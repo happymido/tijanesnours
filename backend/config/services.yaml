@@ -16,3 +16,8 @@ services:
     # Abstract Storage Layer Wiring
     App\Shared\Domain\Storage\FileStorageInterface:
         class: App\Shared\Infrastructure\Storage\FlysystemStorageAdapter
+
+    # JWT Login Response Listener
+    App\IdentityAccess\Application\EventListener\AuthenticationSuccessListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccessResponse }
