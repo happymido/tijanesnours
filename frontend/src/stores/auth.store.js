@@ -20,9 +20,29 @@ export const useAuthStore = defineStore('auth', {
     async login(email, password) {
       this.loading = true
       try {
-        const response = await apiClient.post('/auth/login', { email, password })
+        const response = await apiClient.post('/auth/login', {
+          username: email,
+          email: email,
+          password: password
+        })
+        
         this.token = response.data.token
-        this.user = response.data.user
+        
+        // Decode JWT payload or use returned user
+        if (response.data.user) {
+          this.user = response.data.user
+        } else {
+          // Fallback parsing roles from JWT payload
+          const base64Url = this.token.split('.')[1]
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+          const payload = JSON.parse(window.atob(base64))
+          this.user = {
+            email: payload.username || email,
+            roles: payload.roles || ['ROLE_USER'],
+            locale: 'fr'
+          }
+        }
+        
         localStorage.setItem('token', this.token)
         localStorage.setItem('user', JSON.stringify(this.user))
         return response.data
