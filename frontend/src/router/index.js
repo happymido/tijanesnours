@@ -36,7 +36,12 @@ const routes = [
     component: () => import('../layouts/AdminLayout.vue'),
     meta: { requiresAuth: true, role: 'ROLE_ADMIN' },
     children: [
-      { path: 'dashboard', name: 'admin-dashboard', component: () => import('../views/admin/DashboardView.vue') }
+      { path: 'dashboard', name: 'admin-dashboard', component: () => import('../views/admin/DashboardView.vue') },
+      { path: 'users', name: 'admin-users', component: () => import('../views/admin/UsersView.vue') },
+      { path: 'classes', name: 'admin-classes', component: () => import('../views/admin/ClassesView.vue') },
+      { path: 'finance', name: 'admin-finance', component: () => import('../views/admin/FinanceView.vue') },
+      { path: 'cms', name: 'admin-cms', component: () => import('../views/admin/CmsView.vue') },
+      { path: 'settings', name: 'admin-settings', component: () => import('../views/admin/SettingsView.vue') }
     ]
   }
 ]
