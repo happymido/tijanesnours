@@ -39,6 +39,7 @@ const routes = [
       { path: 'dashboard', name: 'admin-dashboard', component: () => import('../views/admin/DashboardView.vue') },
       { path: 'users', name: 'admin-users', component: () => import('../views/admin/UsersView.vue') },
       { path: 'classes', name: 'admin-classes', component: () => import('../views/admin/ClassesView.vue') },
+      { path: 'pedagogy', name: 'admin-pedagogy', component: () => import('../views/admin/PedagogyView.vue') },
       { path: 'finance', name: 'admin-finance', component: () => import('../views/admin/FinanceView.vue') },
       { path: 'cms', name: 'admin-cms', component: () => import('../views/admin/CmsView.vue') },
       { path: 'settings', name: 'admin-settings', component: () => import('../views/admin/SettingsView.vue') }

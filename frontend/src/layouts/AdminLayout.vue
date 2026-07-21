@@ -27,7 +27,7 @@
           active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
           class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"
         >
-          <span class="text-base">👥</span> Gestion Utilisateurs
+          <span class="text-base">👥</span> Élèves, Parents & Profs
         </router-link>
 
         <router-link
@@ -36,6 +36,14 @@
           class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"
         >
           <span class="text-base">🏫</span> Structure & Classes
+        </router-link>
+
+        <router-link
+          to="/admin/pedagogy"
+          active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"
+        >
+          <span class="text-base">📖</span> Examens, Notes & Bulletins
         </router-link>
 
         <router-link
@@ -51,7 +59,7 @@
           active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
           class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"
         >
-          <span class="text-base">📰</span> CMS & Public
+          <span class="text-base">📰</span> CMS & Site Public
         </router-link>
 
         <router-link
