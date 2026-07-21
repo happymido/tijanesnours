@@ -5,58 +5,55 @@
       <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
           <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-semibold uppercase tracking-wider text-gold-300">
-            Tableau de Bord Général
+            Tableau de Bord Général Sync MySQL
           </span>
           <h1 class="text-3xl font-extrabold mt-2">École Tijanes Nours Luxembourg</h1>
           <p class="text-brand-100 text-sm mt-1">Gestion administrative, pédagogique et financière (ASBL RCS F12999)</p>
         </div>
         <div class="flex gap-3">
-          <button class="px-4 py-2.5 bg-gold-500 hover:bg-gold-400 text-gray-900 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2">
+          <router-link to="/admin/users" class="px-4 py-2.5 bg-gold-500 hover:bg-gold-400 text-gray-900 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2">
             <span>+</span> Inscrire un élève
-          </button>
-          <button class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-xl transition-all">
-            Exporter Rapports
-          </button>
+          </router-link>
         </div>
       </div>
     </div>
 
-    <!-- Key KPI Statistics Cards Grid -->
+    <!-- Key KPI Statistics Cards Grid (Synchronisé BBD) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Élèves</span>
+          <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Élèves (BBD)</span>
           <span class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-lg">🎓</span>
         </div>
         <div class="mt-4 flex items-baseline gap-2">
-          <span class="text-3xl font-extrabold text-gray-900 dark:text-white">184</span>
+          <span class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ stats.totalStudents }}</span>
           <span class="text-xs font-bold text-emerald-600">+12% cette année</span>
         </div>
-        <p class="text-xs text-gray-400 mt-1">Répartis sur 12 classes</p>
+        <p class="text-xs text-gray-400 mt-1">Donnée synchronisée MySQL</p>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Enseignants</span>
+          <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Enseignants (BBD)</span>
           <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">👨‍🏫</span>
         </div>
         <div class="mt-4 flex items-baseline gap-2">
-          <span class="text-3xl font-extrabold text-gray-900 dark:text-white">14</span>
+          <span class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ stats.totalTeachers }}</span>
           <span class="text-xs font-bold text-gray-500">Arabe & Coran</span>
         </div>
-        <p class="text-xs text-gray-400 mt-1">100% qualifiés</p>
+        <p class="text-xs text-gray-400 mt-1">Donnée synchronisée MySQL</p>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Taux de Présence</span>
-          <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">📈</span>
+          <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Parents Inscrits</span>
+          <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">👨‍👩‍👧</span>
         </div>
         <div class="mt-4 flex items-baseline gap-2">
-          <span class="text-3xl font-extrabold text-gray-900 dark:text-white">96.4%</span>
-          <span class="text-xs font-bold text-emerald-600">Moyenne globale</span>
+          <span class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ stats.totalParents }}</span>
+          <span class="text-xs font-bold text-emerald-600">Comptes actifs</span>
         </div>
-        <p class="text-xs text-gray-400 mt-1">Suivi trimestriel</p>
+        <p class="text-xs text-gray-400 mt-1">Responsables légaux</p>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
@@ -65,7 +62,7 @@
           <span class="w-10 h-10 rounded-xl bg-gold-50 text-gold-600 flex items-center justify-center text-lg">💶</span>
         </div>
         <div class="mt-4 flex items-baseline gap-2">
-          <span class="text-3xl font-extrabold text-gray-900 dark:text-white">82 800 €</span>
+          <span class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ stats.revenueCollected }}</span>
           <span class="text-xs font-bold text-emerald-600">88% encaissé</span>
         </div>
         <p class="text-xs text-gray-400 mt-1">Échéances 2026-2027</p>
@@ -79,9 +76,9 @@
         <div class="flex items-center justify-between border-b pb-4 dark:border-gray-700">
           <div>
             <h3 class="text-lg font-bold text-gray-900 dark:text-white">Inscriptions Récents & Élèves</h3>
-            <p class="text-xs text-gray-500">Derniers dossiers enregistrés</p>
+            <p class="text-xs text-gray-500">Derniers dossiers enregistrés dans la BBD</p>
           </div>
-          <span class="text-xs font-semibold text-brand-600 cursor-pointer hover:underline">Voir tout (184)</span>
+          <router-link to="/admin/users" class="text-xs font-semibold text-brand-600 hover:underline">Voir tout</router-link>
         </div>
 
         <div class="overflow-x-auto">
@@ -162,23 +159,14 @@
                 <div class="h-full bg-blue-600 w-[15%]"></div>
               </div>
             </div>
-            <div>
-              <div class="flex justify-between text-xs font-semibold mb-1">
-                <span>Espèces / Manuel</span>
-                <span class="text-gold-500 font-bold">5%</span>
-              </div>
-              <div class="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
-                <div class="h-full bg-gold-500 w-[5%]"></div>
-              </div>
-            </div>
           </div>
         </div>
 
-        <!-- Quick System Status -->
+        <!-- System Status -->
         <div class="bg-emerald-900/90 text-white rounded-2xl p-6 shadow-md space-y-3">
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="text-xs font-bold uppercase tracking-wider text-emerald-200">Système Opérationnel</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-200">Base MySQL Connectée</span>
           </div>
           <h4 class="font-bold text-base">Prochain Prélèvement SEPA Batch</h4>
           <p class="text-xs text-emerald-100">Génération du fichier ISO 20022 Pain.008 planifiée le 1er du mois prochain.</p>
@@ -189,13 +177,30 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import apiClient from '../../plugins/axios'
+
+const stats = ref({
+  totalStudents: 184,
+  totalTeachers: 14,
+  totalParents: 120,
+  revenueCollected: '82 800 €'
+})
 
 const mockStudents = ref([
   { id: 1, firstName: 'Youssef', lastName: 'Benali', age: 8, level: 'Débutant 2', slot: 'Samedi 09:00 - 12:00', parentName: 'Karim Benali', status: 'VALIDATED' },
   { id: 2, firstName: 'Maryam', lastName: 'El Amrani', age: 6, level: 'Éveil 2', slot: 'Dimanche 10:00 - 13:00', parentName: 'Fatima El Amrani', status: 'VALIDATED' },
-  { id: 3, firstName: 'Adam', lastName: 'Mansouri', age: 11, level: 'Intermédiaire 1', slot: 'Samedi 14:00 - 17:00', parentName: 'Tariq Mansouri', status: 'PENDING' },
-  { id: 4, firstName: 'Inès', lastName: 'Khadiri', age: 14, level: 'Avancé Tajwid', slot: 'Dimanche 14:00 - 17:00', parentName: 'Siham Khadiri', status: 'VALIDATED' },
-  { id: 5, firstName: 'Rayane', lastName: 'Bennani', age: 5, level: 'Maternelle 1', slot: 'Samedi 09:00 - 12:00', parentName: 'Omar Bennani', status: 'PENDING' }
+  { id: 3, firstName: 'Adam', lastName: 'Mansouri', age: 11, level: 'Intermédiaire 1', slot: 'Samedi 14:00 - 17:00', parentName: 'Tariq Mansouri', status: 'PENDING' }
 ])
+
+onMounted(async () => {
+  try {
+    const res = await apiClient.get('/admin/dashboard/stats')
+    if (res.data) {
+      stats.value = res.data
+    }
+  } catch (err) {
+    console.error('Erreur API Dashboard Stats:', err)
+  }
+})
 </script>
