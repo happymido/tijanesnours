@@ -1,0 +1,11 @@
+# Configuration oneup_flysystem pour l'abstraction du stockage de fichiers (Local par défaut, migration S3/Wasabi/Azure)
+oneup_flysystem:
+    adapters:
+        local_adapter:
+            local:
+                location: '%kernel.project_dir%/public/uploads'
+
+    filesystems:
+        default_storage:
+            adapter: local_adapter
+            alias: League\Flysystem\FilesystemOperator

@@ -1,0 +1,15 @@
+vich_uploader:
+    db_driver: orm
+    mappings:
+        documents:
+            uri_prefix: /uploads/documents
+            upload_destination: '%kernel.project_dir%/public/uploads/documents'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+        bulletins:
+            uri_prefix: /uploads/bulletins
+            upload_destination: '%kernel.project_dir%/public/uploads/bulletins'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+        invoices:
+            uri_prefix: /uploads/invoices
+            upload_destination: '%kernel.project_dir%/public/uploads/invoices'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer

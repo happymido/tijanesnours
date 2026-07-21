@@ -1,0 +1,46 @@
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+        profiling_collect_backtrace: '%kernel.debug%'
+        use_savepoints: true
+    orm:
+        auto_generate_proxy_classes: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+            IdentityAccess:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/IdentityAccess/Domain/Entity'
+                prefix: 'App\IdentityAccess\Domain\Entity'
+                alias: IdentityAccess
+            Schooling:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Schooling/Domain/Entity'
+                prefix: 'App\Schooling\Domain\Entity'
+                alias: Schooling
+            Pedagogy:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Pedagogy/Domain/Entity'
+                prefix: 'App\Pedagogy\Domain\Entity'
+                alias: Pedagogy
+            Billing:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Billing/Domain/Entity'
+                prefix: 'App\Billing\Domain\Entity'
+                alias: Billing
+            CMS:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/CMS/Domain/Entity'
+                prefix: 'App\CMS\Domain\Entity'
+                alias: CMS
+            Communication:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Communication/Domain/Entity'
+                prefix: 'App\Communication\Domain\Entity'
+                alias: Communication

@@ -1,0 +1,35 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About Us",
+    "courses": "Courses",
+    "pedagogy": "Pedagogy",
+    "news": "News",
+    "contact": "Contact",
+    "register": "Register",
+    "login": "Login",
+    "dashboard": "Dashboard",
+    "logout": "Logout"
+  },
+  "hero": {
+    "title": "Tijanes Nours School",
+    "subtitle": "Modern, interactive, and progressive Arabic language and Quran education for children aged 4 to 16.",
+    "cta_register": "Enroll a Child",
+    "cta_courses": "Explore Programs"
+  },
+  "roles": {
+    "ROLE_ADMIN": "Administrator",
+    "ROLE_PAYMENT_AGENT": "Accountant Agent",
+    "ROLE_TEACHER": "Teacher",
+    "ROLE_PARENT": "Parent",
+    "ROLE_STUDENT": "Student"
+  },
+  "common": {
+    "language": "Language",
+    "switch_theme": "Toggle Theme",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "success": "Operation Successful"
+  }
+}

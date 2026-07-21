@@ -1,0 +1,24 @@
+# Dependencies
+/frontend/node_modules/
+/backend/vendor/
+
+# Build & Dist
+/frontend/dist/
+/backend/public/uploads/*
+!/backend/public/uploads/.gitkeep
+
+# Symfony Cache & Logs
+/backend/var/
+/backend/public/bundles/
+
+# JWT Keys & Secrets
+/backend/config/jwt/*.pem
+/backend/.env.local
+/backend/.env.*.local
+
+# Docker & OS Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

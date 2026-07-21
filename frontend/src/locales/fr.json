@@ -1,0 +1,35 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "about": "Présentation",
+    "courses": "Nos Cours",
+    "pedagogy": "Pédagogie",
+    "news": "Actualités",
+    "contact": "Contact",
+    "register": "S'inscrire",
+    "login": "Connexion",
+    "dashboard": "Mon Espace",
+    "logout": "Déconnexion"
+  },
+  "hero": {
+    "title": "École Tijanes Nours",
+    "subtitle": "Enseignement moderne, ludique et progressif de la langue arabe et du Coran pour les enfants de 4 à 16 ans.",
+    "cta_register": "Inscrire un enfant",
+    "cta_courses": "Découvrir les programmes"
+  },
+  "roles": {
+    "ROLE_ADMIN": "Administration",
+    "ROLE_PAYMENT_AGENT": "Agent Comptable",
+    "ROLE_TEACHER": "Enseignant",
+    "ROLE_PARENT": "Parent",
+    "ROLE_STUDENT": "Élève"
+  },
+  "common": {
+    "language": "Langue",
+    "switch_theme": "Changer le thème",
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "success": "Opération réussie"
+  }
+}

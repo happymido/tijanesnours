@@ -1,0 +1,18 @@
+parameters:
+    app.locales: [fr, ar, en]
+    app.default_locale: fr
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Kernel.php'
+
+    # Abstract Storage Layer Wiring
+    App\Shared\Domain\Storage\FileStorageInterface:
+        class: App\Shared\Infrastructure\Storage\FlysystemStorageAdapter
