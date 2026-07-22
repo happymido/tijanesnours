@@ -6,12 +6,21 @@
         <span>◀</span> Retour à la liste des Utilisateurs
       </router-link>
       <div class="flex gap-3">
-        <button v-if="!isEditing" @click="isEditing = true" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
+        <!-- Bouton Éditer (Mode Lecture) -->
+        <button v-if="!isEditing" @click="startEdit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
           <span>✏️</span> Éditer la Fiche
         </button>
-        <button v-else @click="saveChanges" :disabled="saving" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2 disabled:opacity-50">
-          <span>💾</span> {{ saving ? 'Enregistrement MySQL...' : 'Enregistrer dans MySQL' }}
-        </button>
+
+        <!-- Boutons Enregistrer & Annuler (Mode Édition) -->
+        <template v-else>
+          <button @click="saveChanges" :disabled="saving" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2 disabled:opacity-50">
+            <span>💾</span> {{ saving ? 'Enregistrement MySQL...' : 'Enregistrer dans MySQL' }}
+          </button>
+          <button @click="cancelEdit" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold text-xs rounded-xl transition-all flex items-center gap-2 border">
+            <span>❌</span> Annuler les modifications
+          </button>
+        </template>
+
         <button @click="printCard" class="px-4 py-2 bg-gray-900 text-white font-bold text-xs rounded-xl shadow hover:bg-gray-800 transition-all flex items-center gap-2">
           <span>🖨️</span> Imprimer Fiche
         </button>
@@ -109,12 +118,12 @@
             <div>
               <span class="text-gray-400 font-semibold block">Nom & Prénom :</span>
               <strong v-if="!isEditing" class="text-gray-900 dark:text-white text-sm">{{ user.name }}</strong>
-              <input v-else v-model="editForm.name" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
+              <input v-else v-model="editForm.name" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700 font-semibold" />
             </div>
             <div>
               <span class="text-gray-400 font-semibold block">Email :</span>
               <strong v-if="!isEditing" class="text-gray-900 dark:text-white">{{ user.email }}</strong>
-              <input v-else v-model="editForm.email" type="email" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
+              <input v-else v-model="editForm.email" type="email" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700 font-semibold" />
             </div>
           </div>
 
@@ -146,7 +155,7 @@
         </div>
       </div>
 
-      <!-- 2. Informations Pédagogiques & Affectation (AVEC SELECT POUR L'AFFECTATION SCOLAIRE) -->
+      <!-- 2. Informations Pédagogiques & Affectation (SÉLECTIONNÉ PAR DÉFAUT EN ÉDITION) -->
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
           <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-bold">🏫</span>
@@ -158,8 +167,9 @@
             <span class="text-[10px] uppercase font-bold text-emerald-700">Groupe / Classe Assignée</span>
             <p v-if="!isEditing" class="text-lg font-extrabold text-gray-900 dark:text-white">{{ user.assignedGroup }}</p>
             
-            <!-- Sélecteur Recherchable (Select2) pour la Classe en Mode Édition -->
+            <!-- Sélecteur Recherchable Pré-sélectionné par Défaut -->
             <div v-else class="space-y-1">
+              <label class="text-[10px] font-bold text-gray-500 block mb-1">Changer l'affectation de classe :</label>
               <SearchableSelect
                 v-model="editForm.assignedGroup"
                 :options="classOptions"
@@ -276,11 +286,21 @@ const childrenList = computed(() => {
 })
 
 function fillEditForm() {
+  // Trouver l'option de classe correspondant le mieux à la valeur de l'utilisateur
+  let defaultGroup = user.value.assignedGroup || 'Classe Débutant 2A (6-8 ans)'
+  const matchingOpt = classOptions.value.find(opt => 
+    opt.value.toLowerCase().includes(defaultGroup.toLowerCase()) || 
+    defaultGroup.toLowerCase().includes(opt.value.toLowerCase())
+  )
+  if (matchingOpt) {
+    defaultGroup = matchingOpt.value
+  }
+
   editForm.value = {
     name: user.value.name,
     email: user.value.email,
     contactInfo: user.value.contactInfo || '+352 691 123 456',
-    assignedGroup: user.value.assignedGroup || 'Classe Débutant 2A (6-8 ans)',
+    assignedGroup: defaultGroup,
     parentName: user.value.parentName || 'Karim Benali',
     address: user.value.details?.address || 'Luxembourg-Ville',
     dateOfBirth: user.value.details?.dateOfBirth || '12/05/2018',
@@ -288,6 +308,16 @@ function fillEditForm() {
     allergies: user.value.details?.allergies || 'Aucune allergie connue',
     insurancePolicy: user.value.details?.insurancePolicy || 'LU-890421-AXA'
   }
+}
+
+function startEdit() {
+  fillEditForm()
+  isEditing.value = true
+}
+
+function cancelEdit() {
+  fillEditForm()
+  isEditing.value = false
 }
 
 onMounted(async () => {
