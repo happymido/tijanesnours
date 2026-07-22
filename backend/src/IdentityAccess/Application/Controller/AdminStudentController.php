@@ -5,6 +5,7 @@ namespace App\IdentityAccess\Application\Controller;
 use App\IdentityAccess\Domain\Entity\User;
 use App\IdentityAccess\Domain\Entity\Student;
 use App\IdentityAccess\Domain\Entity\ParentUser;
+use App\IdentityAccess\Domain\Entity\Teacher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,14 +20,16 @@ class AdminStudentController extends AbstractController
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(EntityManagerInterface $em): JsonResponse
     {
-        $students = $em->getRepository(Student::class)->findAll();
         $data = [];
 
+        // 1. Récupérer tous les Élèves
+        $students = $em->getRepository(Student::class)->findAll();
         foreach ($students as $student) {
             $parent = $student->getParent();
             $user = $student->getUser();
             $data[] = [
-                'id' => $student->getId(),
+                'id' => 'student_' . $student->getId(),
+                'dbId' => $student->getId(),
                 'firstName' => $student->getFirstName(),
                 'lastName' => $student->getLastName(),
                 'name' => $student->getFirstName() . ' ' . $student->getLastName(),
@@ -46,18 +49,72 @@ class AdminStudentController extends AbstractController
             ];
         }
 
+        // 2. Récupérer tous les Parents
+        $parents = $em->getRepository(ParentUser::class)->findAll();
+        foreach ($parents as $parent) {
+            $user = $parent->getUser();
+            $data[] = [
+                'id' => 'parent_' . $parent->getId(),
+                'dbId' => $parent->getId(),
+                'name' => $parent->getFullName(),
+                'email' => $user ? $user->getEmail() : 'parent@tijanesnours.lu',
+                'role' => 'ROLE_PARENT',
+                'assignedGroup' => 'Responsable Légal',
+                'parentName' => null,
+                'contactInfo' => $parent->getPhone() ?? '+352 691 123 456',
+                'status' => ($user && !$user->isActive()) ? 'INACTIVE' : 'ACTIVE',
+                'details' => [
+                    'address' => $parent->getAddress() ?? 'Luxembourg-Ville',
+                    'paymentMethod' => $parent->getPreferredPaymentMethod()
+                ]
+            ];
+        }
+
+        // 3. Récupérer tous les Enseignants
+        $teachers = $em->getRepository(Teacher::class)->findAll();
+        foreach ($teachers as $teacher) {
+            $user = $teacher->getUser();
+            $specs = implode(', ', $teacher->getSpecialities());
+            $data[] = [
+                'id' => 'teacher_' . $teacher->getId(),
+                'dbId' => $teacher->getId(),
+                'name' => $teacher->getFullName(),
+                'email' => $user ? $user->getEmail() : 'mahmoud@tijanesnours.lu',
+                'role' => 'ROLE_TEACHER',
+                'assignedGroup' => !empty($specs) ? $specs : 'Langue Arabe & Tajwid',
+                'parentName' => null,
+                'contactInfo' => $teacher->getPhone() ?? '+352 691 888 999',
+                'status' => ($user && !$user->isActive()) ? 'INACTIVE' : 'ACTIVE',
+                'details' => [
+                    'bio' => $teacher->getBio() ?? 'Professeur diplômé en Tajwid'
+                ]
+            ];
+        }
+
         return $this->json($data);
     }
 
     #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['PUT', 'POST'])]
-    public function toggleStatus(int $id, EntityManagerInterface $em): JsonResponse
+    public function toggleStatus(string $id, EntityManagerInterface $em): JsonResponse
     {
-        $student = $em->getRepository(Student::class)->find($id);
-        if (!$student) {
-            return $this->json(['error' => 'Élève non trouvé'], Response::HTTP_NOT_FOUND);
+        if (str_starts_with($id, 'student_')) {
+            $realId = (int) str_replace('student_', '', $id);
+            $entity = $em->getRepository(Student::class)->find($realId);
+        } elseif (str_starts_with($id, 'parent_')) {
+            $realId = (int) str_replace('parent_', '', $id);
+            $entity = $em->getRepository(ParentUser::class)->find($realId);
+        } elseif (str_starts_with($id, 'teacher_')) {
+            $realId = (int) str_replace('teacher_', '', $id);
+            $entity = $em->getRepository(Teacher::class)->find($realId);
+        } else {
+            $entity = $em->getRepository(Student::class)->find((int) $id);
         }
 
-        $user = $student->getUser();
+        if (!$entity) {
+            return $this->json(['error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $user = method_exists($entity, 'getUser') ? $entity->getUser() : null;
         if ($user) {
             $user->setIsActive(!$user->isActive());
             $em->flush();
@@ -132,7 +189,7 @@ class AdminStudentController extends AbstractController
         return $this->json([
             'message' => 'Élève et Parent enregistrés avec succès dans MySQL',
             'student' => [
-                'id' => $studentEntity->getId(),
+                'id' => 'student_' . $studentEntity->getId(),
                 'name' => $studentEntity->getFirstName() . ' ' . $studentEntity->getLastName(),
                 'email' => $studentEmail,
                 'role' => 'ROLE_STUDENT',
