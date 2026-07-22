@@ -74,8 +74,10 @@
                   {{ cls.category }}
                 </span>
               </td>
-              <td class="py-3.5 px-4 font-bold text-emerald-600 flex items-center gap-2">
-                <span>👨‍🏫</span> {{ cls.teacher }}
+              <td class="py-3.5 px-4 font-bold text-emerald-600 dark:text-emerald-400">
+                <router-link :to="`/admin/users/teacher_1/id-card`" class="hover:underline">
+                  {{ cls.teacher }}
+                </router-link>
               </td>
               <td class="py-3.5 px-4 text-gray-600 dark:text-gray-300">
                 <div>🚪 {{ cls.roomNumber || cls.room }}</div>
@@ -112,7 +114,11 @@
                 👨‍🏫
               </div>
               <div>
-                <h4 class="font-bold text-gray-900 dark:text-white text-sm">{{ teacher.name }}</h4>
+                <h4 class="font-bold text-gray-900 dark:text-white text-sm">
+                  <router-link :to="`/admin/users/teacher_${teacher.id}/id-card`" class="hover:text-emerald-600 hover:underline">
+                    {{ teacher.name }}
+                  </router-link>
+                </h4>
                 <p class="text-xs text-emerald-600 font-semibold">{{ teacher.speciality }}</p>
               </div>
             </div>

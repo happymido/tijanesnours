@@ -88,9 +88,13 @@
                   {{ user.assignedGroup || 'Non affecté' }}
                 </td>
                 <td class="py-3.5 px-4 text-gray-600 dark:text-gray-300">
-                  <div v-if="user.parentName" class="font-semibold text-brand-600 dark:text-gold-400">
-                    👨‍👩‍👧 {{ user.parentName }}
-                  </div>
+                  <router-link
+                    v-if="user.parentName"
+                    :to="`/admin/users/parent_${user.id}/id-card`"
+                    class="font-semibold text-brand-600 dark:text-gold-400 hover:underline block"
+                  >
+                    {{ user.parentName }}
+                  </router-link>
                   <div class="text-[10px] text-gray-400">{{ user.contactInfo || '-' }}</div>
                 </td>
                 <td class="py-3.5 px-4">

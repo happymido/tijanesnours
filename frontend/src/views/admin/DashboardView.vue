@@ -99,8 +99,12 @@
                     {{ student.firstName[0] }}{{ student.lastName[0] }}
                   </div>
                   <div>
-                    <div>{{ student.firstName }} {{ student.lastName }}</div>
-                    <div class="text-[10px] text-gray-400">Parent: {{ student.parentName }}</div>
+                    <router-link :to="`/admin/users/student_${student.id}/id-card`" class="font-bold text-gray-900 dark:text-white hover:text-brand-600 hover:underline block">
+                      {{ student.firstName }} {{ student.lastName }}
+                    </router-link>
+                    <router-link :to="`/admin/users/parent_${student.id}/id-card`" class="text-[10px] text-brand-600 dark:text-gold-400 hover:underline block">
+                      Parent: {{ student.parentName }}
+                    </router-link>
                   </div>
                 </td>
                 <td class="py-3.5 px-4 font-medium text-gray-600 dark:text-gray-300">
@@ -116,7 +120,9 @@
                   </span>
                 </td>
                 <td class="py-3.5 px-4">
-                  <button class="text-brand-600 font-bold hover:underline">Fiche</button>
+                  <router-link :to="`/admin/users/student_${student.id}/id-card`" class="text-brand-600 font-bold hover:underline">
+                    🪪 Fiche
+                  </router-link>
                 </td>
               </tr>
             </tbody>
