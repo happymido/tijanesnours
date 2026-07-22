@@ -27,12 +27,20 @@ class AdminClassController extends AbstractController
         $totalStudentsInDb = count($allStudents);
 
         foreach ($classes as $c) {
-            $cName = $c->getName();
+            $cName = strtolower(trim(preg_replace('/\([^)]*\)/', '', $c->getName())));
             $enrolledCount = 0;
+
             foreach ($allStudents as $st) {
-                $grp = $st->getAssignedGroup() ?? '';
-                if (!empty($grp) && (str_contains(strtolower($grp), strtolower($cName)) || str_contains(strtolower($cName), strtolower($grp)))) {
-                    $enrolledCount++;
+                $group = strtolower(trim($st->getAssignedGroup() ?? ''));
+                if (!empty($group)) {
+                    $assignedList = array_map('trim', explode(',', $group));
+                    foreach ($assignedList as $assignedItem) {
+                        $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
+                        if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $cName) || str_contains($cName, $cleanAssigned))) {
+                            $enrolledCount++;
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -308,22 +316,21 @@ class AdminClassController extends AbstractController
 
         $allStudents = $em->getRepository(Student::class)->findAll();
         $roster = [];
-        $className = strtolower(trim($classEntity->getName()));
+        $className = strtolower(trim(preg_replace('/\([^)]*\)/', '', $classEntity->getName())));
 
         foreach ($allStudents as $st) {
             $group = strtolower(trim($st->getAssignedGroup() ?? ''));
-
             $isAssigned = false;
+
             if (!empty($group)) {
                 $assignedList = array_map('trim', explode(',', $group));
                 foreach ($assignedList as $assignedItem) {
-                    if (!empty($assignedItem) && (str_contains($assignedItem, $className) || str_contains($className, $assignedItem))) {
+                    $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
+                    if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $className) || str_contains($className, $cleanAssigned))) {
                         $isAssigned = true;
                         break;
                     }
                 }
-            } else {
-                $isAssigned = true;
             }
 
             if ($isAssigned) {
