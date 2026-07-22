@@ -702,7 +702,10 @@ const schedules = ref([
   { id: 6, day: 'Vendredi', startTime: '17:30', endTime: '19:30', label: 'Soirée', name: 'Vendredi 17:30 - 19:30 (Soirée)' }
 ])
 
-const classrooms = ref([])
+const classrooms = ref([
+  { id: 1, name: 'Classe Éveil 1', level: '4-5 ans (Éveil)', category: 'Langue Arabe', teacher: 'Cheikh Mahmoud', schedule: 'Samedi 09:00 - 12:00 (Matin)', roomNumber: 'Salle Maryam 1', maxCapacity: 12, currentEnrolled: 1 },
+  { id: 2, name: 'Classe Débutant 2A', level: '6-8 ans (Débutant)', category: 'Coran & Tajwid', teacher: 'Cheikh Mahmoud', schedule: 'Samedi 09:00 - 12:00 (Matin)', roomNumber: 'Salle Maryam 2', maxCapacity: 15, currentEnrolled: 2 }
+])
 
 const filteredClassrooms = computed(() => {
   if (!classSearch.value) return classrooms.value
@@ -730,7 +733,7 @@ const categoryForm = ref({
   name: '',
   description: '',
   color: '#047857',
-  icon: '📚'
+  icon: '📖'
 })
 
 const levelForm = ref({
@@ -749,9 +752,17 @@ async function fetchClassesData() {
   try {
     const res = await apiClient.get('/admin/classes')
     if (res.data) {
-      if (Array.isArray(res.data.classes) && res.data.classes.length > 0) {
-        classrooms.value = res.data.classes
+      let rawClasses = []
+      if (Array.isArray(res.data.classes)) {
+        rawClasses = res.data.classes
+      } else if (Array.isArray(res.data)) {
+        rawClasses = res.data
       }
+
+      if (rawClasses.length > 0) {
+        classrooms.value = rawClasses
+      }
+
       if (Array.isArray(res.data.categories) && res.data.categories.length > 0) {
         categories.value = res.data.categories
       }
