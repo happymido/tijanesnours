@@ -146,7 +146,7 @@
         </div>
       </div>
 
-      <!-- 2. Informations Pédagogiques & Affectation -->
+      <!-- 2. Informations Pédagogiques & Affectation (AVEC SELECT POUR L'AFFECTATION SCOLAIRE) -->
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
           <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-bold">🏫</span>
@@ -157,8 +157,17 @@
           <div class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 space-y-2">
             <span class="text-[10px] uppercase font-bold text-emerald-700">Groupe / Classe Assignée</span>
             <p v-if="!isEditing" class="text-lg font-extrabold text-gray-900 dark:text-white">{{ user.assignedGroup }}</p>
-            <input v-else v-model="editForm.assignedGroup" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700 text-sm font-bold" />
-            <p class="text-xs text-gray-500">Créneau : Samedi 09:00 - 12:00 • Salle Maryam 1</p>
+            
+            <!-- Sélecteur Recherchable (Select2) pour la Classe en Mode Édition -->
+            <div v-else class="space-y-1">
+              <SearchableSelect
+                v-model="editForm.assignedGroup"
+                :options="classOptions"
+                placeholder="Sélectionner une classe..."
+              />
+            </div>
+            
+            <p class="text-xs text-gray-500 pt-1">Créneau : Samedi 09:00 - 12:00 • Salle Maryam 1</p>
           </div>
         </div>
       </div>
@@ -210,6 +219,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import apiClient from '../../plugins/axios'
 import { showSuccessAlert, showErrorAlert } from '../../plugins/notify'
+import SearchableSelect from '../../components/common/SearchableSelect.vue'
 
 const route = useRoute()
 const userId = route.params.id
@@ -217,12 +227,19 @@ const userId = route.params.id
 const isEditing = ref(false)
 const saving = ref(false)
 
+const classOptions = ref([
+  { value: 'Classe Éveil 1 (4-5 ans)', label: 'Classe Éveil 1 (4-5 ans)' },
+  { value: 'Classe Débutant 2A (6-8 ans)', label: 'Classe Débutant 2A (6-8 ans)' },
+  { value: 'Classe Intermédiaire 1 (9-12 ans)', label: 'Classe Intermédiaire 1 (9-12 ans)' },
+  { value: 'Classe Avancé Tajwid (13-16 ans)', label: 'Classe Avancé Tajwid (13-16 ans)' }
+])
+
 const user = ref({
   id: userId,
   name: 'Utilisateur',
   email: '',
   role: 'ROLE_STUDENT',
-  assignedGroup: 'Classe Débutant 2A',
+  assignedGroup: 'Classe Débutant 2A (6-8 ans)',
   parentName: 'Karim Benali',
   contactInfo: '+352 691 123 456',
   status: 'ACTIVE',
@@ -239,7 +256,7 @@ const editForm = ref({
   name: '',
   email: '',
   contactInfo: '',
-  assignedGroup: '',
+  assignedGroup: 'Classe Débutant 2A (6-8 ans)',
   parentName: '',
   address: '',
   dateOfBirth: '',
@@ -263,7 +280,7 @@ function fillEditForm() {
     name: user.value.name,
     email: user.value.email,
     contactInfo: user.value.contactInfo || '+352 691 123 456',
-    assignedGroup: user.value.assignedGroup,
+    assignedGroup: user.value.assignedGroup || 'Classe Débutant 2A (6-8 ans)',
     parentName: user.value.parentName || 'Karim Benali',
     address: user.value.details?.address || 'Luxembourg-Ville',
     dateOfBirth: user.value.details?.dateOfBirth || '12/05/2018',

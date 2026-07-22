@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Gestion des Élèves, Parents & Enseignants</h1>
-        <p class="text-xs text-gray-500">Cliquez sur n'importe quel nom d'utilisateur pour ouvrir sa Fiche d'Identité Détaillée</p>
+        <p class="text-xs text-gray-500">Statuts Actif/Inactif en BBD, Fiches d'identité détaillées et sélecteurs de classes</p>
       </div>
       <div class="flex gap-3">
         <button @click="openModal('STUDENT')" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
@@ -55,7 +55,7 @@
           <table class="w-full text-left text-xs">
             <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 uppercase font-semibold">
               <tr>
-                <th class="py-3 px-4">Nom & Prénom (Cliquer pour Fiche)</th>
+                <th class="py-3 px-4">Nom & Prénom</th>
                 <th class="py-3 px-4">Rôle</th>
                 <th class="py-3 px-4">Classe / Spécialité</th>
                 <th class="py-3 px-4">Parent Rattaché / Contact</th>
@@ -65,9 +65,8 @@
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
               <tr v-for="user in paginatedUsers" :key="user.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30">
-                <!-- Raccourci cliquable sur le nom de l'utilisateur -->
                 <td class="py-3.5 px-4 font-bold text-gray-900 dark:text-white">
-                  <router-link :to="`/admin/users/${user.id}/id-card`" class="flex items-center gap-3 group" title="Cliquer pour consulter la fiche d'identité officielle">
+                  <router-link :to="`/admin/users/${user.id}/id-card`" class="flex items-center gap-3 group" title="Cliquer pour voir le dossier officiel">
                     <div :class="getAvatarBg(user.role)" class="w-8 h-8 rounded-full font-bold flex items-center justify-center text-xs text-white shadow-sm group-hover:scale-110 transition-transform">
                       {{ user.name[0] }}
                     </div>
@@ -104,14 +103,36 @@
                     {{ user.status === 'ACTIVE' ? 'Actif' : 'Inactif' }}
                   </button>
                 </td>
-                <td class="py-3.5 px-4 text-right space-x-2">
-                  <router-link
-                    :to="`/admin/users/${user.id}/id-card`"
-                    class="px-2.5 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold transition-all inline-flex items-center gap-1"
-                  >
-                    🪪 Fiche d'identité
-                  </router-link>
-                  <button @click="deleteUser(user)" class="text-red-600 font-bold hover:underline">Supprimer</button>
+                <!-- Actions sous forme d'icônes stylisées avec tooltips -->
+                <td class="py-3.5 px-4 text-right">
+                  <div class="inline-flex items-center gap-1.5 justify-end">
+                    <!-- Icône 🪪 Voir Fiche Détaillée -->
+                    <router-link
+                      :to="`/admin/users/${user.id}/id-card`"
+                      class="w-8 h-8 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+                      title="Voir Fiche d'Identité Détaillée"
+                    >
+                      🪪
+                    </router-link>
+
+                    <!-- Icône ✏️ Éditer Fiche -->
+                    <router-link
+                      :to="`/admin/users/${user.id}/id-card`"
+                      class="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+                      title="Éditer l'Utilisateur"
+                    >
+                      ✏️
+                    </router-link>
+
+                    <!-- Icône 🗑️ Supprimer -->
+                    <button
+                      @click="deleteUser(user)"
+                      class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+                      title="Supprimer l'Utilisateur"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -206,7 +227,7 @@
           <!-- Section Choix & Sélection du Parent avec Select2 -->
           <div v-if="modalType === 'STUDENT'" class="space-y-3 pt-2">
             <h4 class="font-bold text-brand-600 dark:text-gold-400 border-b pb-1 flex items-center justify-between">
-              <span>👨‍👩‍👧 2. Responsable Légal / Parent</span>
+              <span>👨‍gsub 2. Responsable Légal / Parent</span>
             </h4>
 
             <!-- Select2 Recherchable des Parents Existants -->
