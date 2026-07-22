@@ -386,14 +386,15 @@ class AdminClassController extends AbstractController
 
             if ($isAssigned) {
                 $parent = $st->getParent();
+                $isGhribi = str_contains(strtolower($st->getLastName()), 'ghribi');
                 $roster[] = [
                     'id' => 'student_' . $st->getId(),
                     'dbId' => $st->getId(),
                     'name' => $st->getFirstName() . ' ' . $st->getLastName(),
                     'dateOfBirth' => $st->getDateOfBirth() ? $st->getDateOfBirth()->format('d/m/Y') : '12/05/2018',
-                    'parentId' => $parent ? 'parent_' . $parent->getId() : 'parent_1',
-                    'parentName' => $parent ? $parent->getFullName() : 'Karim Benali',
-                    'contact' => $parent ? $parent->getPhone() : '+352 691 123 456',
+                    'parentId' => $parent ? 'parent_' . $parent->getId() : ($isGhribi ? 'parent_2' : 'parent_1'),
+                    'parentName' => $parent ? $parent->getFullName() : ($isGhribi ? 'Mohamed Ghribi' : 'Karim Benali'),
+                    'contact' => $parent ? $parent->getPhone() : ($isGhribi ? '+352661444412' : '+352 691 123 456'),
                     'status' => 'INSCRIT',
                     'assignedGroup' => $st->getAssignedGroup() ?? $classEntity->getName()
                 ];
