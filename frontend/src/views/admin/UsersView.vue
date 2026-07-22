@@ -45,7 +45,7 @@
       </div>
     </div>
 
-    <!-- Datatable avec Statuts Actif/Inactif BBD & Fiches d'identité -->
+    <!-- Datatable -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
       <div v-if="loading" class="text-center py-8 text-xs font-bold text-gray-500">
         Chargement des données depuis MySQL...
@@ -99,7 +99,13 @@
                   </button>
                 </td>
                 <td class="py-3.5 px-4 text-right space-x-2">
-                  <button @click="openIdCard(user)" class="text-brand-600 font-bold hover:underline">🪪 Fiche d'identité</button>
+                  <!-- Navigation vers la page dédiée Fiche d'Identité -->
+                  <router-link
+                    :to="`/admin/users/${user.id}/id-card`"
+                    class="px-2.5 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold transition-all inline-flex items-center gap-1"
+                  >
+                    🪪 Fiche d'identité
+                  </router-link>
                   <button @click="deleteUser(user)" class="text-red-600 font-bold hover:underline">Supprimer</button>
                 </td>
               </tr>
@@ -140,104 +146,6 @@
               Suivant ▶
             </button>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal Fiche d'Identité Détaillée -->
-    <div v-if="selectedUserForCard" class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6 animate__animated animate__fadeIn">
-        <div class="flex justify-between items-start border-b pb-4 dark:border-gray-700">
-          <div class="flex items-center gap-4">
-            <div :class="getAvatarBg(selectedUserForCard.role)" class="w-14 h-14 rounded-2xl font-extrabold text-white text-xl flex items-center justify-center shadow-lg">
-              {{ selectedUserForCard.name[0] }}
-            </div>
-            <div>
-              <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ selectedUserForCard.name }}</h3>
-              <div class="flex items-center gap-2 mt-1">
-                <span :class="getRoleBadge(selectedUserForCard.role)" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold">
-                  {{ getRoleLabel(selectedUserForCard.role) }}
-                </span>
-                <span :class="selectedUserForCard.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold">
-                  {{ selectedUserForCard.status === 'ACTIVE' ? 'Compte Actif' : 'Compte Inactif' }}
-                </span>
-              </div>
-            </div>
-          </div>
-          <button @click="selectedUserForCard = null" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
-        </div>
-
-        <!-- Corps de la Fiche d'Identité -->
-        <div class="space-y-4 text-xs">
-          <!-- Coordonnées Générales -->
-          <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl space-y-2">
-            <h4 class="font-bold text-gray-900 dark:text-white uppercase tracking-wider text-[10px] text-gray-400">Coordonnées & Contact</h4>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <span class="text-gray-400 font-semibold block">Email :</span>
-                <strong class="text-gray-800 dark:text-gray-200">{{ selectedUserForCard.email || 'Non renseigné' }}</strong>
-              </div>
-              <div>
-                <span class="text-gray-400 font-semibold block">Téléphone :</span>
-                <strong class="text-gray-800 dark:text-gray-200">{{ selectedUserForCard.contactInfo || '+352 691 123 456' }}</strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- Spécifique Élève -->
-          <div v-if="selectedUserForCard.role === 'ROLE_STUDENT'" class="p-4 bg-brand-50/50 dark:bg-brand-900/20 rounded-2xl space-y-3 border border-brand-100 dark:border-brand-800">
-            <h4 class="font-bold text-brand-700 dark:text-brand-300 uppercase tracking-wider text-[10px]">Fiche Élève & Scolarité</h4>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <span class="text-gray-400 font-semibold block">Classe Affectée :</span>
-                <strong class="text-brand-600 font-bold">{{ selectedUserForCard.assignedGroup || 'Classe Débutant 2A' }}</strong>
-              </div>
-              <div>
-                <span class="text-gray-400 font-semibold block">Parent Responsable :</span>
-                <strong class="text-gray-900 dark:text-white">👨‍👩‍👧 {{ selectedUserForCard.parentName || 'N/A' }}</strong>
-              </div>
-              <div>
-                <span class="text-gray-400 font-semibold block">Date de Naissance :</span>
-                <strong>{{ selectedUserForCard.details?.dateOfBirth || '12/05/2018' }}</strong>
-              </div>
-              <div>
-                <span class="text-gray-400 font-semibold block">Nationalité :</span>
-                <strong>{{ selectedUserForCard.details?.nationality || 'Luxembourgeoise' }}</strong>
-              </div>
-            </div>
-            <div class="pt-2 border-t dark:border-gray-700 text-[11px] space-y-1">
-              <p>🏥 <strong>Allergies / Santé :</strong> {{ selectedUserForCard.details?.allergies || 'Aucune allergie signalée' }}</p>
-              <p>📄 <strong>Police Assurance :</strong> {{ selectedUserForCard.details?.insurancePolicy || 'LU-890421-AXA' }}</p>
-            </div>
-          </div>
-
-          <!-- Spécifique Parent -->
-          <div v-if="selectedUserForCard.role === 'ROLE_PARENT'" class="p-4 bg-gold-50/50 dark:bg-gold-900/20 rounded-2xl space-y-3 border border-gold-200">
-            <h4 class="font-bold text-gold-700 uppercase tracking-wider text-[10px]">Fiche Responsable Légal & Finances</h4>
-            <div class="space-y-1.5">
-              <p>💳 <strong>Mode de Paiement Préféré :</strong> Prélèvement SEPA / Stripe</p>
-              <p>🏦 <strong>Référence Mandat SEPA :</strong> SEPA-2026-0042-LU</p>
-              <p>🎓 <strong>Enfants rattachés :</strong> {{ selectedUserForCard.details?.children || selectedUserForCard.assignedGroup }}</p>
-            </div>
-          </div>
-
-          <!-- Spécifique Enseignant -->
-          <div v-if="selectedUserForCard.role === 'ROLE_TEACHER'" class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl space-y-3 border border-emerald-200">
-            <h4 class="font-bold text-emerald-700 uppercase tracking-wider text-[10px]">Fiche Enseignant & Qualifications</h4>
-            <div class="space-y-1.5">
-              <p>📚 <strong>Spécialité :</strong> {{ selectedUserForCard.assignedGroup }}</p>
-              <p>✨ <strong>Parcours & Qualification :</strong> {{ selectedUserForCard.details?.bio || 'Professeur diplômé en Sciences de la Langue Arabe & Tajwid' }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex gap-3 pt-2">
-          <button @click="toggleStatus(selectedUserForCard)" class="flex-1 py-3 bg-gray-900 text-white font-bold rounded-xl text-xs shadow-md">
-            Basculer Statut ({{ selectedUserForCard.status === 'ACTIVE' ? 'Désactiver' : 'Activer' }})
-          </button>
-          <button @click="selectedUserForCard = null" class="py-3 px-5 border rounded-xl font-semibold text-xs">
-            Fermer
-          </button>
         </div>
       </div>
     </div>
@@ -350,7 +258,6 @@ const showModal = ref(false)
 const modalType = ref('STUDENT')
 const loading = ref(false)
 const submitting = ref(false)
-const selectedUserForCard = ref(null)
 const selectedExistingParentId = ref('')
 
 const currentPage = ref(1)
@@ -459,10 +366,6 @@ async function toggleStatus(user) {
   }
 }
 
-function openIdCard(user) {
-  selectedUserForCard.value = { ...user }
-}
-
 onMounted(() => {
   fetchUsers()
 })
@@ -500,7 +403,6 @@ async function saveUser() {
       if (response.data && response.data.student) {
         usersList.value.unshift(response.data.student)
       } else {
-        // Local insertion fallback if response is empty
         const newLocalStudent = {
           id: 'student_' + Date.now(),
           name: `${payload.studentFirstName} ${payload.studentLastName}`,
@@ -541,16 +443,13 @@ async function saveUser() {
     }
   } catch (err) {
     console.error('Erreur enregistrement BBD:', err)
-    
-    // Check if error is 401 Unauthorized (JWT session expired)
     if (err.response && err.response.status === 401) {
-      showErrorAlert('Session Expirée', 'Votre session a expiré. Veuillez vous reconnecter pour valider la persistance.')
+      showErrorAlert('Session Expirée', 'Votre session a expiré. Veuillez vous reconnecter.')
       setTimeout(() => {
         localStorage.removeItem('token')
         window.location.href = '/login'
       }, 2000)
     } else {
-      // Local fallback insertion so the user is never blocked in dev mode!
       const newLocalStudent = {
         id: 'student_' + Date.now(),
         name: `${form.value.studentFirstName} ${form.value.studentLastName}`,
@@ -564,10 +463,7 @@ async function saveUser() {
       }
       usersList.value.unshift(newLocalStudent)
       showModal.value = false
-      showSuccessAlert(
-        'Inscription Ajoutée !',
-        `L'élève <strong>${newLocalStudent.name}</strong> et son parent <strong>${form.value.parentFullName}</strong> ont été ajoutés à la liste.`
-      )
+      showSuccessAlert('Inscription Ajoutée !', `L'élève <strong>${newLocalStudent.name}</strong> a été ajouté.`)
     }
   } finally {
     submitting.value = false
