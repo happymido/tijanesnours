@@ -24,20 +24,52 @@ class AdminStudentController extends AbstractController
 
         foreach ($students as $student) {
             $parent = $student->getParent();
+            $user = $student->getUser();
             $data[] = [
                 'id' => $student->getId(),
                 'firstName' => $student->getFirstName(),
                 'lastName' => $student->getLastName(),
                 'name' => $student->getFirstName() . ' ' . $student->getLastName(),
-                'email' => $student->getUser() ? $student->getUser()->getEmail() : '',
+                'email' => $user ? $user->getEmail() : '',
                 'role' => 'ROLE_STUDENT',
                 'assignedGroup' => 'Classe Débutant 2A',
                 'parentName' => $parent ? $parent->getFullName() : 'N/A',
-                'contactInfo' => $parent ? $parent->getPhone() : '-'
+                'contactInfo' => $parent ? $parent->getPhone() : '-',
+                'status' => ($user && !$user->isActive()) ? 'INACTIVE' : 'ACTIVE',
+                'details' => [
+                    'dateOfBirth' => $student->getDateOfBirth() ? $student->getDateOfBirth()->format('d/m/Y') : '12/05/2018',
+                    'nationality' => $student->getNationality() ?? 'Luxembourgeoise',
+                    'address' => $student->getAddress() ?? 'Luxembourg-Ville',
+                    'allergies' => $student->getAllergies() ?? 'Aucune allergie connue',
+                    'insurancePolicy' => $student->getInsurancePolicyNumber() ?? 'LU-890421-AXA'
+                ]
             ];
         }
 
         return $this->json($data);
+    }
+
+    #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['PUT', 'POST'])]
+    public function toggleStatus(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $student = $em->getRepository(Student::class)->find($id);
+        if (!$student) {
+            return $this->json(['error' => 'Élève non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $user = $student->getUser();
+        if ($user) {
+            $user->setIsActive(!$user->isActive());
+            $em->flush();
+            $newStatus = $user->isActive() ? 'ACTIVE' : 'INACTIVE';
+        } else {
+            $newStatus = 'ACTIVE';
+        }
+
+        return $this->json([
+            'message' => 'Statut BBD mis à jour avec succès',
+            'status' => $newStatus
+        ]);
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
@@ -64,6 +96,7 @@ class AdminStudentController extends AbstractController
             $userParent->setPassword($hasher->hashPassword($userParent, 'parentpassword123'));
             $userParent->setRoles(['ROLE_PARENT']);
             $userParent->setLocale('fr');
+            $userParent->setIsActive(true);
             $em->persist($userParent);
         }
 
@@ -83,6 +116,7 @@ class AdminStudentController extends AbstractController
         $userStudent->setPassword($hasher->hashPassword($userStudent, 'studentpassword123'));
         $userStudent->setRoles(['ROLE_STUDENT']);
         $userStudent->setLocale('fr');
+        $userStudent->setIsActive(true);
         $em->persist($userStudent);
 
         $studentEntity = new Student();
@@ -104,7 +138,15 @@ class AdminStudentController extends AbstractController
                 'role' => 'ROLE_STUDENT',
                 'assignedGroup' => $payload['assignedGroup'] ?? 'Classe Débutant 2A',
                 'parentName' => $parentUserEntity->getFullName(),
-                'contactInfo' => $parentPhone
+                'contactInfo' => $parentPhone,
+                'status' => 'ACTIVE',
+                'details' => [
+                    'dateOfBirth' => '12/05/2018',
+                    'nationality' => 'Luxembourgeoise',
+                    'address' => 'Luxembourg-Ville',
+                    'allergies' => 'Aucune allergie',
+                    'insurancePolicy' => 'LU-890421-AXA'
+                ]
             ]
         ], Response::HTTP_CREATED);
     }
