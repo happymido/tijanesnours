@@ -30,53 +30,75 @@ class AdminClassController extends AbstractController
                 'roomNumber' => $c->getRoomNumber() ?? 'Salle Maryam 1',
                 'maxCapacity' => $c->getMaxCapacity(),
                 'currentEnrolled' => 12,
-                'schedule' => $c->getSchedule() ?? 'Samedi 09:00 - 12:00',
+                'schedule' => $c->getSchedule() ?? 'Samedi 09:00 - 12:00 (Matin)',
                 'category' => $c->getCategory() ? $c->getCategory()->getName() : 'Langue Arabe',
-                'level' => $c->getLevel() ? $c->getLevel()->getName() : '6-8 ans',
+                'level' => $c->getLevel() ? $c->getLevel()->getName() : '6-8 ans (Débutant)',
                 'teacher' => $c->getTeacher() ? $c->getTeacher()->getFullName() : 'Cheikh Mahmoud'
             ];
         }
 
-        // Si la table est vide lors du premier appel, insérer des classes de test
+        // Initialisation si base vide lors de la première requête
         if (empty($classData)) {
             $cat1 = new CourseCategory();
             $cat1->setName('Langue Arabe');
-            $cat1->setDescription('Apprentissage de la lecture et de l\'écriture arabe');
+            $cat1->setDescription('Apprentissage de la lecture, écriture, grammaire & vocabulaire');
             $cat1->setColor('#047857');
             $em->persist($cat1);
 
             $cat2 = new CourseCategory();
             $cat2->setName('Coran & Tajwid');
-            $cat2->setDescription('Mémorisation et règles de récitation');
+            $cat2->setDescription('Mémorisation, récitation et règles de Tajwid');
             $cat2->setColor('#d97706');
             $em->persist($cat2);
+
+            $cat3 = new CourseCategory();
+            $cat3->setName('Éducation Éthique');
+            $cat3->setDescription('Valeurs morales et comportementales');
+            $cat3->setColor('#2563eb');
+            $em->persist($cat3);
 
             $lvl1 = new CourseLevel();
             $lvl1->setName('4-5 ans (Éveil)');
             $lvl1->setTargetAgeMin(4);
             $lvl1->setTargetAgeMax(5);
+            $lvl1->setDescription('Initiation ludique aux lettres et à la langue');
             $em->persist($lvl1);
 
             $lvl2 = new CourseLevel();
             $lvl2->setName('6-8 ans (Débutant)');
             $lvl2->setTargetAgeMin(6);
             $lvl2->setTargetAgeMax(8);
+            $lvl2->setDescription('Apprentissage de la lecture fluide');
             $em->persist($lvl2);
+
+            $lvl3 = new CourseLevel();
+            $lvl3->setName('9-12 ans (Intermédiaire)');
+            $lvl3->setTargetAgeMin(9);
+            $lvl3->setTargetAgeMax(12);
+            $lvl3->setDescription('Grammaire et mémorisation du Saint Coran');
+            $em->persist($lvl3);
+
+            $lvl4 = new CourseLevel();
+            $lvl4->setName('13-16 ans (Avancé Tajwid)');
+            $lvl4->setTargetAgeMin(13);
+            $lvl4->setTargetAgeMax(16);
+            $lvl4->setDescription('Étude approfondie des règles de Tajwid');
+            $em->persist($lvl4);
 
             $class1 = new SchoolClass();
             $class1->setName('Classe Éveil 1');
-            $class1->setRoomNumber('Salle Khadija 2');
+            $class1->setRoomNumber('Salle Maryam 1');
             $class1->setMaxCapacity(12);
-            $class1->setSchedule('Samedi 09:00 - 11:30');
+            $class1->setSchedule('Samedi 09:00 - 12:00 (Matin)');
             $class1->setCategory($cat1);
             $class1->setLevel($lvl1);
             $em->persist($class1);
 
             $class2 = new SchoolClass();
             $class2->setName('Classe Débutant 2A');
-            $class2->setRoomNumber('Salle Maryam 1');
+            $class2->setRoomNumber('Salle Maryam 2');
             $class2->setMaxCapacity(15);
-            $class2->setSchedule('Samedi 09:00 - 12:00');
+            $class2->setSchedule('Samedi 09:00 - 12:00 (Matin)');
             $class2->setCategory($cat2);
             $class2->setLevel($lvl2);
             $em->persist($class2);
@@ -92,7 +114,7 @@ class AdminClassController extends AbstractController
                     'currentEnrolled' => 10,
                     'schedule' => $class1->getSchedule(),
                     'category' => 'Langue Arabe',
-                    'level' => '4-5 ans',
+                    'level' => '4-5 ans (Éveil)',
                     'teacher' => 'Cheikh Mahmoud'
                 ],
                 [
@@ -103,13 +125,13 @@ class AdminClassController extends AbstractController
                     'currentEnrolled' => 14,
                     'schedule' => $class2->getSchedule(),
                     'category' => 'Coran & Tajwid',
-                    'level' => '6-8 ans',
+                    'level' => '6-8 ans (Débutant)',
                     'teacher' => 'Cheikh Mahmoud'
                 ]
             ];
         }
 
-        // 2. Récupérer les catégories
+        // 2. Récupérer les catégories depuis MySQL
         $categories = $em->getRepository(CourseCategory::class)->findAll();
         $catData = [];
         foreach ($categories as $cat) {
@@ -117,11 +139,12 @@ class AdminClassController extends AbstractController
                 'id' => $cat->getId(),
                 'name' => $cat->getName(),
                 'description' => $cat->getDescription(),
-                'color' => $cat->getColor()
+                'color' => $cat->getColor() ?? '#047857',
+                'icon' => $cat->getColor() === '#d97706' ? '📖' : ($cat->getColor() === '#2563eb' ? '✨' : '🗣️')
             ];
         }
 
-        // 3. Récupérer les niveaux
+        // 3. Récupérer les niveaux depuis MySQL
         $levels = $em->getRepository(CourseLevel::class)->findAll();
         $levelData = [];
         foreach ($levels as $l) {
@@ -129,14 +152,27 @@ class AdminClassController extends AbstractController
                 'id' => $l->getId(),
                 'name' => $l->getName(),
                 'minAge' => $l->getTargetAgeMin(),
-                'maxAge' => $l->getTargetAgeMax()
+                'maxAge' => $l->getTargetAgeMax(),
+                'ageGroup' => $l->getTargetAgeMin() . '-' . $l->getTargetAgeMax() . ' ans',
+                'description' => $l->getDescription() ?? 'Objectifs pédagogiques et programme annuel'
             ];
         }
+
+        // 4. Liste des Créneaux Horaires configurables
+        $schedulesList = [
+            ['id' => 1, 'day' => 'Samedi', 'startTime' => '09:00', 'endTime' => '12:00', 'label' => 'Matin', 'name' => 'Samedi 09:00 - 12:00 (Matin)'],
+            ['id' => 2, 'day' => 'Samedi', 'startTime' => '14:00', 'endTime' => '17:00', 'label' => 'Après-Midi', 'name' => 'Samedi 14:00 - 17:00 (Après-Midi)'],
+            ['id' => 3, 'day' => 'Dimanche', 'startTime' => '09:00', 'endTime' => '12:00', 'label' => 'Matin', 'name' => 'Dimanche 09:00 - 12:00 (Matin)'],
+            ['id' => 4, 'day' => 'Dimanche', 'startTime' => '14:00', 'endTime' => '17:00', 'label' => 'Après-Midi', 'name' => 'Dimanche 14:00 - 17:00 (Après-Midi)'],
+            ['id' => 5, 'day' => 'Mercredi', 'startTime' => '14:00', 'endTime' => '17:00', 'label' => 'Rattrapage', 'name' => 'Mercredi 14:00 - 17:00 (Rattrapage)'],
+            ['id' => 6, 'day' => 'Vendredi', 'startTime' => '17:30', 'endTime' => '19:30', 'label' => 'Soirée', 'name' => 'Vendredi 17:30 - 19:30 (Soirée)']
+        ];
 
         return $this->json([
             'classes' => $classData,
             'categories' => $catData,
-            'levels' => $levelData
+            'levels' => $levelData,
+            'schedules' => $schedulesList
         ]);
     }
 
@@ -148,7 +184,7 @@ class AdminClassController extends AbstractController
         $name = trim($payload['name'] ?? 'Nouvelle Classe');
         $room = trim($payload['roomNumber'] ?? 'Salle Maryam 1');
         $capacity = (int) ($payload['maxCapacity'] ?? 15);
-        $schedule = trim($payload['schedule'] ?? 'Samedi 09:00 - 12:00');
+        $schedule = trim($payload['schedule'] ?? 'Samedi 09:00 - 12:00 (Matin)');
 
         $classEntity = new SchoolClass();
         $classEntity->setName($name);
@@ -158,16 +194,14 @@ class AdminClassController extends AbstractController
 
         if (!empty($payload['teacherId'])) {
             $teacher = $em->getRepository(Teacher::class)->find((int) $payload['teacherId']);
-            if ($teacher) {
-                $classEntity->setTeacher($teacher);
-            }
+            if ($teacher) $classEntity->setTeacher($teacher);
         }
 
         $em->persist($classEntity);
         $em->flush();
 
         return $this->json([
-            'message' => 'Classe créée et enregistrée avec succès dans la base MySQL',
+            'message' => 'Classe créée avec succès dans MySQL',
             'class' => [
                 'id' => $classEntity->getId(),
                 'name' => $classEntity->getName(),
@@ -176,7 +210,7 @@ class AdminClassController extends AbstractController
                 'currentEnrolled' => 0,
                 'schedule' => $classEntity->getSchedule(),
                 'category' => 'Langue Arabe',
-                'level' => '6-8 ans',
+                'level' => '6-8 ans (Débutant)',
                 'teacher' => $classEntity->getTeacher() ? $classEntity->getTeacher()->getFullName() : 'Non affecté'
             ]
         ], Response::HTTP_CREATED);
@@ -211,5 +245,106 @@ class AdminClassController extends AbstractController
         }
 
         return $this->json(['message' => 'Classe supprimée avec succès de MySQL']);
+    }
+
+    // CRUD CATÉGORIES EN BBD MYSQL
+    #[Route('/categories', name: 'category_create', methods: ['POST'])]
+    public function createCategory(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+        $cat = new CourseCategory();
+        $cat->setName(trim($payload['name'] ?? 'Nouvelle Catégorie'));
+        $cat->setDescription(trim($payload['description'] ?? ''));
+        $cat->setColor($payload['color'] ?? '#047857');
+        $em->persist($cat);
+        $em->flush();
+
+        return $this->json([
+            'message' => 'Catégorie créée dans MySQL',
+            'category' => [
+                'id' => $cat->getId(),
+                'name' => $cat->getName(),
+                'description' => $cat->getDescription(),
+                'color' => $cat->getColor(),
+                'icon' => '📚'
+            ]
+        ], Response::HTTP_CREATED);
+    }
+
+    #[Route('/categories/{id}', name: 'category_update', methods: ['PUT', 'PATCH'])]
+    public function updateCategory(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $cat = $em->getRepository(CourseCategory::class)->find($id);
+        if ($cat) {
+            $payload = json_decode($request->getContent(), true);
+            if (isset($payload['name'])) $cat->setName($payload['name']);
+            if (isset($payload['description'])) $cat->setDescription($payload['description']);
+            if (isset($payload['color'])) $cat->setColor($payload['color']);
+            $em->flush();
+        }
+        return $this->json(['message' => 'Catégorie mise à jour dans MySQL']);
+    }
+
+    #[Route('/categories/{id}', name: 'category_delete', methods: ['DELETE'])]
+    public function deleteCategory(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $cat = $em->getRepository(CourseCategory::class)->find($id);
+        if ($cat) {
+            $em->remove($cat);
+            $em->flush();
+        }
+        return $this->json(['message' => 'Catégorie supprimée de MySQL']);
+    }
+
+    // CRUD NIVEAUX EN BBD MYSQL
+    #[Route('/levels', name: 'level_create', methods: ['POST'])]
+    public function createLevel(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+        $lvl = new CourseLevel();
+        $lvl->setName(trim($payload['name'] ?? 'Nouveau Niveau'));
+        $lvl->setTargetAgeMin((int) ($payload['minAge'] ?? 6));
+        $lvl->setTargetAgeMax((int) ($payload['maxAge'] ?? 10));
+        $lvl->setDescription(trim($payload['description'] ?? ''));
+        $em->persist($lvl);
+        $em->flush();
+
+        return $this->json([
+            'message' => 'Niveau créé dans MySQL',
+            'level' => [
+                'id' => $lvl->getId(),
+                'name' => $lvl->getName(),
+                'minAge' => $lvl->getTargetAgeMin(),
+                'maxAge' => $lvl->getTargetAgeMax(),
+                'ageGroup' => $lvl->getTargetAgeMin() . '-' . $lvl->getTargetAgeMax() . ' ans',
+                'description' => $lvl->getDescription()
+            ]
+        ], Response::HTTP_CREATED);
+    }
+
+    #[Route('/levels/{id}', name: 'level_update', methods: ['PUT', 'PATCH'])]
+    public function updateLevel(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $lvl = $em->getRepository(CourseLevel::class)->find($id);
+        if ($lvl) {
+            $payload = json_decode($request->getContent(), true);
+            if (isset($payload['name'])) $lvl->setName($payload['name']);
+            if (isset($payload['minAge'])) $lvl->setTargetAgeMin((int)$payload['minAge']);
+            if (isset($payload['maxAge'])) $lvl->setTargetAgeMax((int)$payload['maxAge']);
+            if (isset($payload['description'])) $lvl->setDescription($payload['description']);
+            $em->flush();
+        }
+        return $this->json(['message' => 'Niveau mis à jour dans MySQL']);
+    }
+
+    #[Route('/levels/{id}', name: 'level_delete', methods: ['DELETE'])]
+    public function deleteLevel(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $lvl = $em->getRepository(CourseLevel::class)->find($id);
+        if ($lvl) {
+            $em->remove($lvl);
+            $em->flush();
+        }
+        return $this->json(['message' => 'Niveau supprimé de MySQL']);
     }
 }

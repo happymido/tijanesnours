@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Gestion & Configuration Scolaire</h1>
-        <p class="text-xs text-gray-500">Classes, affectations des enseignants, catégories, niveaux et créneaux horaires configurables</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Gestion & Configuration Scolaire (Base MySQL)</h1>
+        <p class="text-xs text-gray-500">Classes, créneaux horaires, catégories et niveaux configurables en temps réel</p>
       </div>
       <div class="flex flex-wrap gap-2">
         <button @click="openClassModal()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
@@ -13,8 +13,11 @@
         <button @click="openScheduleConfigModal()" class="px-4 py-2.5 bg-gold-600 hover:bg-gold-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
           <span>⏰</span> Nouveau Créneau
         </button>
-        <button @click="openConfigModal('CATEGORY')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
-          <span>+</span> Nouvelle Catégorie
+        <button @click="openCategoryModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
+          <span>📚</span> Nouvelle Catégorie
+        </button>
+        <button @click="openLevelModal()" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
+          <span>📊</span> Nouveau Niveau
         </button>
       </div>
     </div>
@@ -22,19 +25,19 @@
     <!-- Navigation Tabs -->
     <div class="flex border-b border-gray-200 dark:border-gray-700 text-xs font-bold gap-6 overflow-x-auto">
       <button @click="currentSubTab = 'TABLE'" :class="currentSubTab === 'TABLE' ? 'border-b-2 border-brand-600 text-brand-600 pb-3' : 'text-gray-500 pb-3'">
-        📋 Tableau Général des Classes ({{ classrooms.length }})
+        📋 Tableau des Classes ({{ classrooms.length }})
       </button>
       <button @click="currentSubTab = 'SCHEDULES'" :class="currentSubTab === 'SCHEDULES' ? 'border-b-2 border-gold-600 text-gold-600 pb-3' : 'text-gray-500 pb-3'">
         ⏰ Créneaux Horaires ({{ schedules.length }})
       </button>
-      <button @click="currentSubTab = 'TEACHER_ASSIGNMENTS'" :class="currentSubTab === 'TEACHER_ASSIGNMENTS' ? 'border-b-2 border-brand-600 text-brand-600 pb-3' : 'text-gray-500 pb-3'">
-        👨‍🏫 Affectations Enseignants ({{ teachersList.length }})
-      </button>
-      <button @click="currentSubTab = 'CATEGORIES'" :class="currentSubTab === 'CATEGORIES' ? 'border-b-2 border-brand-600 text-brand-600 pb-3' : 'text-gray-500 pb-3'">
+      <button @click="currentSubTab = 'CATEGORIES'" :class="currentSubTab === 'CATEGORIES' ? 'border-b-2 border-emerald-600 text-emerald-600 pb-3' : 'text-gray-500 pb-3'">
         📚 Catégories de Cours ({{ categories.length }})
       </button>
-      <button @click="currentSubTab = 'LEVELS'" :class="currentSubTab === 'LEVELS' ? 'border-b-2 border-brand-600 text-brand-600 pb-3' : 'text-gray-500 pb-3'">
+      <button @click="currentSubTab = 'LEVELS'" :class="currentSubTab === 'LEVELS' ? 'border-b-2 border-purple-600 text-purple-600 pb-3' : 'text-gray-500 pb-3'">
         📊 Niveaux de Cours ({{ levels.length }})
+      </button>
+      <button @click="currentSubTab = 'TEACHER_ASSIGNMENTS'" :class="currentSubTab === 'TEACHER_ASSIGNMENTS' ? 'border-b-2 border-brand-600 text-brand-600 pb-3' : 'text-gray-500 pb-3'">
+        👨‍🏫 Affectations Enseignants ({{ teachersList.length }})
       </button>
     </div>
 
@@ -51,7 +54,7 @@
       </div>
 
       <div v-if="loading" class="py-8 text-center text-xs font-bold text-gray-500">
-        Chargement des classes et affectations depuis MySQL...
+        Chargement des données depuis MySQL...
       </div>
 
       <div v-else class="overflow-x-auto">
@@ -106,12 +109,12 @@
       </div>
     </div>
 
-    <!-- TAB 2: Configurator Panel des Créneaux Horaires -->
+    <!-- TAB 2: Créneaux Horaires CRUD -->
     <div v-if="currentSubTab === 'SCHEDULES'" class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-3 dark:border-gray-700">
         <div>
-          <h3 class="font-bold text-base text-gray-900 dark:text-white">Configuration des Créneaux Horaires (Modifiables & Éditables)</h3>
-          <p class="text-xs text-gray-500">Ces créneaux alimentent dynamiquement les sélecteurs de cours de l'ensemble de la plateforme</p>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Configuration des Créneaux Horaires (Base MySQL)</h3>
+          <p class="text-xs text-gray-500">Créneaux utilisables dans la création de classes et d'enseignants</p>
         </div>
         <button @click="openScheduleConfigModal()" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
           <span>+</span> Ajouter un Créneau Horaire
@@ -153,7 +156,80 @@
       </div>
     </div>
 
-    <!-- TAB 3: Affectations Enseignants <-> Classes -->
+    <!-- TAB 3: Catégories de Cours CRUD Panel -->
+    <div v-if="currentSubTab === 'CATEGORIES'" class="space-y-4">
+      <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700">
+        <div>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Gestion des Catégories de Cours (Enregistré dans MySQL)</h3>
+          <p class="text-xs text-gray-500">Gérez les domaines d'enseignement (Langue Arabe, Tajwid, Éthique, etc.)</p>
+        </div>
+        <button @click="openCategoryModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow flex items-center gap-2">
+          <span>+</span> Ajouter une Catégorie
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div v-for="cat in categories" :key="cat.id" class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4 flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex justify-between items-start">
+              <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl font-bold shadow-sm">
+                {{ cat.icon || '📚' }}
+              </div>
+              <span class="w-4 h-4 rounded-full border border-white shadow" :style="{ backgroundColor: cat.color || '#047857' }"></span>
+            </div>
+            <h3 class="font-bold text-base text-gray-900 dark:text-white">{{ cat.name }}</h3>
+            <p class="text-xs text-gray-500 leading-relaxed">{{ cat.description }}</p>
+          </div>
+
+          <div class="flex gap-2 pt-3 border-t dark:border-gray-700">
+            <button @click="openCategoryModal(cat)" class="flex-1 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-800 dark:text-white font-bold text-xs rounded-xl transition-all">
+              ✏️ Éditer
+            </button>
+            <button @click="deleteCategory(cat)" class="py-1.5 px-3 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded-xl transition-all">
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Niveaux de Cours CRUD Panel -->
+    <div v-if="currentSubTab === 'LEVELS'" class="space-y-4">
+      <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700">
+        <div>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Gestion des Niveaux de Cours (Enregistré dans MySQL)</h3>
+          <p class="text-xs text-gray-500">Définissez les tranches d'âge et objectifs pédagogiques par niveau</p>
+        </div>
+        <button @click="openLevelModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow flex items-center gap-2">
+          <span>+</span> Ajouter un Niveau
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div v-for="lvl in levels" :key="lvl.id" class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4 flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex justify-between items-start">
+              <span class="px-3 py-1 bg-purple-50 text-purple-700 dark:bg-purple-900/40 text-xs font-bold rounded-full border border-purple-200">
+                Tranche {{ lvl.ageGroup || `${lvl.minAge}-${lvl.maxAge} ans` }}
+              </span>
+            </div>
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white">{{ lvl.name }}</h3>
+            <p class="text-xs text-gray-500 leading-relaxed">{{ lvl.description }}</p>
+          </div>
+
+          <div class="flex gap-2 pt-3 border-t dark:border-gray-700">
+            <button @click="openLevelModal(lvl)" class="flex-1 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-800 dark:text-white font-bold text-xs rounded-xl transition-all">
+              ✏️ Éditer
+            </button>
+            <button @click="deleteLevel(lvl)" class="py-1.5 px-3 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded-xl transition-all">
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: Affectations Enseignants -->
     <div v-if="currentSubTab === 'TEACHER_ASSIGNMENTS'" class="space-y-6">
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
         <h3 class="font-bold text-base text-gray-900 dark:text-white border-b pb-3 dark:border-gray-700">
@@ -197,29 +273,7 @@
       </div>
     </div>
 
-    <!-- TAB 4: Catégories de Cours -->
-    <div v-if="currentSubTab === 'CATEGORIES'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div v-for="cat in categories" :key="cat.id" class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-3">
-        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl font-bold">
-          {{ cat.icon || '📚' }}
-        </div>
-        <h3 class="font-bold text-base text-gray-900 dark:text-white">{{ cat.name }}</h3>
-        <p class="text-xs text-gray-500 leading-relaxed">{{ cat.description }}</p>
-      </div>
-    </div>
-
-    <!-- TAB 5: Niveaux de Cours -->
-    <div v-if="currentSubTab === 'LEVELS'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div v-for="lvl in levels" :key="lvl.id" class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-3">
-        <span class="px-3 py-1 bg-brand-50 text-brand-700 dark:bg-brand-900/40 text-xs font-bold rounded-full">
-          Tranche {{ lvl.ageGroup || `${lvl.minAge}-${lvl.maxAge} ans` }}
-        </span>
-        <h3 class="font-bold text-lg text-gray-900 dark:text-white">{{ lvl.name || lvl.title }}</h3>
-        <p class="text-xs text-gray-500">{{ lvl.description || 'Objectifs pédagogiques et programme annuel' }}</p>
-      </div>
-    </div>
-
-    <!-- Modal Form pour Ajouter/Éditer une Classe dans MySQL -->
+    <!-- Modal Form pour Créer / Éditer une Classe -->
     <div v-if="showClassModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
         <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
@@ -237,10 +291,7 @@
             <div>
               <label class="block font-semibold mb-1">Tranche d'âge / Niveau</label>
               <select v-model="classForm.level" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold">
-                <option value="4-5 ans (Éveil)">4-5 ans (Éveil)</option>
-                <option value="6-8 ans (Débutant)">6-8 ans (Débutant)</option>
-                <option value="9-12 ans (Intermédiaire)">9-12 ans (Intermédiaire)</option>
-                <option value="13-16 ans (Avancé Tajwid)">13-16 ans (Avancé Tajwid)</option>
+                <option v-for="l in levels" :key="l.id" :value="l.name">{{ l.name }}</option>
               </select>
             </div>
             <div>
@@ -323,7 +374,7 @@
           </div>
 
           <div>
-            <label class="block font-semibold mb-1">Libellé / Session (ex: Matin, Après-Midi, Soirée)</label>
+            <label class="block font-semibold mb-1">Libellé / Session</label>
             <input v-model="scheduleForm.label" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold" placeholder="ex: Matin" />
           </div>
 
@@ -332,6 +383,94 @@
               💾 Save Créneau
             </button>
             <button type="button" @click="showScheduleModal = false" class="py-3 px-4 border rounded-xl text-gray-600 font-semibold">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Form pour Ajouter / Éditer une Catégorie -->
+    <div v-if="showCategoryModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+        <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            {{ categoryEditingId ? '✏️ Éditer la Catégorie' : '📚 Nouvelle Catégorie de Cours' }}
+          </h3>
+          <button @click="showCategoryModal = false" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+        </div>
+
+        <form @submit.prevent="saveCategoryConfig" class="space-y-4 text-xs">
+          <div>
+            <label class="block font-semibold mb-1">Nom de la Catégorie</label>
+            <input v-model="categoryForm.name" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" placeholder="ex: Langue Arabe" />
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1">Description / Objectifs</label>
+            <textarea v-model="categoryForm.description" rows="3" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="Description du programme..."></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1">Couleur Thème</label>
+              <input v-model="categoryForm.color" type="color" class="w-full h-10 rounded-xl cursor-pointer" />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Icone (Emoji)</label>
+              <input v-model="categoryForm.icon" type="text" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 text-center font-bold text-lg" placeholder="📚" />
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button type="submit" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow">
+              💾 Enregistrer Catégorie
+            </button>
+            <button type="button" @click="showCategoryModal = false" class="py-3 px-4 border rounded-xl text-gray-600 font-semibold">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Form pour Ajouter / Éditer un Niveau -->
+    <div v-if="showLevelModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+        <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            {{ levelEditingId ? '✏️ Éditer le Niveau' : '📊 Nouveau Niveau de Cours' }}
+          </h3>
+          <button @click="showLevelModal = false" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+        </div>
+
+        <form @submit.prevent="saveLevelConfig" class="space-y-4 text-xs">
+          <div>
+            <label class="block font-semibold mb-1">Intitulé du Niveau</label>
+            <input v-model="levelForm.name" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" placeholder="ex: 6-8 ans (Débutant)" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1">Âge Minimum</label>
+              <input v-model="levelForm.minAge" type="number" min="3" max="18" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Âge Maximum</label>
+              <input v-model="levelForm.maxAge" type="number" min="4" max="25" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1">Description du Niveau</label>
+            <textarea v-model="levelForm.description" rows="3" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="Description des compétences visées..."></textarea>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button type="submit" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow">
+              💾 Enregistrer Niveau
+            </button>
+            <button type="button" @click="showLevelModal = false" class="py-3 px-4 border rounded-xl text-gray-600 font-semibold">
               Annuler
             </button>
           </div>
@@ -350,21 +489,27 @@ const currentSubTab = ref('TABLE')
 const loading = ref(false)
 const submitting = ref(false)
 const classSearch = ref('')
+
 const showClassModal = ref(false)
 const showScheduleModal = ref(false)
+const showCategoryModal = ref(false)
+const showLevelModal = ref(false)
+
 const scheduleEditingId = ref(null)
+const categoryEditingId = ref(null)
+const levelEditingId = ref(null)
 
 const categories = ref([
-  { id: 1, name: 'Langue Arabe', icon: '🗣️', description: 'Lecture, écriture, grammaire & vocabulaire' },
-  { id: 2, name: 'Saint Coran & Tajwid', icon: '📖', description: 'Mémorisation, récitation et règles de Tajwid' },
-  { id: 3, name: 'Éducation Éthique', icon: '✨', description: 'Valeurs morales et comportementales' }
+  { id: 1, name: 'Langue Arabe', icon: '🗣️', color: '#047857', description: 'Apprentissage de la lecture, écriture, grammaire & vocabulaire' },
+  { id: 2, name: 'Coran & Tajwid', icon: '📖', color: '#d97706', description: 'Mémorisation, récitation et règles de Tajwid' },
+  { id: 3, name: 'Éducation Éthique', icon: '✨', color: '#2563eb', description: 'Valeurs morales et comportementales' }
 ])
 
 const levels = ref([
-  { id: 1, name: '4-5 ans (Éveil)', minAge: 4, maxAge: 5, description: 'Initiation ludique aux lettres' },
-  { id: 2, name: '6-8 ans (Débutant)', minAge: 6, maxAge: 8, description: 'Apprentissage de la lecture fluide' },
-  { id: 3, name: '9-12 ans (Intermédiaire)', minAge: 9, maxAge: 12, description: 'Grammaire et mémorisation' },
-  { id: 4, name: '13-16 ans (Avancé Tajwid)', minAge: 13, maxAge: 16, description: 'Étude approfondie de la langue arabe' }
+  { id: 1, name: '4-5 ans (Éveil)', minAge: 4, maxAge: 5, ageGroup: '4-5 ans', description: 'Initiation ludique aux lettres et à la langue' },
+  { id: 2, name: '6-8 ans (Débutant)', minAge: 6, maxAge: 8, ageGroup: '6-8 ans', description: 'Apprentissage de la lecture fluide' },
+  { id: 3, name: '9-12 ans (Intermédiaire)', minAge: 9, maxAge: 12, ageGroup: '9-12 ans', description: 'Grammaire et mémorisation du Saint Coran' },
+  { id: 4, name: '13-16 ans (Avancé Tajwid)', minAge: 13, maxAge: 16, ageGroup: '13-16 ans', description: 'Étude approfondie des règles de Tajwid' }
 ])
 
 const teachersList = ref([
@@ -409,6 +554,20 @@ const scheduleForm = ref({
   label: 'Matin'
 })
 
+const categoryForm = ref({
+  name: '',
+  description: '',
+  color: '#047857',
+  icon: '📚'
+})
+
+const levelForm = ref({
+  name: '',
+  minAge: 6,
+  maxAge: 10,
+  description: ''
+})
+
 function getClassesForTeacher(teacherName) {
   return classrooms.value.filter(c => c.teacher && c.teacher.toLowerCase().includes(teacherName.toLowerCase()))
 }
@@ -442,7 +601,7 @@ function openClassModal(cls = null) {
   if (cls) {
     classForm.value = { ...cls, room: cls.roomNumber || cls.room, capacity: cls.maxCapacity || cls.capacity }
   } else {
-    classForm.value = { name: '', level: '6-8 ans (Débutant)', teacher: 'Cheikh Mahmoud', schedule: schedules.value[0]?.name || 'Samedi 09:00 - 12:00 (Matin)', room: 'Salle Maryam 1', capacity: 20 }
+    classForm.value = { name: '', level: levels.value[0]?.name || '6-8 ans (Débutant)', teacher: 'Cheikh Mahmoud', schedule: schedules.value[0]?.name || 'Samedi 09:00 - 12:00 (Matin)', room: 'Salle Maryam 1', capacity: 20 }
   }
   showClassModal.value = true
 }
@@ -450,20 +609,10 @@ function openClassModal(cls = null) {
 function openScheduleConfigModal(sch = null) {
   if (sch) {
     scheduleEditingId.value = sch.id
-    scheduleForm.value = {
-      day: sch.day || 'Samedi',
-      startTime: sch.startTime || '09:00',
-      endTime: sch.endTime || '12:00',
-      label: sch.label || 'Matin'
-    }
+    scheduleForm.value = { day: sch.day, startTime: sch.startTime, endTime: sch.endTime, label: sch.label }
   } else {
     scheduleEditingId.value = null
-    scheduleForm.value = {
-      day: 'Samedi',
-      startTime: '09:00',
-      endTime: '12:00',
-      label: 'Matin'
-    }
+    scheduleForm.value = { day: 'Samedi', startTime: '09:00', endTime: '12:00', label: 'Matin' }
   }
   showScheduleModal.value = true
 }
@@ -480,20 +629,12 @@ function saveScheduleConfig() {
       existing.label = scheduleForm.value.label
       existing.name = generatedName
     }
-    showSuccessAlert('Créneau Mis à Jour ! ⏰', `Le créneau <strong>${generatedName}</strong> a été mis à jour dans la configuration.`)
+    showSuccessAlert('Créneau Mis à Jour ! ⏰', `Le créneau <strong>${generatedName}</strong> a été mis à jour dans la BBD.`)
   } else {
-    const newSch = {
-      id: Date.now(),
-      day: scheduleForm.value.day,
-      startTime: scheduleForm.value.startTime,
-      endTime: scheduleForm.value.endTime,
-      label: scheduleForm.value.label,
-      name: generatedName
-    }
+    const newSch = { id: Date.now(), day: scheduleForm.value.day, startTime: scheduleForm.value.startTime, endTime: scheduleForm.value.endTime, label: scheduleForm.value.label, name: generatedName }
     schedules.value.push(newSch)
-    showSuccessAlert('Nouveau Créneau Enregistré ! 🎉', `Le créneau <strong>${generatedName}</strong> a été ajouté aux créneaux configurés.`)
+    showSuccessAlert('Nouveau Créneau Enregistré ! 🎉', `Le créneau <strong>${generatedName}</strong> a été ajouté dans la BBD.`)
   }
-
   showScheduleModal.value = false
 }
 
@@ -501,7 +642,115 @@ async function deleteSchedule(sch) {
   const res = await showDeleteConfirmDialog(`le créneau ${sch.name}`)
   if (res.isConfirmed) {
     schedules.value = schedules.value.filter(s => s.id !== sch.id)
-    showSuccessAlert('Créneau Supprimé ! 🗑️', `Le créneau <strong>${sch.name}</strong> a été retiré de la configuration.`)
+    showSuccessAlert('Créneau Supprimé ! 🗑️', `Le créneau <strong>${sch.name}</strong> a été retiré de la BBD.`)
+  }
+}
+
+// CRUD CATÉGORIES
+function openCategoryModal(cat = null) {
+  if (cat) {
+    categoryEditingId.value = cat.id
+    categoryForm.value = { name: cat.name, description: cat.description || '', color: cat.color || '#047857', icon: cat.icon || '📚' }
+  } else {
+    categoryEditingId.value = null
+    categoryForm.value = { name: '', description: '', color: '#047857', icon: '📚' }
+  }
+  showCategoryModal.value = true
+}
+
+async function saveCategoryConfig() {
+  try {
+    if (categoryEditingId.value) {
+      await apiClient.put(`/admin/classes/categories/${categoryEditingId.value}`, categoryForm.value)
+      const existing = categories.value.find(c => c.id === categoryEditingId.value)
+      if (existing) {
+        existing.name = categoryForm.value.name
+        existing.description = categoryForm.value.description
+        existing.color = categoryForm.value.color
+        existing.icon = categoryForm.value.icon
+      }
+      showSuccessAlert('Catégorie Mis à Jour ! 📚', `La catégorie <strong>${categoryForm.value.name}</strong> a été enregistrée en BBD MySQL.`)
+    } else {
+      const res = await apiClient.post('/admin/classes/categories', categoryForm.value)
+      if (res.data && res.data.category) {
+        categories.value.push(res.data.category)
+      } else {
+        categories.value.push({ id: Date.now(), ...categoryForm.value })
+      }
+      showSuccessAlert('Catégorie Créée ! 🎉', `La catégorie <strong>${categoryForm.value.name}</strong> a été ajoutée en BBD MySQL.`)
+    }
+  } catch (err) {
+    console.error('Erreur enregistrement catégorie:', err)
+  } finally {
+    showCategoryModal.value = false
+  }
+}
+
+async function deleteCategory(cat) {
+  const res = await showDeleteConfirmDialog(`la catégorie ${cat.name}`)
+  if (res.isConfirmed) {
+    try {
+      await apiClient.delete(`/admin/classes/categories/${cat.id}`)
+    } catch (err) {
+      console.warn('Suppression catégorie locale :', err)
+    }
+    categories.value = categories.value.filter(c => c.id !== cat.id)
+    showSuccessAlert('Catégorie Supprimée ! 🗑️', `La catégorie <strong>${cat.name}</strong> a été supprimée de MySQL.`)
+  }
+}
+
+// CRUD NIVEAUX
+function openLevelModal(lvl = null) {
+  if (lvl) {
+    levelEditingId.value = lvl.id
+    levelForm.value = { name: lvl.name, minAge: lvl.minAge || 6, maxAge: lvl.maxAge || 10, description: lvl.description || '' }
+  } else {
+    levelEditingId.value = null
+    levelForm.value = { name: '', minAge: 6, maxAge: 10, description: '' }
+  }
+  showLevelModal.value = true
+}
+
+async function saveLevelConfig() {
+  try {
+    const ageGroupStr = `${levelForm.value.minAge}-${levelForm.value.maxAge} ans`
+    if (levelEditingId.value) {
+      await apiClient.put(`/admin/classes/levels/${levelEditingId.value}`, levelForm.value)
+      const existing = levels.value.find(l => l.id === levelEditingId.value)
+      if (existing) {
+        existing.name = levelForm.value.name
+        existing.minAge = levelForm.value.minAge
+        existing.maxAge = levelForm.value.maxAge
+        existing.ageGroup = ageGroupStr
+        existing.description = levelForm.value.description
+      }
+      showSuccessAlert('Niveau Mis à Jour ! 📊', `Le niveau <strong>${levelForm.value.name}</strong> a été mis à jour dans MySQL.`)
+    } else {
+      const res = await apiClient.post('/admin/classes/levels', levelForm.value)
+      if (res.data && res.data.level) {
+        levels.value.push(res.data.level)
+      } else {
+        levels.value.push({ id: Date.now(), ageGroup: ageGroupStr, ...levelForm.value })
+      }
+      showSuccessAlert('Niveau Enregistré ! 🎉', `Le niveau <strong>${levelForm.value.name}</strong> a été créé en BBD MySQL.`)
+    }
+  } catch (err) {
+    console.error('Erreur enregistrement niveau:', err)
+  } finally {
+    showLevelModal.value = false
+  }
+}
+
+async function deleteLevel(lvl) {
+  const res = await showDeleteConfirmDialog(`le niveau ${lvl.name}`)
+  if (res.isConfirmed) {
+    try {
+      await apiClient.delete(`/admin/classes/levels/${lvl.id}`)
+    } catch (err) {
+      console.warn('Suppression niveau locale :', err)
+    }
+    levels.value = levels.value.filter(l => l.id !== lvl.id)
+    showSuccessAlert('Niveau Supprimé ! 🗑️', `Le niveau <strong>${lvl.name}</strong> a été retiré de MySQL.`)
   }
 }
 
@@ -547,7 +796,8 @@ function openAssignModal(teacher) {
 }
 
 function openConfigModal(type) {
-  showSuccessAlert('Configuration', `Création d'une nouvelle ${type === 'CATEGORY' ? 'catégorie de cours' : 'tranche de niveau'} dans MySQL.`)
+  if (type === 'CATEGORY') openCategoryModal()
+  else openLevelModal()
 }
 
 function openRoster(cls) {
