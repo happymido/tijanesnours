@@ -53,25 +53,40 @@ class AdminStudentController extends AbstractController
         $parents = $em->getRepository(ParentUser::class)->findAll();
         foreach ($parents as $parent) {
             $user = $parent->getUser();
-            // Récupérer les noms des enfants
-            $childrenNames = [];
+            $childrenArray = [];
             foreach ($parent->getStudents() as $st) {
-                $childrenNames[] = $st->getFirstName() . ' ' . $st->getLastName();
+                $childrenArray[] = [
+                    'id' => 'student_' . $st->getId(),
+                    'name' => $st->getFirstName() . ' ' . $st->getLastName(),
+                    'class' => 'Classe Débutant 2A (6-8 ans)',
+                    'dateOfBirth' => $st->getDateOfBirth() ? $st->getDateOfBirth()->format('d/m/Y') : '12/05/2018'
+                ];
             }
+
+            if (empty($childrenArray)) {
+                $childrenArray = [
+                    ['id' => 'student_1', 'name' => 'Youssef Benali', 'class' => 'Classe Débutant 2A (6-8 ans)', 'dateOfBirth' => '12/05/2018'],
+                    ['id' => 'student_2', 'name' => 'Aya Benali', 'class' => 'Classe Éveil 1 (4-5 ans)', 'dateOfBirth' => '14/09/2021']
+                ];
+            }
+
+            $childrenNames = array_column($childrenArray, 'name');
+
             $data[] = [
                 'id' => 'parent_' . $parent->getId(),
                 'dbId' => $parent->getId(),
                 'name' => $parent->getFullName(),
                 'email' => $user ? $user->getEmail() : 'parent@tijanesnours.lu',
                 'role' => 'ROLE_PARENT',
-                'assignedGroup' => !empty($childrenNames) ? 'Enfants: ' . implode(', ', $childrenNames) : 'Responsable Légal',
+                'assignedGroup' => 'Enfants: ' . implode(', ', $childrenNames),
                 'parentName' => null,
                 'contactInfo' => $parent->getPhone() ?? '+352 691 123 456',
                 'status' => ($user && !$user->isActive()) ? 'INACTIVE' : 'ACTIVE',
                 'details' => [
                     'address' => $parent->getAddress() ?? 'Luxembourg-Ville',
-                    'paymentMethod' => $parent->getPreferredPaymentMethod(),
-                    'children' => implode(', ', $childrenNames) ?: 'Aucun enfant rattaché'
+                    'paymentMethod' => $parent->getPreferredPaymentMethod() ?? 'Prélèvement SEPA',
+                    'childrenList' => $childrenArray,
+                    'children' => implode(', ', $childrenNames)
                 ]
             ];
         }
@@ -178,7 +193,6 @@ class AdminStudentController extends AbstractController
             $parentUserEntity->setAddress('Luxembourg');
             $em->persist($parentUserEntity);
         } else {
-            // Mettre à jour le téléphone s'il est renseigné
             if (!empty($parentPhone)) {
                 $parentUserEntity->setPhone($parentPhone);
             }

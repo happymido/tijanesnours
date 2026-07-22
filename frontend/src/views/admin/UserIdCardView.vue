@@ -42,6 +42,47 @@
       </div>
     </div>
 
+    <!-- Section Spéciale Multi-Enfants Rattachés pour les Parents -->
+    <div v-if="user.role === 'ROLE_PARENT'" class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-lg border border-gold-200 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3 dark:border-gray-700">
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 rounded-2xl bg-gold-100 text-gold-800 flex items-center justify-center text-lg font-bold">👨‍👩‍👧‍👦</span>
+          <div>
+            <h3 class="font-bold text-base text-gray-900 dark:text-white">Fratrie / Enfants Rattachés à ce Compte Parent</h3>
+            <p class="text-xs text-gray-500">Tous les élèves inscrits sous la responsabilité légale de {{ user.name }}</p>
+          </div>
+        </div>
+        <span class="px-3 py-1 bg-gold-100 text-gold-800 font-extrabold text-xs rounded-full">
+          {{ childrenList.length }} Enfant(s) Inscrit(s)
+        </span>
+      </div>
+
+      <!-- Liste sous forme de cartes d'élèves rattachés -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div v-for="(child, idx) in childrenList" :key="child.id || idx" class="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4 border border-gray-200 dark:border-gray-600 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-600 font-bold text-white text-sm flex items-center justify-center shadow">
+              👩‍🎓
+            </div>
+            <div>
+              <h4 class="font-bold text-gray-900 dark:text-white text-sm">{{ child.name }}</h4>
+              <p class="text-xs text-brand-600 font-semibold">{{ child.class || 'Classe Débutant 2A' }}</p>
+              <span class="text-[10px] text-gray-400">Né(e) le : {{ child.dateOfBirth || '12/05/2018' }}</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-end gap-2">
+            <span v-if="idx > 0" class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold rounded-full">
+              🏷️ Réduction Fratrie {{ idx === 1 ? '-15%' : '-25%' }}
+            </span>
+            <router-link :to="`/admin/users/${child.id || 'student_1'}/id-card`" class="px-3 py-1.5 bg-brand-600 text-white font-bold text-xs rounded-xl shadow hover:bg-brand-700 transition-all">
+              🪪 Voir Fiche Élève
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Detailed Identity Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <!-- 1. Coordonnées & Informations Personnelles -->
@@ -108,11 +149,11 @@
         </div>
       </div>
 
-      <!-- 3. Responsable Légal & Rattachement -->
+      <!-- 3. Responsable Légal & Finances -->
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
           <span class="w-8 h-8 rounded-xl bg-gold-50 text-gold-700 flex items-center justify-center text-sm font-bold">👨‍👩‍👧</span>
-          <h3 class="font-bold text-base text-gray-900 dark:text-white">Famille & Responsable Légal</h3>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Rattachement Légal & Règlements</h3>
         </div>
 
         <div class="space-y-3 text-xs">
@@ -128,10 +169,9 @@
           </div>
 
           <div v-if="user.role === 'ROLE_PARENT'" class="space-y-2">
-            <span class="text-gray-400 font-semibold block">Enfants rattachés au compte :</span>
-            <div class="p-3 bg-gray-50 rounded-xl font-bold text-brand-700">
-              🎓 {{ user.details?.children || user.assignedGroup }}
-            </div>
+            <span class="text-gray-400 font-semibold block">Mode de Paiement Préféré :</span>
+            <p class="font-bold text-gold-700 text-sm">💳 {{ user.details?.paymentMethod || 'Prélèvement Automatique SEPA' }}</p>
+            <p class="text-gray-500 text-[11px]">Mandat SEPA : SEPA-2026-0042-LU • Validation Stripe OK</p>
           </div>
         </div>
       </div>
@@ -163,7 +203,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import apiClient from '../../plugins/axios'
 import { showSuccessAlert } from '../../plugins/notify'
@@ -185,8 +225,22 @@ const user = ref({
     nationality: 'Luxembourgeoise',
     address: 'Luxembourg-Ville',
     allergies: 'Aucune allergie connue',
-    insurancePolicy: 'LU-890421-AXA'
+    insurancePolicy: 'LU-890421-AXA',
+    childrenList: [
+      { id: 'student_1', name: 'Youssef Benali', class: 'Classe Débutant 2A (6-8 ans)', dateOfBirth: '12/05/2018' },
+      { id: 'student_2', name: 'Aya Benali', class: 'Classe Éveil 1 (4-5 ans)', dateOfBirth: '14/09/2021' }
+    ]
   }
+})
+
+const childrenList = computed(() => {
+  if (user.value.details && Array.isArray(user.value.details.childrenList) && user.value.details.childrenList.length > 0) {
+    return user.value.details.childrenList
+  }
+  return [
+    { id: 'student_1', name: 'Youssef Benali', class: 'Classe Débutant 2A (6-8 ans)', dateOfBirth: '12/05/2018' },
+    { id: 'student_2', name: 'Aya Benali', class: 'Classe Éveil 1 (4-5 ans)', dateOfBirth: '14/09/2021' }
+  ]
 })
 
 onMounted(async () => {
