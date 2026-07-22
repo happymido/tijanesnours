@@ -212,18 +212,25 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block font-semibold mb-1">Email Élève (optionnel)</label>
-                <input v-model="form.studentEmail" type="email" class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="youssef@student.lu" />
-              </div>
-              <div>
-                <label class="block font-semibold mb-1">Classe Affectée (Select2)</label>
-                <SearchableSelect
-                  v-model="form.assignedGroup"
-                  :options="classOptions"
-                  placeholder="Rechercher une classe..."
-                />
+            <div>
+              <label class="block font-semibold mb-1">Email Élève / Utilisateur (optionnel)</label>
+              <input v-model="form.studentEmail" type="email" class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="youssef@student.lu" />
+            </div>
+
+            <div class="space-y-2 pt-1">
+              <label class="block font-bold text-emerald-800 dark:text-emerald-300 text-xs">
+                ⚡ Classes & Niveaux Affectés (Sélection Multiple) :
+              </label>
+              <div class="grid grid-cols-2 gap-2">
+                <label v-for="opt in classOptions" :key="opt.value" class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-xl border cursor-pointer hover:bg-emerald-50 transition-colors text-xs">
+                  <input
+                    type="checkbox"
+                    :value="opt.value"
+                    v-model="form.selectedClasses"
+                    class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 accent-emerald-600"
+                  />
+                  <span class="font-semibold text-gray-800 dark:text-gray-200">{{ opt.label }}</span>
+                </label>
               </div>
             </div>
           </div>
@@ -311,7 +318,7 @@ const form = ref({
   studentFirstName: '',
   studentLastName: '',
   studentEmail: '',
-  assignedGroup: 'Classe Débutant 2A (6-8 ans)',
+  selectedClasses: ['Classe Débutant 2A (6-8 ans)'],
   parentFirstName: '',
   parentLastName: '',
   parentEmail: '',
@@ -418,7 +425,7 @@ function openModal(type) {
     studentFirstName: '',
     studentLastName: '',
     studentEmail: '',
-    assignedGroup: type === 'STUDENT' ? 'Classe Débutant 2A (6-8 ans)' : 'Langue Arabe & Tajwid',
+    selectedClasses: ['Classe Débutant 2A (6-8 ans)'],
     parentFirstName: '',
     parentLastName: '',
     parentEmail: '',
@@ -431,12 +438,13 @@ async function saveUser() {
   submitting.value = true
   try {
     if (modalType.value === 'STUDENT') {
+      const assignedClassesString = form.value.selectedClasses.length > 0 ? form.value.selectedClasses.join(', ') : 'Classe Débutant 2A (6-8 ans)'
       const fullParentName = `${form.value.parentFirstName} ${form.value.parentLastName}`.trim()
       const payload = {
         studentFirstName: form.value.studentFirstName.trim(),
         studentLastName: form.value.studentLastName.trim(),
         studentEmail: form.value.studentEmail.trim(),
-        assignedGroup: form.value.assignedGroup,
+        assignedGroup: assignedClassesString,
         parentFullName: fullParentName,
         parentEmail: form.value.parentEmail.trim(),
         parentPhone: form.value.parentPhone.trim()

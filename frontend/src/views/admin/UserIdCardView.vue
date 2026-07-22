@@ -229,21 +229,29 @@
             </div>
           </div>
 
-          <!-- CAS ÉLÈVE : Select2 pour la Classe -->
+          <!-- CAS ÉLÈVE : Cases à cocher pour sélection de plusieurs classes -->
           <div v-else class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 space-y-2">
-            <span class="text-[10px] uppercase font-bold text-emerald-700">Groupe / Classe Assignée</span>
-            <p v-if="!isEditing" class="text-lg font-extrabold text-gray-900 dark:text-white">{{ user.assignedGroup }}</p>
+            <span class="text-[10px] uppercase font-bold text-emerald-700">Groupe / Classes Assignées :</span>
+            <p v-if="!isEditing" class="text-base font-extrabold text-gray-900 dark:text-white">{{ user.assignedGroup }}</p>
             
-            <div v-else class="space-y-1">
-              <label class="text-[10px] font-bold text-gray-500 block mb-1">Changer l'affectation de classe :</label>
-              <SearchableSelect
-                v-model="editForm.assignedGroup"
-                :options="classOptions"
-                placeholder="Sélectionner une classe..."
-              />
+            <div v-else class="space-y-2 pt-1">
+              <label class="font-bold text-emerald-800 dark:text-emerald-300 block text-xs border-b pb-1">
+                ⚡ Sélectionner les classes affectées (Présélectionnées par défaut) :
+              </label>
+              <div class="grid grid-cols-1 gap-2 pt-1">
+                <label v-for="opt in classOptions" :key="opt.value" class="flex items-center gap-2.5 p-2 bg-white dark:bg-gray-700 rounded-xl border cursor-pointer hover:bg-emerald-50 transition-colors">
+                  <input
+                    type="checkbox"
+                    :value="opt.value"
+                    v-model="editForm.studentClasses"
+                    class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 accent-emerald-600"
+                  />
+                  <span class="font-bold text-xs text-gray-800 dark:text-white">{{ opt.label }}</span>
+                </label>
+              </div>
             </div>
             
-            <p class="text-xs text-gray-500 pt-1">Créneau : Samedi 09:00 - 12:00 • Salle Maryam 1</p>
+            <p class="text-xs text-gray-500 pt-1">Créneaux : Samedi 09:00 - 12:00 • Salle Maryam 1 & 2</p>
           </div>
         </div>
       </div>
@@ -447,6 +455,21 @@ function fillEditForm() {
     selectedSpecs.push('Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation')
   }
 
+  // PRÉSÉLECTION DE PLUSIEURS CLASSES POUR L'ÉLÈVE
+  const currentStudentGroupString = user.value.assignedGroup || 'Classe Débutant 2A (6-8 ans)'
+  const selectedStudentClasses = []
+
+  classOptions.value.forEach(opt => {
+    if (currentStudentGroupString.toLowerCase().includes(opt.value.toLowerCase()) || 
+        opt.value.toLowerCase().includes(currentStudentGroupString.toLowerCase())) {
+      selectedStudentClasses.push(opt.value)
+    }
+  })
+
+  if (selectedStudentClasses.length === 0) {
+    selectedStudentClasses.push('Classe Débutant 2A (6-8 ans)')
+  }
+
   // PRÉSÉLECTION DU PARENT PAR DÉFAUT POUR L'ÉLÈVE
   let defaultParent = user.value.parentName || 'Karim Benali'
   const matchingParent = parentSelectOptions.value.find(p => p.value.toLowerCase() === defaultParent.toLowerCase())
@@ -459,6 +482,7 @@ function fillEditForm() {
     email: user.value.email,
     contactInfo: user.value.contactInfo || '+352 691 123 456',
     assignedGroup: defaultGroup,
+    studentClasses: selectedStudentClasses,
     parentName: defaultParent,
     address: user.value.details?.address || 'Luxembourg-Ville',
     dateOfBirth: user.value.details?.dateOfBirth || '12/05/2018',
@@ -527,6 +551,8 @@ async function saveChanges() {
   try {
     if (user.value.role === 'ROLE_TEACHER') {
       editForm.value.assignedGroup = editForm.value.teacherSpecialities.join(', ')
+    } else if (user.value.role === 'ROLE_STUDENT') {
+      editForm.value.assignedGroup = editForm.value.studentClasses.join(', ')
     }
 
     await apiClient.put(`/admin/students/${user.value.id}`, editForm.value)
