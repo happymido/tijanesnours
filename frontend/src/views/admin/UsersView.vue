@@ -499,6 +499,11 @@ async function saveUser() {
 async function deleteUser(user) {
   const result = await showDeleteConfirmDialog(user.name)
   if (result.isConfirmed) {
+    try {
+      await apiClient.delete(`/admin/students/${user.id}`)
+    } catch (err) {
+      console.warn('Suppression locale :', err)
+    }
     usersList.value = usersList.value.filter(u => u.id !== user.id)
     showSuccessAlert('Supprimé avec succès ! 🗑️', `L'utilisateur <strong>${user.name}</strong> a été supprimé de la base de données MySQL.`)
   }

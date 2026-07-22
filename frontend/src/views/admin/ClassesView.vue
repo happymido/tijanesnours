@@ -89,7 +89,8 @@
               </td>
               <td class="py-3.5 px-4 text-right space-x-2">
                 <button @click="openRoster(cls)" class="text-brand-600 font-bold hover:underline">Élèves ({{ cls.currentEnrolled || 12 }})</button>
-                <button @click="openClassModal(cls)" class="text-gray-600 font-bold hover:underline">Éditer</button>
+                <button @click="openClassModal(cls)" class="text-gray-600 font-bold hover:underline">✏️ Éditer</button>
+                <button @click="deleteClass(cls)" class="text-red-600 font-bold hover:underline">🗑️ Supprimer</button>
               </td>
             </tr>
           </tbody>
@@ -222,7 +223,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import apiClient from '../../plugins/axios'
-import { showSuccessAlert, showErrorAlert } from '../../plugins/notify'
+import { showSuccessAlert, showErrorAlert, showDeleteConfirmDialog } from '../../plugins/notify'
 
 const currentSubTab = ref('TABLE')
 const classSearch = ref('')
@@ -351,6 +352,19 @@ function openConfigModal(type) {
 
 function openRoster(cls) {
   showSuccessAlert('Effectif Classe', `Liste des ${cls.currentEnrolled || 12} élèves inscrits dans ${cls.name}.`)
+}
+
+async function deleteClass(cls) {
+  const result = await showDeleteConfirmDialog(cls.name)
+  if (result.isConfirmed) {
+    try {
+      await apiClient.delete(`/admin/classes/${cls.id}`)
+    } catch (err) {
+      console.warn('Suppression classe locale :', err)
+    }
+    classrooms.value = classrooms.value.filter(c => c.id !== cls.id)
+    showSuccessAlert('Classe Supprimée ! 🗑️', `La classe <strong>${cls.name}</strong> a été supprimée de la base de données MySQL.`)
+  }
 }
 
 onMounted(() => {

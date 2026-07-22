@@ -92,12 +92,11 @@ class AdminStudentController extends AbstractController
             ];
         }
 
-        // 3. Récupérer tous les Enseignants avec leurs classes affectées en base MySQL
+        // 3. Récupérer tous les Enseignants avec leurs classes affectées
         $teachers = $em->getRepository(Teacher::class)->findAll();
         foreach ($teachers as $teacher) {
             $user = $teacher->getUser();
             
-            // Chercher les classes affectées à cet enseignant dans school_classes
             $assignedClasses = $em->getRepository(SchoolClass::class)->findBy(['teacher' => $teacher]);
             $assignedClassesList = [];
             foreach ($assignedClasses as $ac) {
@@ -192,6 +191,41 @@ class AdminStudentController extends AbstractController
         }
 
         return $this->json(['message' => 'Données utilisateur mises à jour avec succès dans MySQL']);
+    }
+
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(string $id, EntityManagerInterface $em): JsonResponse
+    {
+        if (str_starts_with($id, 'student_')) {
+            $realId = (int) str_replace('student_', '', $id);
+            $student = $em->getRepository(Student::class)->find($realId);
+            if ($student) {
+                $user = $student->getUser();
+                $em->remove($student);
+                if ($user) $em->remove($user);
+                $em->flush();
+            }
+        } elseif (str_starts_with($id, 'parent_')) {
+            $realId = (int) str_replace('parent_', '', $id);
+            $parent = $em->getRepository(ParentUser::class)->find($realId);
+            if ($parent) {
+                $user = $parent->getUser();
+                $em->remove($parent);
+                if ($user) $em->remove($user);
+                $em->flush();
+            }
+        } elseif (str_starts_with($id, 'teacher_')) {
+            $realId = (int) str_replace('teacher_', '', $id);
+            $teacher = $em->getRepository(Teacher::class)->find($realId);
+            if ($teacher) {
+                $user = $teacher->getUser();
+                $em->remove($teacher);
+                if ($user) $em->remove($user);
+                $em->flush();
+            }
+        }
+
+        return $this->json(['message' => 'Utilisateur supprimé avec succès de la BBD MySQL']);
     }
 
     #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['PUT', 'POST'])]

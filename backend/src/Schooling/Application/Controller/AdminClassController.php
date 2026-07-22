@@ -156,7 +156,6 @@ class AdminClassController extends AbstractController
         $classEntity->setMaxCapacity($capacity);
         $classEntity->setSchedule($schedule);
 
-        // Rattacher Enseignant si fourni
         if (!empty($payload['teacherId'])) {
             $teacher = $em->getRepository(Teacher::class)->find((int) $payload['teacherId']);
             if ($teacher) {
@@ -181,5 +180,36 @@ class AdminClassController extends AbstractController
                 'teacher' => $classEntity->getTeacher() ? $classEntity->getTeacher()->getFullName() : 'Non affecté'
             ]
         ], Response::HTTP_CREATED);
+    }
+
+    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
+    public function update(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $classEntity = $em->getRepository(SchoolClass::class)->find($id);
+        if (!$classEntity) {
+            return $this->json(['error' => 'Classe non trouvée'], Response::HTTP_NOT_FOUND);
+        }
+
+        $payload = json_decode($request->getContent(), true);
+        if (isset($payload['name'])) $classEntity->setName($payload['name']);
+        if (isset($payload['roomNumber'])) $classEntity->setRoomNumber($payload['roomNumber']);
+        if (isset($payload['maxCapacity'])) $classEntity->setMaxCapacity((int)$payload['maxCapacity']);
+        if (isset($payload['schedule'])) $classEntity->setSchedule($payload['schedule']);
+
+        $em->flush();
+
+        return $this->json(['message' => 'Classe mise à jour avec succès dans MySQL']);
+    }
+
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $classEntity = $em->getRepository(SchoolClass::class)->find($id);
+        if ($classEntity) {
+            $em->remove($classEntity);
+            $em->flush();
+        }
+
+        return $this->json(['message' => 'Classe supprimée avec succès de MySQL']);
     }
 }
