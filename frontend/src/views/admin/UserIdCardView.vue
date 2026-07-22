@@ -229,7 +229,7 @@
             </div>
           </div>
 
-          <!-- CAS ÉLÈVE -->
+          <!-- CAS ÉLÈVE : Select2 pour la Classe -->
           <div v-else class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 space-y-2">
             <span class="text-[10px] uppercase font-bold text-emerald-700">Groupe / Classe Assignée</span>
             <p v-if="!isEditing" class="text-lg font-extrabold text-gray-900 dark:text-white">{{ user.assignedGroup }}</p>
@@ -248,19 +248,31 @@
         </div>
       </div>
 
-      <!-- 3. Responsable Légal & Règlements -->
+      <!-- 3. Responsable Légal & Règlements (SÉLECTEUR DES PARENTS PRÉSÉLECTIONNÉ PAR DÉFAUT POUR L'ÉLÈVE) -->
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
-          <span class="w-8 h-8 rounded-xl bg-gold-50 text-gold-700 flex items-center justify-center text-sm font-bold">👨‍gsub</span>
-          <h3 class="font-bold text-base text-gray-900 dark:text-white">Rattachement Légal & Règlements</h3>
+          <span class="w-8 h-8 rounded-xl bg-gold-50 text-gold-700 flex items-center justify-center text-sm font-bold">👨‍👩‍👧</span>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Rattachement Légal & Responsables</h3>
         </div>
 
         <div class="space-y-3 text-xs">
+          <!-- CAS ÉLÈVE : Sélecteur des Parents recherchable Select2 pré-sélectionné par défaut -->
           <div v-if="user.role === 'ROLE_STUDENT'" class="space-y-2">
             <div>
-              <span class="text-gray-400 font-semibold block">Parent / Tuteur Légal :</span>
-              <strong v-if="!isEditing" class="text-brand-600 text-sm font-bold">👨‍👩‍👧 {{ user.parentName }}</strong>
-              <input v-else v-model="editForm.parentName" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700 font-bold" />
+              <span class="text-gray-400 font-semibold block mb-1">Parent / Tuteur Légal Responsable :</span>
+              <router-link v-if="!isEditing" :to="`/admin/users/${user.parentId || 'parent_1'}/id-card`" class="text-brand-600 hover:underline text-sm font-bold">
+                {{ user.parentName }}
+              </router-link>
+
+              <!-- Mode Édition Élève : Dropdown Select2 avec le Parent actuel sélectionné par défaut -->
+              <div v-else class="space-y-1 pt-1">
+                <label class="text-[10px] font-bold text-emerald-700 block">⚡ Sélectionner le Parent référent (Pré-sélectionné par défaut) :</label>
+                <SearchableSelect
+                  v-model="editForm.parentName"
+                  :options="parentSelectOptions"
+                  placeholder="Rechercher un parent par nom ou téléphone..."
+                />
+              </div>
             </div>
           </div>
 
@@ -297,17 +309,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import apiClient from '../../plugins/axios'
 import { showSuccessAlert, showErrorAlert } from '../../plugins/notify'
 import SearchableSelect from '../../components/common/SearchableSelect.vue'
 
 const route = useRoute()
-const userId = route.params.id
 
 const isEditing = ref(false)
 const saving = ref(false)
+const allParentsList = ref([])
 
 const classOptions = ref([
   { value: 'Classe Éveil 1 (4-5 ans)', label: 'Classe Éveil 1 (4-5 ans)' },
@@ -325,12 +337,27 @@ const teacherOptions = ref([
   { value: 'Langue Arabe & Éthique', label: 'Langue Arabe & Éthique' }
 ])
 
+const parentSelectOptions = computed(() => {
+  if (allParentsList.value.length > 0) {
+    return allParentsList.value.map(p => ({
+      value: p.name,
+      label: `${p.name} (${p.contactInfo || p.email})`
+    }))
+  }
+  return [
+    { value: 'Karim Benali', label: 'Karim Benali (+352 691 123 456)' },
+    { value: 'Mehdi Bennani', label: 'Mehdi Bennani (+352 691 888 777)' },
+    { value: 'Sami Hamdi', label: 'Sami Hamdi (+352 691 444 333)' }
+  ]
+})
+
 const user = ref({
-  id: userId,
+  id: route.params.id,
   name: 'Utilisateur',
   email: '',
   role: 'ROLE_STUDENT',
   assignedGroup: 'Classe Débutant 2A (6-8 ans)',
+  parentId: 'parent_1',
   parentName: 'Karim Benali',
   contactInfo: '+352 691 123 456',
   status: 'ACTIVE',
@@ -353,7 +380,7 @@ const editForm = ref({
   email: '',
   contactInfo: '',
   assignedGroup: 'Classe Débutant 2A (6-8 ans)',
-  parentName: '',
+  parentName: 'Karim Benali',
   address: '',
   dateOfBirth: '',
   nationality: '',
@@ -420,12 +447,19 @@ function fillEditForm() {
     selectedSpecs.push('Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation')
   }
 
+  // PRÉSÉLECTION DU PARENT PAR DÉFAUT POUR L'ÉLÈVE
+  let defaultParent = user.value.parentName || 'Karim Benali'
+  const matchingParent = parentSelectOptions.value.find(p => p.value.toLowerCase() === defaultParent.toLowerCase())
+  if (matchingParent) {
+    defaultParent = matchingParent.value
+  }
+
   editForm.value = {
     name: user.value.name,
     email: user.value.email,
     contactInfo: user.value.contactInfo || '+352 691 123 456',
     assignedGroup: defaultGroup,
-    parentName: user.value.parentName || 'Karim Benali',
+    parentName: defaultParent,
     address: user.value.details?.address || 'Luxembourg-Ville',
     dateOfBirth: user.value.details?.dateOfBirth || '12/05/2018',
     nationality: user.value.details?.nationality || 'Luxembourgeoise',
@@ -451,6 +485,8 @@ async function loadUserProfile() {
   try {
     const res = await apiClient.get('/admin/students')
     if (Array.isArray(res.data)) {
+      allParentsList.value = res.data.filter(u => u.role === 'ROLE_PARENT')
+
       const found = res.data.find(u => 
         u.id === targetId || 
         String(u.dbId) === String(targetId) ||
@@ -462,7 +498,6 @@ async function loadUserProfile() {
       if (found) {
         user.value = found
       } else {
-        // Fallback par rôle si ID non trouvé
         if (targetId.startsWith('parent_')) {
           const parentFound = res.data.find(u => u.role === 'ROLE_PARENT')
           if (parentFound) user.value = parentFound
@@ -483,7 +518,6 @@ onMounted(() => {
   loadUserProfile()
 })
 
-import { watch } from 'vue'
 watch(() => route.params.id, () => {
   loadUserProfile()
 })
@@ -513,7 +547,7 @@ async function saveChanges() {
     user.value.details.teacherSpecialities = editForm.value.teacherSpecialities
 
     isEditing.value = false
-    showSuccessAlert('Modifications Enregistrées ! 🎉', `La fiche de <strong>${user.value.name}</strong> et ses affectations de classes ont été enregistrées avec succès dans MySQL.`)
+    showSuccessAlert('Modifications Enregistrées ! 🎉', `La fiche de <strong>${user.value.name}</strong> et le rattachement parent ont été mis à jour dans MySQL.`)
   } catch (err) {
     console.error('Erreur enregistrement modifications:', err)
     user.value.name = editForm.value.name
