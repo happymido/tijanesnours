@@ -37,11 +37,11 @@
           v-for="opt in filteredOptions"
           :key="opt.value"
           @click="selectOption(opt)"
-          :class="modelValue === opt.value ? 'bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 font-bold' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200'"
+          :class="isOptionSelected(opt) ? 'bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 font-bold' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200'"
           class="px-3 py-2 cursor-pointer transition-colors flex items-center justify-between"
         >
           <span>{{ opt.label }}</span>
-          <span v-if="modelValue === opt.value" class="text-brand-600 dark:text-gold-400 font-extrabold text-xs">✓</span>
+          <span v-if="isOptionSelected(opt)" class="text-brand-600 dark:text-gold-400 font-extrabold text-xs">✓</span>
         </div>
 
         <div v-if="filteredOptions.length === 0" class="px-3 py-3 text-center text-gray-400 text-xs italic">
@@ -59,7 +59,7 @@ const props = defineProps({
   modelValue: [String, Number],
   options: {
     type: Array,
-    default: () => [] // array of { value: any, label: string }
+    default: () => []
   },
   placeholder: {
     type: String,
@@ -75,9 +75,23 @@ const searchInput = ref(null)
 const dropdownRef = ref(null)
 
 const selectedLabel = computed(() => {
-  const found = props.options.find(o => o.value === props.modelValue)
-  return found ? found.label : ''
+  if (!props.modelValue) return ''
+  const found = props.options.find(o => 
+    o.value === props.modelValue || 
+    String(o.value).toLowerCase() === String(props.modelValue).toLowerCase() ||
+    String(o.label).toLowerCase() === String(props.modelValue).toLowerCase() ||
+    String(o.value).toLowerCase().includes(String(props.modelValue).toLowerCase()) ||
+    String(props.modelValue).toLowerCase().includes(String(o.value).toLowerCase())
+  )
+  return found ? found.label : props.modelValue
 })
+
+function isOptionSelected(opt) {
+  if (!props.modelValue) return false
+  return opt.value === props.modelValue || 
+         String(opt.value).toLowerCase() === String(props.modelValue).toLowerCase() ||
+         String(opt.label).toLowerCase() === String(props.modelValue).toLowerCase()
+}
 
 const filteredOptions = computed(() => {
   if (!searchQuery.value) return props.options

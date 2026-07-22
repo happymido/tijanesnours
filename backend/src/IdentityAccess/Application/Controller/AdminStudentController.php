@@ -23,7 +23,7 @@ class AdminStudentController extends AbstractController
     {
         $data = [];
 
-        // 1. Récupérer tous les Élèves avec l'ID exact de leur Parent
+        // 1. Récupérer tous les Élèves avec leur classe et parent
         $students = $em->getRepository(Student::class)->findAll();
         foreach ($students as $student) {
             $parent = $student->getParent();
@@ -167,7 +167,6 @@ class AdminStudentController extends AbstractController
                 if (isset($payload['address'])) $student->setAddress($payload['address']);
                 if (isset($payload['insurancePolicy'])) $student->setInsurancePolicyNumber($payload['insurancePolicy']);
 
-                // Mise à jour de la relation Parent dans MySQL lors d'un changement de parent !
                 if (!empty($payload['parentName'])) {
                     $parentUserEntity = $em->getRepository(ParentUser::class)->findOneBy(['fullName' => trim($payload['parentName'])]);
                     if ($parentUserEntity) {
@@ -202,7 +201,11 @@ class AdminStudentController extends AbstractController
             }
         }
 
-        return $this->json(['message' => 'Données utilisateur et rattachement parent mis à jour avec succès dans MySQL']);
+        return $this->json([
+            'message' => 'Données utilisateur, classe et rattachement parent mis à jour avec succès dans MySQL',
+            'assignedGroup' => $payload['assignedGroup'] ?? null,
+            'parentName' => $payload['parentName'] ?? null
+        ]);
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
