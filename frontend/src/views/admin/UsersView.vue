@@ -497,14 +497,10 @@ async function saveUser() {
 }
 
 async function deleteUser(user) {
-  const result = await showConfirmDialog(
-    'Confirmation de Suppression',
-    `Êtes-vous sûr de vouloir supprimer <strong>${user.name}</strong> de la base de données ?`,
-    'Oui, supprimer'
-  )
+  const result = await showDeleteConfirmDialog(user.name)
   if (result.isConfirmed) {
     usersList.value = usersList.value.filter(u => u.id !== user.id)
-    showSuccessAlert('Supprimé', `L'utilisateur ${user.name} a été supprimé.`)
+    showSuccessAlert('Supprimé avec succès ! 🗑️', `L'utilisateur <strong>${user.name}</strong> a été supprimé de la base de données MySQL.`)
   }
 }
 
