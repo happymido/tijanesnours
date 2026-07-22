@@ -58,19 +58,14 @@ class AdminStudentController extends AbstractController
         foreach ($parents as $parent) {
             $user = $parent->getUser();
             $childrenArray = [];
-            foreach ($parent->getStudents() as $st) {
+            $realChildren = $em->getRepository(Student::class)->findBy(['parent' => $parent]);
+            foreach ($realChildren as $st) {
                 $childrenArray[] = [
                     'id' => 'student_' . $st->getId(),
+                    'dbId' => $st->getId(),
                     'name' => $st->getFirstName() . ' ' . $st->getLastName(),
                     'class' => $st->getAssignedGroup() ?? 'Classe Débutant 2A (6-8 ans)',
                     'dateOfBirth' => $st->getDateOfBirth() ? $st->getDateOfBirth()->format('d/m/Y') : '12/05/2018'
-                ];
-            }
-
-            if (empty($childrenArray)) {
-                $childrenArray = [
-                    ['id' => 'student_1', 'name' => 'Youssef Benali', 'class' => 'Classe Débutant 2A (6-8 ans)', 'dateOfBirth' => '12/05/2018'],
-                    ['id' => 'student_2', 'name' => 'Aya Benali', 'class' => 'Classe Éveil 1 (4-5 ans)', 'dateOfBirth' => '14/09/2021']
                 ];
             }
 

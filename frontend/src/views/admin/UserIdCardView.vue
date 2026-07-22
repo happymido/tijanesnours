@@ -387,35 +387,30 @@ const editForm = ref({
   name: '',
   email: '',
   contactInfo: '',
-  assignedGroup: 'Classe Débutant 2A (6-8 ans)',
-  parentName: 'Karim Benali',
+  assignedGroup: '',
+  studentClasses: [],
+  parentName: '',
   address: '',
   dateOfBirth: '',
   nationality: '',
   allergies: '',
   insurancePolicy: '',
   bio: '',
-  teacherSpecialities: ['Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation']
+  teacherSpecialities: []
 })
 
 const childrenList = computed(() => {
-  if (user.value.details && Array.isArray(user.value.details.childrenList) && user.value.details.childrenList.length > 0) {
+  if (user.value.details && Array.isArray(user.value.details.childrenList)) {
     return user.value.details.childrenList
   }
-  return [
-    { id: 'student_1', name: 'Youssef Benali', class: 'Classe Débutant 2A (6-8 ans)', dateOfBirth: '12/05/2018' },
-    { id: 'student_2', name: 'Aya Benali', class: 'Classe Éveil 1 (4-5 ans)', dateOfBirth: '14/09/2021' }
-  ]
+  return []
 })
 
 const assignedTeacherClasses = computed(() => {
-  if (user.value.details && Array.isArray(user.value.details.assignedClasses) && user.value.details.assignedClasses.length > 0) {
+  if (user.value.details && Array.isArray(user.value.details.assignedClasses)) {
     return user.value.details.assignedClasses
   }
-  return [
-    { id: 1, name: 'Classe Éveil 1 (4-5 ans)', room: 'Salle Maryam 1', schedule: 'Samedi 09:00 - 12:00', capacity: 15, enrolled: 10 },
-    { id: 2, name: 'Classe Débutant 2A (6-8 ans)', room: 'Salle Maryam 2', schedule: 'Samedi 09:00 - 12:00', capacity: 20, enrolled: 14 }
-  ]
+  return []
 })
 
 const currentTeacherSpecs = computed(() => {
@@ -423,11 +418,11 @@ const currentTeacherSpecs = computed(() => {
     return editForm.value.teacherSpecialities
   }
   if (user.value.details?.teacherSpecialities) return user.value.details.teacherSpecialities
-  return ['Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation']
+  return []
 })
 
 function fillEditForm() {
-  let defaultGroup = user.value.assignedGroup || 'Classe Débutant 2A (6-8 ans)'
+  let defaultGroup = user.value.assignedGroup || ''
   const matchingOpt = classOptions.value.find(opt => 
     opt.value.toLowerCase().includes(defaultGroup.toLowerCase()) || 
     defaultGroup.toLowerCase().includes(opt.value.toLowerCase())
@@ -443,53 +438,37 @@ function fillEditForm() {
     const optLower = opt.value.toLowerCase()
     const currentLower = currentGroupString.toLowerCase()
 
-    if (currentLower.includes(optLower) || optLower.includes(currentLower) ||
-        (currentLower.includes('arabe') && optLower.includes('arabe')) ||
-        (currentLower.includes('tajwid') && optLower.includes('tajwid')) ||
-        (currentLower.includes('débutant') && optLower.includes('débutant'))) {
+    if (currentLower.includes(optLower) || optLower.includes(currentLower)) {
       selectedSpecs.push(opt.value)
     }
   })
 
-  if (selectedSpecs.length === 0) {
-    selectedSpecs.push('Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation')
-  }
-
   // PRÉSÉLECTION DE PLUSIEURS CLASSES POUR L'ÉLÈVE
-  const currentStudentGroupString = user.value.assignedGroup || 'Classe Débutant 2A (6-8 ans)'
+  const currentStudentGroupString = user.value.assignedGroup || ''
   const selectedStudentClasses = []
 
   classOptions.value.forEach(opt => {
-    if (currentStudentGroupString.toLowerCase().includes(opt.value.toLowerCase()) || 
-        opt.value.toLowerCase().includes(currentStudentGroupString.toLowerCase())) {
+    const optLower = opt.value.toLowerCase()
+    const currentLower = currentStudentGroupString.toLowerCase()
+
+    if (currentLower.includes(optLower) || optLower.includes(currentLower)) {
       selectedStudentClasses.push(opt.value)
     }
   })
 
-  if (selectedStudentClasses.length === 0) {
-    selectedStudentClasses.push('Classe Débutant 2A (6-8 ans)')
-  }
-
-  // PRÉSÉLECTION DU PARENT PAR DÉFAUT POUR L'ÉLÈVE
-  let defaultParent = user.value.parentName || 'Karim Benali'
-  const matchingParent = parentSelectOptions.value.find(p => p.value.toLowerCase() === defaultParent.toLowerCase())
-  if (matchingParent) {
-    defaultParent = matchingParent.value
-  }
-
   editForm.value = {
-    name: user.value.name,
-    email: user.value.email,
-    contactInfo: user.value.contactInfo || '+352 691 123 456',
+    name: user.value.name || '',
+    email: user.value.email || '',
+    contactInfo: user.value.contactInfo || '',
     assignedGroup: defaultGroup,
     studentClasses: selectedStudentClasses,
-    parentName: defaultParent,
-    address: user.value.details?.address || 'Luxembourg-Ville',
-    dateOfBirth: user.value.details?.dateOfBirth || '12/05/2018',
-    nationality: user.value.details?.nationality || 'Luxembourgeoise',
-    allergies: user.value.details?.allergies || 'Aucune allergie connue',
-    insurancePolicy: user.value.details?.insurancePolicy || 'LU-890421-AXA',
-    bio: user.value.details?.bio || 'Professeur qualifié en Langue Arabe et Tajwid',
+    parentName: user.value.parentName || (allParentsList.value[0]?.name || ''),
+    address: user.value.details?.address || '',
+    dateOfBirth: user.value.details?.dateOfBirth || '',
+    nationality: user.value.details?.nationality || '',
+    allergies: user.value.details?.allergies || '',
+    insurancePolicy: user.value.details?.insurancePolicy || '',
+    bio: user.value.details?.bio || '',
     teacherSpecialities: selectedSpecs
   }
 }
@@ -516,19 +495,10 @@ async function loadUserProfile() {
         String(u.dbId) === String(targetId) ||
         (targetId.startsWith('parent_') && u.role === 'ROLE_PARENT' && (u.id === targetId || String(u.dbId) === targetId.replace('parent_', ''))) ||
         (targetId.startsWith('teacher_') && u.role === 'ROLE_TEACHER' && (u.id === targetId || String(u.dbId) === targetId.replace('teacher_', ''))) ||
-        (targetId.startsWith('student_') && u.role === 'ROLE_STUDENT' && (u.id === targetId || String(u.dbId) === targetId.replace('student_', ''))) ||
-        u.name.toLowerCase().includes(targetId.toLowerCase())
+        (targetId.startsWith('student_') && u.role === 'ROLE_STUDENT' && (u.id === targetId || String(u.dbId) === targetId.replace('student_', '')))
       )
       if (found) {
         user.value = found
-      } else {
-        if (targetId.startsWith('parent_')) {
-          const parentFound = res.data.find(u => u.role === 'ROLE_PARENT')
-          if (parentFound) user.value = parentFound
-        } else if (targetId.startsWith('teacher_')) {
-          const teacherFound = res.data.find(u => u.role === 'ROLE_TEACHER')
-          if (teacherFound) user.value = teacherFound
-        }
       }
     }
   } catch (err) {
