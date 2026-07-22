@@ -4,11 +4,14 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Gestion & Configuration Scolaire</h1>
-        <p class="text-xs text-gray-500">Classes, affectations des enseignants, catégories et niveaux synchronisés avec MySQL</p>
+        <p class="text-xs text-gray-500">Classes, affectations des enseignants, catégories, niveaux et créneaux horaires configurables</p>
       </div>
-      <div class="flex gap-3">
+      <div class="flex flex-wrap gap-2">
         <button @click="openClassModal()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
           <span>+</span> Nouvelle Classe
+        </button>
+        <button @click="openScheduleConfigModal()" class="px-4 py-2.5 bg-gold-600 hover:bg-gold-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
+          <span>⏰</span> Nouveau Créneau
         </button>
         <button @click="openConfigModal('CATEGORY')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
           <span>+</span> Nouvelle Catégorie
@@ -17,9 +20,12 @@
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="flex border-b border-gray-200 dark:border-gray-700 text-xs font-bold gap-6">
+    <div class="flex border-b border-gray-200 dark:border-gray-700 text-xs font-bold gap-6 overflow-x-auto">
       <button @click="currentSubTab = 'TABLE'" :class="currentSubTab === 'TABLE' ? 'border-b-2 border-brand-600 text-brand-600 pb-3' : 'text-gray-500 pb-3'">
         📋 Tableau Général des Classes ({{ classrooms.length }})
+      </button>
+      <button @click="currentSubTab = 'SCHEDULES'" :class="currentSubTab === 'SCHEDULES' ? 'border-b-2 border-gold-600 text-gold-600 pb-3' : 'text-gray-500 pb-3'">
+        ⏰ Créneaux Horaires ({{ schedules.length }})
       </button>
       <button @click="currentSubTab = 'TEACHER_ASSIGNMENTS'" :class="currentSubTab === 'TEACHER_ASSIGNMENTS' ? 'border-b-2 border-brand-600 text-brand-600 pb-3' : 'text-gray-500 pb-3'">
         👨‍🏫 Affectations Enseignants ({{ teachersList.length }})
@@ -100,7 +106,54 @@
       </div>
     </div>
 
-    <!-- TAB 2: Affectations Enseignants <-> Classes -->
+    <!-- TAB 2: Configurator Panel des Créneaux Horaires -->
+    <div v-if="currentSubTab === 'SCHEDULES'" class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-3 dark:border-gray-700">
+        <div>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Configuration des Créneaux Horaires (Modifiables & Éditables)</h3>
+          <p class="text-xs text-gray-500">Ces créneaux alimentent dynamiquement les sélecteurs de cours de l'ensemble de la plateforme</p>
+        </div>
+        <button @click="openScheduleConfigModal()" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
+          <span>+</span> Ajouter un Créneau Horaire
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 uppercase font-semibold">
+            <tr>
+              <th class="py-3.5 px-4">Créneau Intitulé</th>
+              <th class="py-3.5 px-4">Jour de la Semaine</th>
+              <th class="py-3.5 px-4">Heure Début</th>
+              <th class="py-3.5 px-4">Heure Fin</th>
+              <th class="py-3.5 px-4">Libellé / Session</th>
+              <th class="py-3.5 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+            <tr v-for="sch in schedules" :key="sch.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+              <td class="py-3.5 px-4 font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <span>⏰</span> {{ sch.name }}
+              </td>
+              <td class="py-3.5 px-4 font-bold text-brand-600 dark:text-gold-400">{{ sch.day }}</td>
+              <td class="py-3.5 px-4 text-gray-700 dark:text-gray-300 font-mono">{{ sch.startTime }}</td>
+              <td class="py-3.5 px-4 text-gray-700 dark:text-gray-300 font-mono">{{ sch.endTime }}</td>
+              <td class="py-3.5 px-4">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gold-100 text-gold-800 dark:bg-gold-900/50 dark:text-gold-300">
+                  {{ sch.label || 'Standard' }}
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-right space-x-3">
+                <button @click="openScheduleConfigModal(sch)" class="text-brand-600 font-bold hover:underline">✏️ Éditer</button>
+                <button @click="deleteSchedule(sch)" class="text-red-600 font-bold hover:underline">🗑️ Supprimer</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: Affectations Enseignants <-> Classes -->
     <div v-if="currentSubTab === 'TEACHER_ASSIGNMENTS'" class="space-y-6">
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
         <h3 class="font-bold text-base text-gray-900 dark:text-white border-b pb-3 dark:border-gray-700">
@@ -144,7 +197,7 @@
       </div>
     </div>
 
-    <!-- TAB 3: Catégories de Cours -->
+    <!-- TAB 4: Catégories de Cours -->
     <div v-if="currentSubTab === 'CATEGORIES'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div v-for="cat in categories" :key="cat.id" class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-3">
         <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl font-bold">
@@ -155,7 +208,7 @@
       </div>
     </div>
 
-    <!-- TAB 4: Niveaux de Cours -->
+    <!-- TAB 5: Niveaux de Cours -->
     <div v-if="currentSubTab === 'LEVELS'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div v-for="lvl in levels" :key="lvl.id" class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-3">
         <span class="px-3 py-1 bg-brand-50 text-brand-700 dark:bg-brand-900/40 text-xs font-bold rounded-full">
@@ -205,14 +258,9 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block font-semibold mb-1">Créneau Horaire (Sélection)</label>
+              <label class="block font-semibold mb-1">Créneau Horaire Configuré</label>
               <select v-model="classForm.schedule" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold">
-                <option value="Samedi 09:00 - 12:00">Samedi 09:00 - 12:00 (Matin)</option>
-                <option value="Samedi 14:00 - 17:00">Samedi 14:00 - 17:00 (Après-Midi)</option>
-                <option value="Dimanche 09:00 - 12:00">Dimanche 09:00 - 12:00 (Matin)</option>
-                <option value="Dimanche 14:00 - 17:00">Dimanche 14:00 - 17:00 (Après-Midi)</option>
-                <option value="Mercredi 14:00 - 17:00">Mercredi 14:00 - 17:00 (Rattrapage)</option>
-                <option value="Vendredi 17:30 - 19:30">Vendredi 17:30 - 19:30 (Soirée)</option>
+                <option v-for="s in schedules" :key="s.id" :value="s.name">{{ s.name }}</option>
               </select>
             </div>
             <div>
@@ -231,7 +279,61 @@
             <button type="submit" :disabled="submitting" class="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow disabled:opacity-50">
               {{ submitting ? 'Enregistrement MySQL...' : 'Enregistrer dans la BBD MySQL' }}
             </button>
-            <button type="button" @click="showClassModal = false" class="py-3 px-4 border rounded-xl">Annuler</button>
+            <button type="button" @click="showClassModal = false" class="py-3 px-4 border rounded-xl text-gray-600 font-semibold">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Form pour Ajouter / Éditer un Créneau Horaire -->
+    <div v-if="showScheduleModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+        <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            {{ scheduleEditingId ? '✏️ Éditer le Créneau Horaire' : '⏰ Nouveau Créneau Horaire' }}
+          </h3>
+          <button @click="showScheduleModal = false" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+        </div>
+
+        <form @submit.prevent="saveScheduleConfig" class="space-y-4 text-xs">
+          <div>
+            <label class="block font-semibold mb-1">Jour de la Semaine</label>
+            <select v-model="scheduleForm.day" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold">
+              <option value="Samedi">Samedi</option>
+              <option value="Dimanche">Dimanche</option>
+              <option value="Mercredi">Mercredi</option>
+              <option value="Vendredi">Vendredi</option>
+              <option value="Lundi">Lundi</option>
+              <option value="Mardi">Mardi</option>
+              <option value="Jeudi">Jeudi</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1">Heure de Début</label>
+              <input v-model="scheduleForm.startTime" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-mono font-bold" placeholder="09:00" />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Heure de Fin</label>
+              <input v-model="scheduleForm.endTime" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-mono font-bold" placeholder="12:00" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1">Libellé / Session (ex: Matin, Après-Midi, Soirée)</label>
+            <input v-model="scheduleForm.label" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold" placeholder="ex: Matin" />
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button type="submit" class="flex-1 py-3 bg-gold-600 hover:bg-gold-700 text-white font-bold rounded-xl shadow">
+              💾 Save Créneau
+            </button>
+            <button type="button" @click="showScheduleModal = false" class="py-3 px-4 border rounded-xl text-gray-600 font-semibold">
+              Annuler
+            </button>
           </div>
         </form>
       </div>
@@ -245,19 +347,12 @@ import apiClient from '../../plugins/axios'
 import { showSuccessAlert, showErrorAlert, showDeleteConfirmDialog } from '../../plugins/notify'
 
 const currentSubTab = ref('TABLE')
-const classSearch = ref('')
-const showClassModal = ref(false)
 const loading = ref(false)
 const submitting = ref(false)
-
-const classForm = ref({
-  name: '',
-  level: '6-8 ans (Débutant)',
-  teacher: 'Cheikh Mahmoud',
-  schedule: 'Samedi 09:00 - 12:00',
-  room: 'Salle Maryam 1',
-  capacity: 20
-})
+const classSearch = ref('')
+const showClassModal = ref(false)
+const showScheduleModal = ref(false)
+const scheduleEditingId = ref(null)
 
 const categories = ref([
   { id: 1, name: 'Langue Arabe', icon: '🗣️', description: 'Lecture, écriture, grammaire & vocabulaire' },
@@ -278,9 +373,18 @@ const teachersList = ref([
   { id: 3, name: 'Mme Souad', speciality: 'Éducation Éthique & Arabe' }
 ])
 
+const schedules = ref([
+  { id: 1, day: 'Samedi', startTime: '09:00', endTime: '12:00', label: 'Matin', name: 'Samedi 09:00 - 12:00 (Matin)' },
+  { id: 2, day: 'Samedi', startTime: '14:00', endTime: '17:00', label: 'Après-Midi', name: 'Samedi 14:00 - 17:00 (Après-Midi)' },
+  { id: 3, day: 'Dimanche', startTime: '09:00', endTime: '12:00', label: 'Matin', name: 'Dimanche 09:00 - 12:00 (Matin)' },
+  { id: 4, day: 'Dimanche', startTime: '14:00', endTime: '17:00', label: 'Après-Midi', name: 'Dimanche 14:00 - 17:00 (Après-Midi)' },
+  { id: 5, day: 'Mercredi', startTime: '14:00', endTime: '17:00', label: 'Rattrapage', name: 'Mercredi 14:00 - 17:00 (Rattrapage)' },
+  { id: 6, day: 'Vendredi', startTime: '17:30', endTime: '19:30', label: 'Soirée', name: 'Vendredi 17:30 - 19:30 (Soirée)' }
+])
+
 const classrooms = ref([
-  { id: 1, name: 'Classe Éveil 1', level: '4-5 ans (Éveil)', category: 'Langue Arabe', teacher: 'Cheikh Mahmoud', schedule: 'Samedi 09:00 - 12:00', roomNumber: 'Salle Maryam 1', maxCapacity: 15, currentEnrolled: 10 },
-  { id: 2, name: 'Classe Débutant 2A', level: '6-8 ans (Débutant)', category: 'Coran & Tajwid', teacher: 'Cheikh Mahmoud', schedule: 'Samedi 09:00 - 12:00', roomNumber: 'Salle Maryam 2', maxCapacity: 20, currentEnrolled: 14 }
+  { id: 1, name: 'Classe Éveil 1', level: '4-5 ans (Éveil)', category: 'Langue Arabe', teacher: 'Cheikh Mahmoud', schedule: 'Samedi 09:00 - 12:00 (Matin)', roomNumber: 'Salle Maryam 1', maxCapacity: 15, currentEnrolled: 10 },
+  { id: 2, name: 'Classe Débutant 2A', level: '6-8 ans (Débutant)', category: 'Coran & Tajwid', teacher: 'Cheikh Mahmoud', schedule: 'Samedi 09:00 - 12:00 (Matin)', roomNumber: 'Salle Maryam 2', maxCapacity: 20, currentEnrolled: 14 }
 ])
 
 const filteredClassrooms = computed(() => {
@@ -288,6 +392,26 @@ const filteredClassrooms = computed(() => {
   const q = classSearch.value.toLowerCase()
   return classrooms.value.filter(c => c.name.toLowerCase().includes(q) || (c.teacher && c.teacher.toLowerCase().includes(q)) || (c.roomNumber && c.roomNumber.toLowerCase().includes(q)))
 })
+
+const classForm = ref({
+  name: '',
+  level: '6-8 ans (Débutant)',
+  teacher: 'Cheikh Mahmoud',
+  schedule: 'Samedi 09:00 - 12:00 (Matin)',
+  room: 'Salle Maryam 1',
+  capacity: 20
+})
+
+const scheduleForm = ref({
+  day: 'Samedi',
+  startTime: '09:00',
+  endTime: '12:00',
+  label: 'Matin'
+})
+
+function getClassesForTeacher(teacherName) {
+  return classrooms.value.filter(c => c.teacher && c.teacher.toLowerCase().includes(teacherName.toLowerCase()))
+}
 
 async function fetchClassesData() {
   loading.value = true
@@ -303,6 +427,9 @@ async function fetchClassesData() {
       if (Array.isArray(res.data.levels) && res.data.levels.length > 0) {
         levels.value = res.data.levels
       }
+      if (Array.isArray(res.data.schedules) && res.data.schedules.length > 0) {
+        schedules.value = res.data.schedules
+      }
     }
   } catch (err) {
     console.error('Erreur API /admin/classes:', err)
@@ -311,17 +438,71 @@ async function fetchClassesData() {
   }
 }
 
-function getClassesForTeacher(teacherName) {
-  return classrooms.value.filter(c => c.teacher === teacherName)
-}
-
 function openClassModal(cls = null) {
   if (cls) {
     classForm.value = { ...cls, room: cls.roomNumber || cls.room, capacity: cls.maxCapacity || cls.capacity }
   } else {
-    classForm.value = { name: '', level: '6-8 ans (Débutant)', teacher: 'Cheikh Mahmoud', schedule: 'Samedi 09:00 - 12:00', room: 'Salle Maryam 1', capacity: 20 }
+    classForm.value = { name: '', level: '6-8 ans (Débutant)', teacher: 'Cheikh Mahmoud', schedule: schedules.value[0]?.name || 'Samedi 09:00 - 12:00 (Matin)', room: 'Salle Maryam 1', capacity: 20 }
   }
   showClassModal.value = true
+}
+
+function openScheduleConfigModal(sch = null) {
+  if (sch) {
+    scheduleEditingId.value = sch.id
+    scheduleForm.value = {
+      day: sch.day || 'Samedi',
+      startTime: sch.startTime || '09:00',
+      endTime: sch.endTime || '12:00',
+      label: sch.label || 'Matin'
+    }
+  } else {
+    scheduleEditingId.value = null
+    scheduleForm.value = {
+      day: 'Samedi',
+      startTime: '09:00',
+      endTime: '12:00',
+      label: 'Matin'
+    }
+  }
+  showScheduleModal.value = true
+}
+
+function saveScheduleConfig() {
+  const generatedName = `${scheduleForm.value.day} ${scheduleForm.value.startTime} - ${scheduleForm.value.endTime} (${scheduleForm.value.label})`
+
+  if (scheduleEditingId.value) {
+    const existing = schedules.value.find(s => s.id === scheduleEditingId.value)
+    if (existing) {
+      existing.day = scheduleForm.value.day
+      existing.startTime = scheduleForm.value.startTime
+      existing.endTime = scheduleForm.value.endTime
+      existing.label = scheduleForm.value.label
+      existing.name = generatedName
+    }
+    showSuccessAlert('Créneau Mis à Jour ! ⏰', `Le créneau <strong>${generatedName}</strong> a été mis à jour dans la configuration.`)
+  } else {
+    const newSch = {
+      id: Date.now(),
+      day: scheduleForm.value.day,
+      startTime: scheduleForm.value.startTime,
+      endTime: scheduleForm.value.endTime,
+      label: scheduleForm.value.label,
+      name: generatedName
+    }
+    schedules.value.push(newSch)
+    showSuccessAlert('Nouveau Créneau Enregistré ! 🎉', `Le créneau <strong>${generatedName}</strong> a été ajouté aux créneaux configurés.`)
+  }
+
+  showScheduleModal.value = false
+}
+
+async function deleteSchedule(sch) {
+  const res = await showDeleteConfirmDialog(`le créneau ${sch.name}`)
+  if (res.isConfirmed) {
+    schedules.value = schedules.value.filter(s => s.id !== sch.id)
+    showSuccessAlert('Créneau Supprimé ! 🗑️', `Le créneau <strong>${sch.name}</strong> a été retiré de la configuration.`)
+  }
 }
 
 async function saveClass() {
@@ -352,7 +533,7 @@ async function saveClass() {
       })
     }
     showClassModal.value = false
-    showSuccessAlert('Classe Enregistrée ! 🎉', `La classe <strong>${classForm.value.name}</strong> a été enregistrée et persistée avec succès dans la base MySQL <code>tijanes_db</code>.`)
+    showSuccessAlert('Classe Enregistrée ! 🎉', `La classe <strong>${classForm.value.name}</strong> a été enregistrée avec succès.`)
   } catch (err) {
     console.error('Erreur enregistrement classe:', err)
     showErrorAlert('Erreur', 'Erreur lors de l\'enregistrement de la classe.')
