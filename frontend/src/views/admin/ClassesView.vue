@@ -629,7 +629,6 @@
                   <th class="py-3 px-4">Date Naissance</th>
                   <th class="py-3 px-4">Parent Référent</th>
                   <th class="py-3 px-4">Contact Parent</th>
-                  <th class="py-3 px-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -646,11 +645,6 @@
                     </router-link>
                   </td>
                   <td class="py-3 px-4 text-gray-500 font-mono text-[11px]">{{ st.contact }}</td>
-                  <td class="py-3 px-4 text-right">
-                    <router-link :to="`/admin/users/${st.id}/id-card`" class="px-3 py-1 bg-brand-600 text-white font-bold text-[10px] rounded-lg hover:bg-brand-700 transition-all shadow">
-                      🪪 Voir Fiche
-                    </router-link>
-                  </td>
                 </tr>
               </tbody>
             </table>
