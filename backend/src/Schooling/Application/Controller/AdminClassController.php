@@ -28,27 +28,13 @@ class AdminClassController extends AbstractController
         $totalStudentsInDb = count($allStudents);
 
         foreach ($classes as $c) {
-            $cName = strtolower(trim(preg_replace('/\([^)]*\)/', '', $c->getName())));
-            $enrolledCount = 0;
-
-            foreach ($allStudents as $st) {
-                if ($st->getSchoolClasses()->contains($c)) {
-                    $enrolledCount++;
-                } else {
-                    $group = strtolower(trim($st->getAssignedGroup() ?? ''));
-                    if (!empty($group)) {
-                        $assignedList = array_map('trim', explode(',', $group));
-                        foreach ($assignedList as $assignedItem) {
-                            $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
-                            if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $cName) || str_contains($cName, $cleanAssigned))) {
-                                $enrolledCount++;
-                                $st->addSchoolClass($c);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            $enrolledCount = (int) $em->getRepository(Student::class)->createQueryBuilder('s')
+                ->select('COUNT(s.id)')
+                ->innerJoin('s.schoolClasses', 'c')
+                ->where('c.id = :classId')
+                ->setParameter('classId', $c->getId())
+                ->getQuery()
+                ->getSingleScalarResult();
 
             $classData[] = [
                 'id' => $c->getId(),

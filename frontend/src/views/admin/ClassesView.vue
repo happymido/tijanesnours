@@ -702,10 +702,7 @@ const schedules = ref([
   { id: 6, day: 'Vendredi', startTime: '17:30', endTime: '19:30', label: 'Soirée', name: 'Vendredi 17:30 - 19:30 (Soirée)' }
 ])
 
-const classrooms = ref([
-  { id: 1, name: 'Classe Éveil 1', level: '4-5 ans (Éveil)', category: 'Langue Arabe', teacher: 'Cheikh Mahmoud', schedule: 'Samedi 09:00 - 12:00 (Matin)', roomNumber: 'Salle Maryam 1', maxCapacity: 15, currentEnrolled: 2 },
-  { id: 2, name: 'Classe Débutant 2A', level: '6-8 ans (Débutant)', category: 'Coran & Tajwid', teacher: 'Cheikh Mahmoud', schedule: 'Samedi 09:00 - 12:00 (Matin)', roomNumber: 'Salle Maryam 2', maxCapacity: 20, currentEnrolled: 2 }
-])
+const classrooms = ref([])
 
 const filteredClassrooms = computed(() => {
   if (!classSearch.value) return classrooms.value
