@@ -155,19 +155,51 @@
         </div>
       </div>
 
-      <!-- 2. Informations Pédagogiques & Affectation (SÉLECTIONNÉ PAR DÉFAUT EN ÉDITION) -->
+      <!-- 2. Informations Pédagogiques & Affectation (MULTI-SÉLECTION POUR ENSEIGNANT) -->
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
           <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-bold">🏫</span>
-          <h3 class="font-bold text-base text-gray-900 dark:text-white">Affectation Scolaire & Niveaux</h3>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">
+            {{ user.role === 'ROLE_TEACHER' ? 'Classes & Matières Enseignées (Affectations Multiples)' : 'Affectation Scolaire & Niveaux' }}
+          </h3>
         </div>
 
         <div class="space-y-3 text-xs">
-          <div class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 space-y-2">
+          <!-- CAS ENSEIGNANT : Sélection Multiples avec cases à cocher et présélection par défaut -->
+          <div v-if="user.role === 'ROLE_TEACHER'" class="space-y-3">
+            <div v-if="!isEditing" class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 space-y-2">
+              <span class="text-[10px] uppercase font-bold text-emerald-700">Classes & Spécialités d'Enseignement :</span>
+              <div class="flex flex-wrap gap-2 pt-1">
+                <span v-for="(spec, i) in currentTeacherSpecs" :key="i" class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-bold rounded-xl text-xs border border-emerald-200">
+                  📚 {{ spec }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Mode Édition Enseignant : Liste à cocher pré-sélectionnée par défaut -->
+            <div v-else class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200 space-y-3">
+              <label class="font-bold text-emerald-800 dark:text-emerald-300 block border-b pb-1">
+                ⚡ Sélectionner les affectations multiples (Cochées par défaut) :
+              </label>
+              <div class="grid grid-cols-1 gap-2.5 pt-1">
+                <label v-for="opt in teacherOptions" :key="opt.value" class="flex items-center gap-2.5 p-2 bg-white dark:bg-gray-700 rounded-xl border cursor-pointer hover:bg-emerald-50 transition-colors">
+                  <input
+                    type="checkbox"
+                    :value="opt.value"
+                    v-model="editForm.teacherSpecialities"
+                    class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                  />
+                  <span class="font-bold text-xs text-gray-800 dark:text-white">{{ opt.label }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- CAS ÉLÈVE : Sélecteur simple recherchable (Select2) -->
+          <div v-else class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 space-y-2">
             <span class="text-[10px] uppercase font-bold text-emerald-700">Groupe / Classe Assignée</span>
             <p v-if="!isEditing" class="text-lg font-extrabold text-gray-900 dark:text-white">{{ user.assignedGroup }}</p>
             
-            <!-- Sélecteur Recherchable Pré-sélectionné par Défaut -->
             <div v-else class="space-y-1">
               <label class="text-[10px] font-bold text-gray-500 block mb-1">Changer l'affectation de classe :</label>
               <SearchableSelect
@@ -197,6 +229,12 @@
               <input v-else v-model="editForm.parentName" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700 font-bold" />
             </div>
           </div>
+
+          <div v-if="user.role === 'ROLE_TEACHER'" class="space-y-2">
+            <span class="text-gray-400 font-semibold block">Bio & Description du Parcours :</span>
+            <p v-if="!isEditing" class="text-gray-700 dark:text-gray-300 font-medium">{{ user.details?.bio }}</p>
+            <textarea v-else v-model="editForm.bio" rows="2" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700"></textarea>
+          </div>
         </div>
       </div>
 
@@ -210,12 +248,12 @@
         <div class="space-y-3 text-xs">
           <div>
             <span class="text-gray-400 font-semibold block">Remarques Santé / Allergies :</span>
-            <strong v-if="!isEditing" class="text-gray-800 dark:text-gray-200">{{ user.details?.allergies }}</strong>
+            <strong v-if="!isEditing" class="text-gray-800 dark:text-gray-200">{{ user.details?.allergies || 'Aucune allergie signalée' }}</strong>
             <textarea v-else v-model="editForm.allergies" rows="2" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700"></textarea>
           </div>
           <div>
             <span class="text-gray-400 font-semibold block">Assurance Responsabilité Civile :</span>
-            <strong v-if="!isEditing" class="text-emerald-600 font-bold">Police: {{ user.details?.insurancePolicy }}</strong>
+            <strong v-if="!isEditing" class="text-emerald-600 font-bold">Police: {{ user.details?.insurancePolicy || 'LU-890421-AXA' }}</strong>
             <input v-else v-model="editForm.insurancePolicy" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
           </div>
         </div>
@@ -244,6 +282,15 @@ const classOptions = ref([
   { value: 'Classe Avancé Tajwid (13-16 ans)', label: 'Classe Avancé Tajwid (13-16 ans)' }
 ])
 
+const teacherOptions = ref([
+  { value: 'Classe Éveil 1 (4-5 ans)', label: 'Classe Éveil 1 (4-5 ans)' },
+  { value: 'Classe Débutant 2A (6-8 ans)', label: 'Classe Débutant 2A (6-8 ans)' },
+  { value: 'Classe Intermédiaire 1 (9-12 ans)', label: 'Classe Intermédiaire 1 (9-12 ans)' },
+  { value: 'Classe Avancé Tajwid (13-16 ans)', label: 'Classe Avancé Tajwid (13-16 ans)' },
+  { value: 'Sciences du Tajwid & Récitation', label: 'Sciences du Tajwid & Récitation' },
+  { value: 'Langue Arabe & Éthique', label: 'Langue Arabe & Éthique' }
+])
+
 const user = ref({
   id: userId,
   name: 'Utilisateur',
@@ -258,7 +305,8 @@ const user = ref({
     nationality: 'Luxembourgeoise',
     address: 'Luxembourg-Ville',
     allergies: 'Aucune allergie connue',
-    insurancePolicy: 'LU-890421-AXA'
+    insurancePolicy: 'LU-890421-AXA',
+    teacherSpecialities: ['Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation']
   }
 })
 
@@ -272,7 +320,9 @@ const editForm = ref({
   dateOfBirth: '',
   nationality: '',
   allergies: '',
-  insurancePolicy: ''
+  insurancePolicy: '',
+  bio: '',
+  teacherSpecialities: ['Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation']
 })
 
 const childrenList = computed(() => {
@@ -285,8 +335,15 @@ const childrenList = computed(() => {
   ]
 })
 
+const currentTeacherSpecs = computed(() => {
+  if (Array.isArray(editForm.value.teacherSpecialities) && editForm.value.teacherSpecialities.length > 0) {
+    return editForm.value.teacherSpecialities
+  }
+  if (user.value.details?.teacherSpecialities) return user.value.details.teacherSpecialities
+  return ['Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation']
+})
+
 function fillEditForm() {
-  // Trouver l'option de classe correspondant le mieux à la valeur de l'utilisateur
   let defaultGroup = user.value.assignedGroup || 'Classe Débutant 2A (6-8 ans)'
   const matchingOpt = classOptions.value.find(opt => 
     opt.value.toLowerCase().includes(defaultGroup.toLowerCase()) || 
@@ -294,6 +351,14 @@ function fillEditForm() {
   )
   if (matchingOpt) {
     defaultGroup = matchingOpt.value
+  }
+
+  // Multi-sélections Enseignant (présélectionnées par défaut)
+  let initialSpecs = ['Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation']
+  if (user.value.details?.teacherSpecialities && Array.isArray(user.value.details.teacherSpecialities)) {
+    initialSpecs = [...user.value.details.teacherSpecialities]
+  } else if (user.value.assignedGroup && user.value.assignedGroup.includes(',')) {
+    initialSpecs = user.value.assignedGroup.split(',').map(s => s.trim())
   }
 
   editForm.value = {
@@ -306,7 +371,9 @@ function fillEditForm() {
     dateOfBirth: user.value.details?.dateOfBirth || '12/05/2018',
     nationality: user.value.details?.nationality || 'Luxembourgeoise',
     allergies: user.value.details?.allergies || 'Aucune allergie connue',
-    insurancePolicy: user.value.details?.insurancePolicy || 'LU-890421-AXA'
+    insurancePolicy: user.value.details?.insurancePolicy || 'LU-890421-AXA',
+    bio: user.value.details?.bio || 'Professeur qualifié en Langue Arabe et Tajwid',
+    teacherSpecialities: initialSpecs
   }
 }
 
@@ -339,6 +406,10 @@ onMounted(async () => {
 async function saveChanges() {
   saving.value = true
   try {
+    if (user.value.role === 'ROLE_TEACHER') {
+      editForm.value.assignedGroup = editForm.value.teacherSpecialities.join(', ')
+    }
+
     await apiClient.put(`/admin/students/${user.value.id}`, editForm.value)
 
     user.value.name = editForm.value.name
@@ -353,9 +424,11 @@ async function saveChanges() {
     user.value.details.nationality = editForm.value.nationality
     user.value.details.allergies = editForm.value.allergies
     user.value.details.insurancePolicy = editForm.value.insurancePolicy
+    user.value.details.bio = editForm.value.bio
+    user.value.details.teacherSpecialities = editForm.value.teacherSpecialities
 
     isEditing.value = false
-    showSuccessAlert('Modifications Enregistrées ! 🎉', `La fiche de <strong>${user.value.name}</strong> a été mise à jour avec succès dans MySQL.`)
+    showSuccessAlert('Modifications Enregistrées ! 🎉', `La fiche de <strong>${user.value.name}</strong> et ses affectations ont été mises à jour dans MySQL.`)
   } catch (err) {
     console.error('Erreur enregistrement modifications:', err)
     user.value.name = editForm.value.name

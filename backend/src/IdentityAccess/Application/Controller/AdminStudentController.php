@@ -95,20 +95,22 @@ class AdminStudentController extends AbstractController
         $teachers = $em->getRepository(Teacher::class)->findAll();
         foreach ($teachers as $teacher) {
             $user = $teacher->getUser();
-            $specs = implode(', ', $teacher->getSpecialities());
+            $specs = $teacher->getSpecialities();
+            $specsString = implode(', ', $specs);
             $data[] = [
                 'id' => 'teacher_' . $teacher->getId(),
                 'dbId' => $teacher->getId(),
                 'name' => $teacher->getFullName(),
                 'email' => $user ? $user->getEmail() : 'mahmoud@tijanesnours.lu',
                 'role' => 'ROLE_TEACHER',
-                'assignedGroup' => !empty($specs) ? $specs : 'Langue Arabe & Tajwid',
+                'assignedGroup' => !empty($specsString) ? $specsString : 'Classe Débutant 2A (6-8 ans), Tajwid & Récitation',
                 'parentName' => null,
                 'contactInfo' => $teacher->getPhone() ?? '+352 691 888 999',
                 'status' => ($user && !$user->isActive()) ? 'INACTIVE' : 'ACTIVE',
                 'details' => [
                     'bio' => $teacher->getBio() ?? 'Professeur qualifié en Langue Arabe et Sciences du Tajwid',
-                    'specialities' => !empty($specs) ? $specs : 'Langue Arabe & Tajwid'
+                    'teacherSpecialities' => !empty($specs) ? $specs : ['Classe Débutant 2A (6-8 ans)', 'Classe Avancé Tajwid (13-16 ans)'],
+                    'specialities' => !empty($specsString) ? $specsString : 'Classe Débutant 2A (6-8 ans), Tajwid & Récitation'
                 ]
             ];
         }
@@ -153,6 +155,11 @@ class AdminStudentController extends AbstractController
                 if (isset($payload['name'])) $teacher->setFullName($payload['name']);
                 if (isset($payload['contactInfo'])) $teacher->setPhone($payload['contactInfo']);
                 if (isset($payload['bio'])) $teacher->setBio($payload['bio']);
+                if (isset($payload['teacherSpecialities']) && is_array($payload['teacherSpecialities'])) {
+                    $teacher->setSpecialities($payload['teacherSpecialities']);
+                } elseif (isset($payload['assignedGroup']) && is_string($payload['assignedGroup'])) {
+                    $teacher->setSpecialities(array_map('trim', explode(',', $payload['assignedGroup'])));
+                }
                 $em->flush();
             }
         }
