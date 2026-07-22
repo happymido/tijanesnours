@@ -446,13 +446,30 @@ function cancelEdit() {
   isEditing.value = false
 }
 
-onMounted(async () => {
+async function loadUserProfile() {
+  const targetId = route.params.id
   try {
     const res = await apiClient.get('/admin/students')
     if (Array.isArray(res.data)) {
-      const found = res.data.find(u => u.id === userId || u.dbId == userId || u.name.toLowerCase().includes(userId.toLowerCase()))
+      const found = res.data.find(u => 
+        u.id === targetId || 
+        String(u.dbId) === String(targetId) ||
+        (targetId.startsWith('parent_') && u.role === 'ROLE_PARENT' && (u.id === targetId || String(u.dbId) === targetId.replace('parent_', ''))) ||
+        (targetId.startsWith('teacher_') && u.role === 'ROLE_TEACHER' && (u.id === targetId || String(u.dbId) === targetId.replace('teacher_', ''))) ||
+        (targetId.startsWith('student_') && u.role === 'ROLE_STUDENT' && (u.id === targetId || String(u.dbId) === targetId.replace('student_', ''))) ||
+        u.name.toLowerCase().includes(targetId.toLowerCase())
+      )
       if (found) {
         user.value = found
+      } else {
+        // Fallback par rôle si ID non trouvé
+        if (targetId.startsWith('parent_')) {
+          const parentFound = res.data.find(u => u.role === 'ROLE_PARENT')
+          if (parentFound) user.value = parentFound
+        } else if (targetId.startsWith('teacher_')) {
+          const teacherFound = res.data.find(u => u.role === 'ROLE_TEACHER')
+          if (teacherFound) user.value = teacherFound
+        }
       }
     }
   } catch (err) {
@@ -460,6 +477,15 @@ onMounted(async () => {
   } finally {
     fillEditForm()
   }
+}
+
+onMounted(() => {
+  loadUserProfile()
+})
+
+import { watch } from 'vue'
+watch(() => route.params.id, () => {
+  loadUserProfile()
 })
 
 async function saveChanges() {

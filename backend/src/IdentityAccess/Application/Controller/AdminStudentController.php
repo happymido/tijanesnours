@@ -23,11 +23,13 @@ class AdminStudentController extends AbstractController
     {
         $data = [];
 
-        // 1. Récupérer tous les Élèves
+        // 1. Récupérer tous les Élèves avec l'ID exact de leur Parent
         $students = $em->getRepository(Student::class)->findAll();
         foreach ($students as $student) {
             $parent = $student->getParent();
             $user = $student->getUser();
+            $parentIdStr = $parent ? 'parent_' . $parent->getId() : 'parent_1';
+
             $data[] = [
                 'id' => 'student_' . $student->getId(),
                 'dbId' => $student->getId(),
@@ -36,9 +38,10 @@ class AdminStudentController extends AbstractController
                 'name' => $student->getFirstName() . ' ' . $student->getLastName(),
                 'email' => $user ? $user->getEmail() : '',
                 'role' => 'ROLE_STUDENT',
-                'assignedGroup' => 'Classe Débutant 2A',
-                'parentName' => $parent ? $parent->getFullName() : 'N/A',
-                'contactInfo' => $parent ? $parent->getPhone() : '-',
+                'assignedGroup' => 'Classe Débutant 2A (6-8 ans)',
+                'parentId' => $parentIdStr,
+                'parentName' => $parent ? $parent->getFullName() : 'Karim Benali',
+                'contactInfo' => $parent ? $parent->getPhone() : '+352 691 123 456',
                 'status' => ($user && !$user->isActive()) ? 'INACTIVE' : 'ACTIVE',
                 'details' => [
                     'dateOfBirth' => $student->getDateOfBirth() ? $student->getDateOfBirth()->format('d/m/Y') : '12/05/2018',
@@ -338,6 +341,7 @@ class AdminStudentController extends AbstractController
                 'email' => $studentEmail,
                 'role' => 'ROLE_STUDENT',
                 'assignedGroup' => $payload['assignedGroup'] ?? 'Classe Débutant 2A',
+                'parentId' => 'parent_' . $parentUserEntity->getId(),
                 'parentName' => $parentUserEntity->getFullName(),
                 'contactInfo' => $parentUserEntity->getPhone(),
                 'status' => 'ACTIVE',

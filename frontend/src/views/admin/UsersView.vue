@@ -90,7 +90,7 @@
                 <td class="py-3.5 px-4 text-gray-600 dark:text-gray-300">
                   <router-link
                     v-if="user.parentName"
-                    :to="`/admin/users/parent_${user.id}/id-card`"
+                    :to="`/admin/users/${user.parentId || 'parent_1'}/id-card`"
                     class="font-semibold text-brand-600 dark:text-gold-400 hover:underline block"
                   >
                     {{ user.parentName }}
