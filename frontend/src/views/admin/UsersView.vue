@@ -245,20 +245,27 @@
               />
             </div>
 
-            <!-- Champs Saisie / Préremplis -->
+            <!-- Champs Saisie / Préremplis (Nom & Prénom du Parent séparés) -->
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block font-semibold mb-1">Nom & Prénom du Parent</label>
-                <input v-model="form.parentFullName" type="text" required class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold" placeholder="ex: Karim Benali" />
+                <label class="block font-semibold mb-1">Nom du Parent</label>
+                <input v-model="form.parentLastName" type="text" required class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold" placeholder="ex: Benali" />
               </div>
+              <div>
+                <label class="block font-semibold mb-1">Prénom du Parent</label>
+                <input v-model="form.parentFirstName" type="text" required class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold" placeholder="ex: Karim" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block font-semibold mb-1">Email du Parent (Identifiant BBD)</label>
                 <input v-model="form.parentEmail" type="email" required class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold" placeholder="karim.benali@email.lu" />
               </div>
-            </div>
-            <div>
-              <label class="block font-semibold mb-1">Téléphone Joignable du Parent</label>
-              <input v-model="form.parentPhone" type="text" required class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="+352 691 123 456" />
+              <div>
+                <label class="block font-semibold mb-1">Téléphone Joignable du Parent</label>
+                <input v-model="form.parentPhone" type="text" required class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="+352 691 123 456" />
+              </div>
             </div>
           </div>
 
@@ -305,7 +312,8 @@ const form = ref({
   studentLastName: '',
   studentEmail: '',
   assignedGroup: 'Classe Débutant 2A (6-8 ans)',
-  parentFullName: '',
+  parentFirstName: '',
+  parentLastName: '',
   parentEmail: '',
   parentPhone: ''
 })
@@ -321,7 +329,7 @@ const parentOptions = computed(() => {
   parents.value.forEach(p => {
     list.push({
       value: p.id,
-      label: `👨‍👩‍👧 ${p.name} (${p.email})`
+      label: `👨‍gsub ${p.name} (${p.email})`
     })
   })
   return list
@@ -366,14 +374,17 @@ async function fetchUsers() {
 function onSelectExistingParent(opt) {
   const parentId = opt ? opt.value : selectedExistingParentId.value
   if (!parentId) {
-    form.value.parentFullName = ''
+    form.value.parentFirstName = ''
+    form.value.parentLastName = ''
     form.value.parentEmail = ''
     form.value.parentPhone = ''
     return
   }
   const parentObj = parents.value.find(p => p.id === parentId)
   if (parentObj) {
-    form.value.parentFullName = parentObj.name
+    const parts = parentObj.name.split(' ')
+    form.value.parentFirstName = parts[0] || ''
+    form.value.parentLastName = parts.slice(1).join(' ') || ''
     form.value.parentEmail = parentObj.email
     form.value.parentPhone = parentObj.contactInfo || '+352 691 123 456'
   }
@@ -408,7 +419,8 @@ function openModal(type) {
     studentLastName: '',
     studentEmail: '',
     assignedGroup: type === 'STUDENT' ? 'Classe Débutant 2A (6-8 ans)' : 'Langue Arabe & Tajwid',
-    parentFullName: '',
+    parentFirstName: '',
+    parentLastName: '',
     parentEmail: '',
     parentPhone: ''
   }
@@ -419,12 +431,13 @@ async function saveUser() {
   submitting.value = true
   try {
     if (modalType.value === 'STUDENT') {
+      const fullParentName = `${form.value.parentFirstName} ${form.value.parentLastName}`.trim()
       const payload = {
         studentFirstName: form.value.studentFirstName.trim(),
         studentLastName: form.value.studentLastName.trim(),
         studentEmail: form.value.studentEmail.trim(),
         assignedGroup: form.value.assignedGroup,
-        parentFullName: form.value.parentFullName.trim(),
+        parentFullName: fullParentName,
         parentEmail: form.value.parentEmail.trim(),
         parentPhone: form.value.parentPhone.trim()
       }
