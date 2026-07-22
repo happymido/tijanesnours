@@ -93,13 +93,13 @@
                 <div class="text-[10px] text-gray-400">⏰ {{ cls.schedule }}</div>
               </td>
               <td class="py-3.5 px-4">
-                <span class="font-extrabold text-gray-900 dark:text-white">{{ cls.currentEnrolled || 12 }}</span> / {{ cls.maxCapacity || cls.capacity }}
+                <span class="font-extrabold text-gray-900 dark:text-white">{{ cls.currentEnrolled ?? 0 }}</span> / {{ cls.maxCapacity || cls.capacity || 20 }}
                 <div class="w-24 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
-                  <div :style="{ width: ((cls.currentEnrolled || 12) / (cls.maxCapacity || 20) * 100) + '%' }" class="h-full bg-emerald-500"></div>
+                  <div :style="{ width: Math.min(((cls.currentEnrolled ?? 0) / (cls.maxCapacity || 20) * 100), 100) + '%' }" class="h-full bg-emerald-500"></div>
                 </div>
               </td>
               <td class="py-3.5 px-4 text-right space-x-2">
-                <button @click="openRoster(cls)" class="text-brand-600 font-bold hover:underline">Élèves ({{ cls.currentEnrolled || 12 }})</button>
+                <button @click="openRoster(cls)" class="text-brand-600 font-bold hover:underline">Élèves ({{ cls.currentEnrolled ?? 0 }})</button>
                 <button @click="openClassModal(cls)" class="text-gray-600 font-bold hover:underline">✏️ Éditer</button>
                 <button @click="deleteClass(cls)" class="text-red-600 font-bold hover:underline">🗑️ Supprimer</button>
               </td>

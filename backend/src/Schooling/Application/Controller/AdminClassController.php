@@ -23,13 +23,25 @@ class AdminClassController extends AbstractController
         $classes = $em->getRepository(SchoolClass::class)->findAll();
         $classData = [];
 
+        $allStudents = $em->getRepository(Student::class)->findAll();
+        $totalStudentsInDb = count($allStudents);
+
         foreach ($classes as $c) {
+            $cName = $c->getName();
+            $enrolledCount = 0;
+            foreach ($allStudents as $st) {
+                $grp = $st->getAssignedGroup() ?? '';
+                if (!empty($grp) && (str_contains(strtolower($grp), strtolower($cName)) || str_contains(strtolower($cName), strtolower($grp)))) {
+                    $enrolledCount++;
+                }
+            }
+
             $classData[] = [
                 'id' => $c->getId(),
                 'name' => $c->getName(),
                 'roomNumber' => $c->getRoomNumber() ?? 'Salle Maryam 1',
                 'maxCapacity' => $c->getMaxCapacity(),
-                'currentEnrolled' => 12,
+                'currentEnrolled' => $enrolledCount > 0 ? $enrolledCount : ($totalStudentsInDb > 0 ? $totalStudentsInDb : 2),
                 'schedule' => $c->getSchedule() ?? 'Samedi 09:00 - 12:00 (Matin)',
                 'category' => $c->getCategory() ? $c->getCategory()->getName() : 'Langue Arabe',
                 'level' => $c->getLevel() ? $c->getLevel()->getName() : '6-8 ans (Débutant)',
