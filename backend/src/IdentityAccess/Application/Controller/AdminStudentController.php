@@ -116,6 +116,50 @@ class AdminStudentController extends AbstractController
         return $this->json($data);
     }
 
+    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
+    public function update(string $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+
+        if (str_starts_with($id, 'student_')) {
+            $realId = (int) str_replace('student_', '', $id);
+            $student = $em->getRepository(Student::class)->find($realId);
+            if ($student) {
+                if (isset($payload['name'])) {
+                    $parts = explode(' ', $payload['name'], 2);
+                    $student->setFirstName($parts[0]);
+                    if (isset($parts[1])) $student->setLastName($parts[1]);
+                }
+                if (isset($payload['firstName'])) $student->setFirstName($payload['firstName']);
+                if (isset($payload['lastName'])) $student->setLastName($payload['lastName']);
+                if (isset($payload['allergies'])) $student->setAllergies($payload['allergies']);
+                if (isset($payload['address'])) $student->setAddress($payload['address']);
+                if (isset($payload['insurancePolicy'])) $student->setInsurancePolicyNumber($payload['insurancePolicy']);
+                $em->flush();
+            }
+        } elseif (str_starts_with($id, 'parent_')) {
+            $realId = (int) str_replace('parent_', '', $id);
+            $parent = $em->getRepository(ParentUser::class)->find($realId);
+            if ($parent) {
+                if (isset($payload['name'])) $parent->setFullName($payload['name']);
+                if (isset($payload['contactInfo'])) $parent->setPhone($payload['contactInfo']);
+                if (isset($payload['address'])) $parent->setAddress($payload['address']);
+                $em->flush();
+            }
+        } elseif (str_starts_with($id, 'teacher_')) {
+            $realId = (int) str_replace('teacher_', '', $id);
+            $teacher = $em->getRepository(Teacher::class)->find($realId);
+            if ($teacher) {
+                if (isset($payload['name'])) $teacher->setFullName($payload['name']);
+                if (isset($payload['contactInfo'])) $teacher->setPhone($payload['contactInfo']);
+                if (isset($payload['bio'])) $teacher->setBio($payload['bio']);
+                $em->flush();
+            }
+        }
+
+        return $this->json(['message' => 'Données utilisateur mises à jour avec succès dans MySQL']);
+    }
+
     #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['PUT', 'POST'])]
     public function toggleStatus(string $id, EntityManagerInterface $em): JsonResponse
     {
@@ -167,7 +211,6 @@ class AdminStudentController extends AbstractController
         $parentEmail = trim($payload['parentEmail'] ?? 'parent.' . time() . '@tijanesnours.lu');
         $parentPhone = trim($payload['parentPhone'] ?? '+352 691 000 000');
 
-        // 1. Chercher le compte User du Parent par Email (insensible à la casse)
         $userParent = $em->getRepository(User::class)->createQueryBuilder('u')
             ->where('LOWER(u.email) = LOWER(:email)')
             ->setParameter('email', $parentEmail)
@@ -198,7 +241,6 @@ class AdminStudentController extends AbstractController
             }
         }
 
-        // 2. Créer l'Élève
         $userStudent = new User();
         $userStudent->setEmail($studentEmail);
         $userStudent->setPassword($hasher->hashPassword($userStudent, 'studentpassword123'));

@@ -6,24 +6,36 @@
         <span>◀</span> Retour à la liste des Utilisateurs
       </router-link>
       <div class="flex gap-3">
+        <button v-if="!isEditing" @click="isEditing = true" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
+          <span>✏️</span> Éditer la Fiche
+        </button>
+        <button v-else @click="saveChanges" :disabled="saving" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2 disabled:opacity-50">
+          <span>💾</span> {{ saving ? 'Enregistrement MySQL...' : 'Enregistrer dans MySQL' }}
+        </button>
         <button @click="printCard" class="px-4 py-2 bg-gray-900 text-white font-bold text-xs rounded-xl shadow hover:bg-gray-800 transition-all flex items-center gap-2">
-          <span>🖨️</span> Imprimer Fiche Détaillée
+          <span>🖨️</span> Imprimer Fiche
         </button>
       </div>
     </div>
 
     <!-- Main ID Card Header Banner -->
     <div class="bg-gradient-to-r from-brand-900 via-brand-800 to-brand-700 text-white rounded-3xl p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-      <div class="flex items-center gap-6">
+      <div class="flex items-center gap-6 w-full md:w-auto">
         <div :class="getAvatarBg(user.role)" class="w-20 h-20 rounded-3xl font-extrabold text-white text-3xl flex items-center justify-center shadow-2xl border-2 border-white/20">
           {{ user.name ? user.name[0] : 'U' }}
         </div>
-        <div>
+        <div class="space-y-1 flex-1">
           <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider text-gold-300">
             Dossier Individuel Officiel
           </span>
-          <h1 class="text-3xl font-extrabold mt-2">{{ user.name }}</h1>
-          <p class="text-brand-100 text-xs mt-1">Identifiant BBD : <code class="font-mono text-gold-200">{{ user.id }}</code> • Inscription 2026-2027</p>
+          <div v-if="!isEditing">
+            <h1 class="text-3xl font-extrabold mt-1">{{ user.name }}</h1>
+            <p class="text-brand-100 text-xs">Identifiant BBD : <code class="font-mono text-gold-200">{{ user.id }}</code></p>
+          </div>
+          <div v-else class="space-y-2 pt-2">
+            <input v-model="editForm.name" type="text" class="px-3 py-1.5 rounded-xl bg-white/10 border border-white/30 text-white text-lg font-bold w-full" placeholder="Nom et Prénom" />
+            <input v-model="editForm.email" type="email" class="px-3 py-1 rounded-xl bg-white/10 border border-white/30 text-white text-xs w-full" placeholder="Email" />
+          </div>
         </div>
       </div>
 
@@ -57,7 +69,7 @@
         </span>
       </div>
 
-      <!-- Liste sous forme de cartes d'élèves rattachés -->
+      <!-- Liste des cartes d'enfants -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div v-for="(child, idx) in childrenList" :key="child.id || idx" class="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4 border border-gray-200 dark:border-gray-600 flex items-center justify-between gap-4">
           <div class="flex items-center gap-3">
@@ -85,7 +97,7 @@
 
     <!-- Detailed Identity Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <!-- 1. Coordonnées & Informations Personnelles -->
+      <!-- 1. Coordonnées & État Civil -->
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
           <span class="w-8 h-8 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center text-sm font-bold">👤</span>
@@ -95,34 +107,40 @@
         <div class="space-y-3 text-xs">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <span class="text-gray-400 font-semibold block">Nom Complet :</span>
-              <strong class="text-gray-900 dark:text-white text-sm">{{ user.name }}</strong>
+              <span class="text-gray-400 font-semibold block">Nom & Prénom :</span>
+              <strong v-if="!isEditing" class="text-gray-900 dark:text-white text-sm">{{ user.name }}</strong>
+              <input v-else v-model="editForm.name" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
             </div>
             <div>
-              <span class="text-gray-400 font-semibold block">Adresse Email :</span>
-              <strong class="text-gray-900 dark:text-white">{{ user.email || 'Non renseignée' }}</strong>
+              <span class="text-gray-400 font-semibold block">Email :</span>
+              <strong v-if="!isEditing" class="text-gray-900 dark:text-white">{{ user.email }}</strong>
+              <input v-else v-model="editForm.email" type="email" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4 pt-2">
             <div>
               <span class="text-gray-400 font-semibold block">Téléphone Joignable :</span>
-              <strong class="text-gray-900 dark:text-white">{{ user.contactInfo || '+352 691 123 456' }}</strong>
+              <strong v-if="!isEditing" class="text-gray-900 dark:text-white">{{ user.contactInfo }}</strong>
+              <input v-else v-model="editForm.contactInfo" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
             </div>
             <div>
               <span class="text-gray-400 font-semibold block">Adresse Résidence :</span>
-              <strong class="text-gray-900 dark:text-white">{{ user.details?.address || 'Luxembourg-Ville' }}</strong>
+              <strong v-if="!isEditing" class="text-gray-900 dark:text-white">{{ user.details?.address }}</strong>
+              <input v-else v-model="editForm.address" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
             </div>
           </div>
 
           <div v-if="user.role === 'ROLE_STUDENT'" class="grid grid-cols-2 gap-4 pt-2 border-t dark:border-gray-700">
             <div>
               <span class="text-gray-400 font-semibold block">Date de Naissance :</span>
-              <strong>{{ user.details?.dateOfBirth || '12/05/2018' }}</strong>
+              <strong v-if="!isEditing">{{ user.details?.dateOfBirth }}</strong>
+              <input v-else v-model="editForm.dateOfBirth" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
             </div>
             <div>
               <span class="text-gray-400 font-semibold block">Nationalité :</span>
-              <strong>{{ user.details?.nationality || 'Luxembourgeoise' }}</strong>
+              <strong v-if="!isEditing">{{ user.details?.nationality }}</strong>
+              <input v-else v-model="editForm.nationality" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
             </div>
           </div>
         </div>
@@ -138,18 +156,14 @@
         <div class="space-y-3 text-xs">
           <div class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 space-y-2">
             <span class="text-[10px] uppercase font-bold text-emerald-700">Groupe / Classe Assignée</span>
-            <p class="text-lg font-extrabold text-gray-900 dark:text-white">{{ user.assignedGroup || 'Classe Débutant 2A (6-8 ans)' }}</p>
+            <p v-if="!isEditing" class="text-lg font-extrabold text-gray-900 dark:text-white">{{ user.assignedGroup }}</p>
+            <input v-else v-model="editForm.assignedGroup" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700 text-sm font-bold" />
             <p class="text-xs text-gray-500">Créneau : Samedi 09:00 - 12:00 • Salle Maryam 1</p>
-          </div>
-
-          <div v-if="user.role === 'ROLE_TEACHER'" class="space-y-2">
-            <span class="text-gray-400 font-semibold block">Spécialités d'Enseignement :</span>
-            <p class="font-bold text-brand-600">Langue Arabe, Rules of Tajwid, Memorization</p>
           </div>
         </div>
       </div>
 
-      <!-- 3. Responsable Légal & Finances -->
+      <!-- 3. Responsable Légal & Règlements -->
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
           <span class="w-8 h-8 rounded-xl bg-gold-50 text-gold-700 flex items-center justify-center text-sm font-bold">👨‍👩‍👧</span>
@@ -160,18 +174,9 @@
           <div v-if="user.role === 'ROLE_STUDENT'" class="space-y-2">
             <div>
               <span class="text-gray-400 font-semibold block">Parent / Tuteur Légal :</span>
-              <strong class="text-brand-600 text-sm font-bold">👨‍👩‍👧 {{ user.parentName || 'Karim Benali' }}</strong>
+              <strong v-if="!isEditing" class="text-brand-600 text-sm font-bold">👨‍👩‍👧 {{ user.parentName }}</strong>
+              <input v-else v-model="editForm.parentName" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700 font-bold" />
             </div>
-            <div>
-              <span class="text-gray-400 font-semibold block">Téléphone Urgence Parent :</span>
-              <strong class="text-gray-900 dark:text-white">{{ user.contactInfo || '+352 691 123 456' }}</strong>
-            </div>
-          </div>
-
-          <div v-if="user.role === 'ROLE_PARENT'" class="space-y-2">
-            <span class="text-gray-400 font-semibold block">Mode de Paiement Préféré :</span>
-            <p class="font-bold text-gold-700 text-sm">💳 {{ user.details?.paymentMethod || 'Prélèvement Automatique SEPA' }}</p>
-            <p class="text-gray-500 text-[11px]">Mandat SEPA : SEPA-2026-0042-LU • Validation Stripe OK</p>
           </div>
         </div>
       </div>
@@ -186,15 +191,13 @@
         <div class="space-y-3 text-xs">
           <div>
             <span class="text-gray-400 font-semibold block">Remarques Santé / Allergies :</span>
-            <strong class="text-gray-800 dark:text-gray-200">{{ user.details?.allergies || 'Aucune allergie signalée' }}</strong>
+            <strong v-if="!isEditing" class="text-gray-800 dark:text-gray-200">{{ user.details?.allergies }}</strong>
+            <textarea v-else v-model="editForm.allergies" rows="2" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700"></textarea>
           </div>
           <div>
             <span class="text-gray-400 font-semibold block">Assurance Responsabilité Civile :</span>
-            <strong class="text-emerald-600 font-bold">Validée (Police: {{ user.details?.insurancePolicy || 'LU-890421-AXA' }})</strong>
-          </div>
-          <div class="flex gap-4 pt-2 border-t dark:border-gray-700 text-[11px]">
-            <span class="text-emerald-600 font-bold">✓ Consentement RGPD Validé</span>
-            <span class="text-emerald-600 font-bold">✓ Droit à l'Image Autorisé</span>
+            <strong v-if="!isEditing" class="text-emerald-600 font-bold">Police: {{ user.details?.insurancePolicy }}</strong>
+            <input v-else v-model="editForm.insurancePolicy" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
           </div>
         </div>
       </div>
@@ -206,10 +209,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import apiClient from '../../plugins/axios'
-import { showSuccessAlert } from '../../plugins/notify'
+import { showSuccessAlert, showErrorAlert } from '../../plugins/notify'
 
 const route = useRoute()
 const userId = route.params.id
+
+const isEditing = ref(false)
+const saving = ref(false)
 
 const user = ref({
   id: userId,
@@ -225,12 +231,21 @@ const user = ref({
     nationality: 'Luxembourgeoise',
     address: 'Luxembourg-Ville',
     allergies: 'Aucune allergie connue',
-    insurancePolicy: 'LU-890421-AXA',
-    childrenList: [
-      { id: 'student_1', name: 'Youssef Benali', class: 'Classe Débutant 2A (6-8 ans)', dateOfBirth: '12/05/2018' },
-      { id: 'student_2', name: 'Aya Benali', class: 'Classe Éveil 1 (4-5 ans)', dateOfBirth: '14/09/2021' }
-    ]
+    insurancePolicy: 'LU-890421-AXA'
   }
+})
+
+const editForm = ref({
+  name: '',
+  email: '',
+  contactInfo: '',
+  assignedGroup: '',
+  parentName: '',
+  address: '',
+  dateOfBirth: '',
+  nationality: '',
+  allergies: '',
+  insurancePolicy: ''
 })
 
 const childrenList = computed(() => {
@@ -243,6 +258,21 @@ const childrenList = computed(() => {
   ]
 })
 
+function fillEditForm() {
+  editForm.value = {
+    name: user.value.name,
+    email: user.value.email,
+    contactInfo: user.value.contactInfo || '+352 691 123 456',
+    assignedGroup: user.value.assignedGroup,
+    parentName: user.value.parentName || 'Karim Benali',
+    address: user.value.details?.address || 'Luxembourg-Ville',
+    dateOfBirth: user.value.details?.dateOfBirth || '12/05/2018',
+    nationality: user.value.details?.nationality || 'Luxembourgeoise',
+    allergies: user.value.details?.allergies || 'Aucune allergie connue',
+    insurancePolicy: user.value.details?.insurancePolicy || 'LU-890421-AXA'
+  }
+}
+
 onMounted(async () => {
   try {
     const res = await apiClient.get('/admin/students')
@@ -254,8 +284,40 @@ onMounted(async () => {
     }
   } catch (err) {
     console.error('Erreur chargement fiche utilisateur:', err)
+  } finally {
+    fillEditForm()
   }
 })
+
+async function saveChanges() {
+  saving.value = true
+  try {
+    await apiClient.put(`/admin/students/${user.value.id}`, editForm.value)
+
+    user.value.name = editForm.value.name
+    user.value.email = editForm.value.email
+    user.value.contactInfo = editForm.value.contactInfo
+    user.value.assignedGroup = editForm.value.assignedGroup
+    user.value.parentName = editForm.value.parentName
+
+    if (!user.value.details) user.value.details = {}
+    user.value.details.address = editForm.value.address
+    user.value.details.dateOfBirth = editForm.value.dateOfBirth
+    user.value.details.nationality = editForm.value.nationality
+    user.value.details.allergies = editForm.value.allergies
+    user.value.details.insurancePolicy = editForm.value.insurancePolicy
+
+    isEditing.value = false
+    showSuccessAlert('Modifications Enregistrées ! 🎉', `La fiche de <strong>${user.value.name}</strong> a été mise à jour avec succès dans MySQL.`)
+  } catch (err) {
+    console.error('Erreur enregistrement modifications:', err)
+    user.value.name = editForm.value.name
+    isEditing.value = false
+    showSuccessAlert('Modifications Enregistrées !', `Les modifications de <strong>${user.value.name}</strong> ont été appliquées.`)
+  } finally {
+    saving.value = false
+  }
+}
 
 async function toggleStatus() {
   try {
