@@ -538,7 +538,42 @@ async function loadUserProfile() {
   }
 }
 
+async function fetchClassesList() {
+  try {
+    const res = await apiClient.get('/admin/classes')
+    let rawClasses = []
+    if (res.data) {
+      if (Array.isArray(res.data.classes)) {
+        rawClasses = res.data.classes
+      } else if (Array.isArray(res.data)) {
+        rawClasses = res.data
+      }
+    }
+    if (rawClasses.length > 0) {
+      const dbOptions = rawClasses.map(c => {
+        const levelStr = c.level ? ` (${c.level})` : ''
+        const labelStr = `${c.name}${levelStr}`
+        return {
+          value: labelStr,
+          label: labelStr
+        }
+      })
+      classOptions.value = dbOptions
+      
+      const teacherOpts = [...dbOptions]
+      teacherOpts.push(
+        { value: 'Sciences du Tajwid & Récitation', label: 'Sciences du Tajwid & Récitation' },
+        { value: 'Langue Arabe & Éthique', label: 'Langue Arabe & Éthique' }
+      )
+      teacherOptions.value = teacherOpts
+    }
+  } catch (err) {
+    console.error('Erreur chargement des classes BBD:', err)
+  }
+}
+
 onMounted(() => {
+  fetchClassesList()
   loadUserProfile()
 })
 

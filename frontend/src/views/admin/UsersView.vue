@@ -414,8 +414,35 @@ async function toggleStatus(user) {
   }
 }
 
+async function fetchClassesList() {
+  try {
+    const res = await apiClient.get('/admin/classes')
+    let rawClasses = []
+    if (res.data) {
+      if (Array.isArray(res.data.classes)) {
+        rawClasses = res.data.classes
+      } else if (Array.isArray(res.data)) {
+        rawClasses = res.data
+      }
+    }
+    if (rawClasses.length > 0) {
+      classOptions.value = rawClasses.map(c => {
+        const levelStr = c.level ? ` (${c.level})` : ''
+        const labelStr = `${c.name}${levelStr}`
+        return {
+          value: labelStr,
+          label: labelStr
+        }
+      })
+    }
+  } catch (err) {
+    console.error('Erreur chargement des classes BBD:', err)
+  }
+}
+
 onMounted(() => {
   fetchUsers()
+  fetchClassesList()
 })
 
 function openModal(type) {
