@@ -246,6 +246,23 @@ class AdminClassController extends AbstractController
         $classEntity->setMaxCapacity($capacity);
         $classEntity->setSchedule($schedule);
 
+        if (!empty($payload['scheduleSlotId'])) {
+            $slot = $em->getRepository(ScheduleSlot::class)->find((int)$payload['scheduleSlotId']);
+            if ($slot) {
+                $classEntity->setScheduleSlot($slot);
+                $classEntity->setSchedule($slot->getName());
+            }
+        } elseif (!empty($schedule)) {
+            $allSlots = $em->getRepository(ScheduleSlot::class)->findAll();
+            foreach ($allSlots as $sl) {
+                if ($sl->getName() === $schedule || str_contains($sl->getName(), $schedule) || str_contains($schedule, $sl->getName())) {
+                    $classEntity->setScheduleSlot($sl);
+                    $classEntity->setSchedule($sl->getName());
+                    break;
+                }
+            }
+        }
+
         if (!empty($payload['teacherId'])) {
             $teacher = $em->getRepository(Teacher::class)->find((int) $payload['teacherId']);
             if ($teacher) $classEntity->setTeacher($teacher);
@@ -262,7 +279,8 @@ class AdminClassController extends AbstractController
                 'roomNumber' => $classEntity->getRoomNumber(),
                 'maxCapacity' => $classEntity->getMaxCapacity(),
                 'currentEnrolled' => 0,
-                'schedule' => $classEntity->getSchedule(),
+                'schedule' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getName() : $classEntity->getSchedule(),
+                'scheduleSlotId' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getId() : null,
                 'category' => 'Langue Arabe',
                 'level' => '6-8 ans (Débutant)',
                 'teacher' => $classEntity->getTeacher() ? $classEntity->getTeacher()->getFullName() : 'Non affecté'
@@ -282,7 +300,24 @@ class AdminClassController extends AbstractController
         if (isset($payload['name'])) $classEntity->setName($payload['name']);
         if (isset($payload['roomNumber'])) $classEntity->setRoomNumber($payload['roomNumber']);
         if (isset($payload['maxCapacity'])) $classEntity->setMaxCapacity((int)$payload['maxCapacity']);
-        if (isset($payload['schedule'])) $classEntity->setSchedule($payload['schedule']);
+        
+        if (isset($payload['scheduleSlotId'])) {
+            $slot = $em->getRepository(ScheduleSlot::class)->find((int)$payload['scheduleSlotId']);
+            if ($slot) {
+                $classEntity->setScheduleSlot($slot);
+                $classEntity->setSchedule($slot->getName());
+            }
+        } elseif (isset($payload['schedule'])) {
+            $schStr = trim($payload['schedule']);
+            $classEntity->setSchedule($schStr);
+            $allSlots = $em->getRepository(ScheduleSlot::class)->findAll();
+            foreach ($allSlots as $sl) {
+                if ($sl->getName() === $schStr || str_contains($sl->getName(), $schStr) || str_contains($schStr, $sl->getName())) {
+                    $classEntity->setScheduleSlot($sl);
+                    break;
+                }
+            }
+        }
 
         if (array_key_exists('teacherId', $payload)) {
             if ($payload['teacherId'] !== null && (int)$payload['teacherId'] > 0) {
