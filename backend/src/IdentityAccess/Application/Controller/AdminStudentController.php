@@ -166,7 +166,16 @@ class AdminStudentController extends AbstractController
                 if (isset($payload['allergies'])) $student->setAllergies($payload['allergies']);
                 if (isset($payload['address'])) $student->setAddress($payload['address']);
                 if (isset($payload['insurancePolicy'])) $student->setInsurancePolicyNumber($payload['insurancePolicy']);
-                if (isset($payload['assignedGroup'])) $student->setAssignedGroup($payload['assignedGroup']);
+                if (isset($payload['assignedGroup'])) {
+                    if (is_array($payload['assignedGroup'])) {
+                        $student->setAssignedGroup(implode(', ', $payload['assignedGroup']));
+                    } else {
+                        $student->setAssignedGroup((string)$payload['assignedGroup']);
+                    }
+                }
+                if (isset($payload['assignedClasses']) && is_array($payload['assignedClasses'])) {
+                    $student->setAssignedGroup(implode(', ', $payload['assignedClasses']));
+                }
 
                 if (!empty($payload['parentName'])) {
                     $parentUserEntity = $em->getRepository(ParentUser::class)->findOneBy(['fullName' => trim($payload['parentName'])]);

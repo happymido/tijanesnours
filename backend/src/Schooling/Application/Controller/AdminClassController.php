@@ -308,11 +308,25 @@ class AdminClassController extends AbstractController
 
         $allStudents = $em->getRepository(Student::class)->findAll();
         $roster = [];
-        foreach ($allStudents as $st) {
-            $group = $st->getAssignedGroup() ?? '';
-            $className = $classEntity->getName();
+        $className = strtolower(trim($classEntity->getName()));
 
-            if (empty($group) || str_contains(strtolower($group), strtolower($className)) || str_contains(strtolower($className), strtolower($group))) {
+        foreach ($allStudents as $st) {
+            $group = strtolower(trim($st->getAssignedGroup() ?? ''));
+
+            $isAssigned = false;
+            if (!empty($group)) {
+                $assignedList = array_map('trim', explode(',', $group));
+                foreach ($assignedList as $assignedItem) {
+                    if (!empty($assignedItem) && (str_contains($assignedItem, $className) || str_contains($className, $assignedItem))) {
+                        $isAssigned = true;
+                        break;
+                    }
+                }
+            } else {
+                $isAssigned = true;
+            }
+
+            if ($isAssigned) {
                 $parent = $st->getParent();
                 $roster[] = [
                     'id' => 'student_' . $st->getId(),
@@ -322,17 +336,10 @@ class AdminClassController extends AbstractController
                     'parentId' => $parent ? 'parent_' . $parent->getId() : 'parent_1',
                     'parentName' => $parent ? $parent->getFullName() : 'Karim Benali',
                     'contact' => $parent ? $parent->getPhone() : '+352 691 123 456',
-                    'status' => 'INSCRIT'
+                    'status' => 'INSCRIT',
+                    'assignedGroup' => $st->getAssignedGroup() ?? $classEntity->getName()
                 ];
             }
-        }
-
-        if (empty($roster)) {
-            $roster = [
-                ['id' => 'student_1', 'dbId' => 1, 'name' => 'Youssef Benali', 'dateOfBirth' => '12/05/2018', 'parentId' => 'parent_1', 'parentName' => 'Karim Benali', 'contact' => '+352 691 123 456', 'status' => 'INSCRIT'],
-                ['id' => 'student_2', 'dbId' => 2, 'name' => 'Aya Benali', 'dateOfBirth' => '14/09/2021', 'parentId' => 'parent_1', 'parentName' => 'Karim Benali', 'contact' => '+352 691 123 456', 'status' => 'INSCRIT'],
-                ['id' => 'student_3', 'dbId' => 3, 'name' => 'Rayane Hamdi', 'dateOfBirth' => '08/11/2017', 'parentId' => 'parent_2', 'parentName' => 'Sami Hamdi', 'contact' => '+352 691 444 333', 'status' => 'INSCRIT']
-            ];
         }
 
         return $this->json([
