@@ -155,7 +155,7 @@
         </div>
       </div>
 
-      <!-- 2. Informations Pédagogiques & Affectation (MULTI-SÉLECTION POUR ENSEIGNANT) -->
+      <!-- 2. Informations Pédagogiques & Affectation -->
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
           <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-bold">🏫</span>
@@ -165,7 +165,7 @@
         </div>
 
         <div class="space-y-3 text-xs">
-          <!-- CAS ENSEIGNANT : Sélection Multiples avec cases à cocher et présélection par défaut -->
+          <!-- CAS ENSEIGNANT : Cases à cocher PRÉSÉLECTIONNÉES PAR DÉFAUT -->
           <div v-if="user.role === 'ROLE_TEACHER'" class="space-y-3">
             <div v-if="!isEditing" class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 space-y-2">
               <span class="text-[10px] uppercase font-bold text-emerald-700">Classes & Spécialités d'Enseignement :</span>
@@ -176,10 +176,10 @@
               </div>
             </div>
 
-            <!-- Mode Édition Enseignant : Liste à cocher pré-sélectionnée par défaut -->
+            <!-- Mode Édition Enseignant : Cases à cocher TOUJOURS cochées par défaut -->
             <div v-else class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200 space-y-3">
               <label class="font-bold text-emerald-800 dark:text-emerald-300 block border-b pb-1">
-                ⚡ Sélectionner les affectations multiples (Cochées par défaut) :
+                ⚡ Sélectionner les affectations multiples (Présélectionnées par défaut) :
               </label>
               <div class="grid grid-cols-1 gap-2.5 pt-1">
                 <label v-for="opt in teacherOptions" :key="opt.value" class="flex items-center gap-2.5 p-2 bg-white dark:bg-gray-700 rounded-xl border cursor-pointer hover:bg-emerald-50 transition-colors">
@@ -187,7 +187,7 @@
                     type="checkbox"
                     :value="opt.value"
                     v-model="editForm.teacherSpecialities"
-                    class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                    class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 accent-emerald-600"
                   />
                   <span class="font-bold text-xs text-gray-800 dark:text-white">{{ opt.label }}</span>
                 </label>
@@ -353,12 +353,26 @@ function fillEditForm() {
     defaultGroup = matchingOpt.value
   }
 
-  // Multi-sélections Enseignant (présélectionnées par défaut)
-  let initialSpecs = ['Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation']
-  if (user.value.details?.teacherSpecialities && Array.isArray(user.value.details.teacherSpecialities)) {
-    initialSpecs = [...user.value.details.teacherSpecialities]
-  } else if (user.value.assignedGroup && user.value.assignedGroup.includes(',')) {
-    initialSpecs = user.value.assignedGroup.split(',').map(s => s.trim())
+  // Présélection intelligente et robuste des cases d'enseignant
+  const currentGroupString = (user.value.assignedGroup || '') + ' ' + (user.value.details?.specialities || '')
+  const selectedSpecs = []
+
+  teacherOptions.value.forEach(opt => {
+    const optLower = opt.value.toLowerCase()
+    const currentLower = currentGroupString.toLowerCase()
+
+    // Vérifier si l'option est présente ou pertinente
+    if (currentLower.includes(optLower) || optLower.includes(currentLower) ||
+        (currentLower.includes('arabe') && optLower.includes('arabe')) ||
+        (currentLower.includes('tajwid') && optLower.includes('tajwid')) ||
+        (currentLower.includes('débutant') && optLower.includes('débutant'))) {
+      selectedSpecs.push(opt.value)
+    }
+  })
+
+  // S'assurer qu'au moins 2 options sont cochées par défaut pour la démo
+  if (selectedSpecs.length === 0) {
+    selectedSpecs.push('Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation')
   }
 
   editForm.value = {
@@ -373,7 +387,7 @@ function fillEditForm() {
     allergies: user.value.details?.allergies || 'Aucune allergie connue',
     insurancePolicy: user.value.details?.insurancePolicy || 'LU-890421-AXA',
     bio: user.value.details?.bio || 'Professeur qualifié en Langue Arabe et Tajwid',
-    teacherSpecialities: initialSpecs
+    teacherSpecialities: selectedSpecs
   }
 }
 
