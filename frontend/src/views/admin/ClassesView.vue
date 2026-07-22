@@ -1070,6 +1070,7 @@ async function openRoster(cls) {
   selectedRosterClass.value = cls
   showRosterModal.value = true
   loadingRoster.value = true
+  currentRosterStudents.value = []
   try {
     const res = await apiClient.get(`/admin/classes/${cls.id}/students`)
     if (res.data && Array.isArray(res.data.students)) {
@@ -1078,10 +1079,6 @@ async function openRoster(cls) {
     }
   } catch (err) {
     console.error('Erreur chargement effectif classe:', err)
-    currentRosterStudents.value = [
-      { id: 'student_1', dbId: 1, name: 'Youssef Benali', dateOfBirth: '12/05/2018', parentId: 'parent_1', parentName: 'Karim Benali', contact: '+352 691 123 456', status: 'INSCRIT' },
-      { id: 'student_2', dbId: 2, name: 'Aya Benali', dateOfBirth: '14/09/2021', parentId: 'parent_1', parentName: 'Karim Benali', contact: '+352 691 123 456', status: 'INSCRIT' }
-    ]
   } finally {
     loadingRoster.value = false
   }
