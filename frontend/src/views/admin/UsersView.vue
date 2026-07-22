@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Gestion des Élèves, Parents & Enseignants</h1>
-        <p class="text-xs text-gray-500">Statuts Actif/Inactif en BBD, Fiches d'identité détaillées et sélecteurs recherchables (Select2)</p>
+        <p class="text-xs text-gray-500">Statuts Actif/Inactif en BBD, Fiches d'identité détaillées et rattachement parent existant</p>
       </div>
       <div class="flex gap-3">
         <button @click="openModal('STUDENT')" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
@@ -45,7 +45,7 @@
       </div>
     </div>
 
-    <!-- Datatable -->
+    <!-- Datatable avec Statuts Actif/Inactif BBD & Fiches d'identité -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
       <div v-if="loading" class="text-center py-8 text-xs font-bold text-gray-500">
         Chargement des données depuis MySQL...
@@ -144,7 +144,105 @@
       </div>
     </div>
 
-    <!-- Modal Form avec Select2 Recherchable pour la sélection des Parents et des Classes -->
+    <!-- Modal Fiche d'Identité Détaillée (ID Card) -->
+    <div v-if="selectedUserForCard" class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6 animate__animated animate__fadeIn">
+        <div class="flex justify-between items-start border-b pb-4 dark:border-gray-700">
+          <div class="flex items-center gap-4">
+            <div :class="getAvatarBg(selectedUserForCard.role)" class="w-14 h-14 rounded-2xl font-extrabold text-white text-xl flex items-center justify-center shadow-lg">
+              {{ selectedUserForCard.name[0] }}
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ selectedUserForCard.name }}</h3>
+              <div class="flex items-center gap-2 mt-1">
+                <span :class="getRoleBadge(selectedUserForCard.role)" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                  {{ getRoleLabel(selectedUserForCard.role) }}
+                </span>
+                <span :class="selectedUserForCard.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                  {{ selectedUserForCard.status === 'ACTIVE' ? 'Compte Actif' : 'Compte Inactif' }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <button @click="selectedUserForCard = null" class="text-gray-400 hover:text-gray-600 font-bold text-xl">✕</button>
+        </div>
+
+        <!-- Corps de la Fiche d'Identité -->
+        <div class="space-y-4 text-xs">
+          <!-- Coordonnées Générales -->
+          <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl space-y-2">
+            <h4 class="font-bold text-gray-900 dark:text-white uppercase tracking-wider text-[10px] text-gray-400">Coordonnées & Contact</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <span class="text-gray-400 font-semibold block">Email :</span>
+                <strong class="text-gray-800 dark:text-gray-200">{{ selectedUserForCard.email || 'Non renseigné' }}</strong>
+              </div>
+              <div>
+                <span class="text-gray-400 font-semibold block">Téléphone :</span>
+                <strong class="text-gray-800 dark:text-gray-200">{{ selectedUserForCard.contactInfo || '+352 691 123 456' }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Spécifique Élève -->
+          <div v-if="selectedUserForCard.role === 'ROLE_STUDENT'" class="p-4 bg-brand-50/50 dark:bg-brand-900/20 rounded-2xl space-y-3 border border-brand-100 dark:border-brand-800">
+            <h4 class="font-bold text-brand-700 dark:text-brand-300 uppercase tracking-wider text-[10px]">Fiche Élève & Scolarité</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <span class="text-gray-400 font-semibold block">Classe Affectée :</span>
+                <strong class="text-brand-600 font-bold">{{ selectedUserForCard.assignedGroup || 'Classe Débutant 2A' }}</strong>
+              </div>
+              <div>
+                <span class="text-gray-400 font-semibold block">Parent Responsable :</span>
+                <strong class="text-gray-900 dark:text-white">👨‍👩‍👧 {{ selectedUserForCard.parentName || 'N/A' }}</strong>
+              </div>
+              <div>
+                <span class="text-gray-400 font-semibold block">Date de Naissance :</span>
+                <strong>{{ selectedUserForCard.details?.dateOfBirth || '12/05/2018' }}</strong>
+              </div>
+              <div>
+                <span class="text-gray-400 font-semibold block">Nationalité :</span>
+                <strong>{{ selectedUserForCard.details?.nationality || 'Luxembourgeoise' }}</strong>
+              </div>
+            </div>
+            <div class="pt-2 border-t dark:border-gray-700 text-[11px] space-y-1">
+              <p>🏥 <strong>Allergies / Santé :</strong> {{ selectedUserForCard.details?.allergies || 'Aucune allergie signalée' }}</p>
+              <p>📄 <strong>Police Assurance :</strong> {{ selectedUserForCard.details?.insurancePolicy || 'LU-890421-AXA' }}</p>
+            </div>
+          </div>
+
+          <!-- Spécifique Parent -->
+          <div v-if="selectedUserForCard.role === 'ROLE_PARENT'" class="p-4 bg-gold-50/50 dark:bg-gold-900/20 rounded-2xl space-y-3 border border-gold-200">
+            <h4 class="font-bold text-gold-700 uppercase tracking-wider text-[10px]">Fiche Responsable Légal & Finances</h4>
+            <div class="space-y-1.5">
+              <p>💳 <strong>Mode de Paiement Préféré :</strong> Prélèvement SEPA / Stripe</p>
+              <p>🏦 <strong>Référence Mandat SEPA :</strong> SEPA-2026-0042-LU</p>
+              <p>🎓 <strong>Enfants rattachés :</strong> {{ selectedUserForCard.details?.children || selectedUserForCard.assignedGroup }}</p>
+            </div>
+          </div>
+
+          <!-- Spécifique Enseignant -->
+          <div v-if="selectedUserForCard.role === 'ROLE_TEACHER'" class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl space-y-3 border border-emerald-200">
+            <h4 class="font-bold text-emerald-700 uppercase tracking-wider text-[10px]">Fiche Enseignant & Qualifications</h4>
+            <div class="space-y-1.5">
+              <p>📚 <strong>Spécialité :</strong> {{ selectedUserForCard.assignedGroup }}</p>
+              <p>✨ <strong>Parcours & Qualification :</strong> {{ selectedUserForCard.details?.bio || 'Professeur diplômé en Sciences de la Langue Arabe & Tajwid' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button @click="toggleStatus(selectedUserForCard)" class="flex-1 py-3 bg-gray-900 text-white font-bold rounded-xl text-xs shadow-md">
+            Basculer Statut ({{ selectedUserForCard.status === 'ACTIVE' ? 'Désactiver' : 'Activer' }})
+          </button>
+          <button @click="selectedUserForCard = null" class="py-3 px-5 border rounded-xl font-semibold text-xs">
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Form avec Select2 pour la sélection des Parents et des Classes -->
     <div v-if="showModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6 overflow-visible">
         <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
@@ -192,7 +290,7 @@
             </div>
           </div>
 
-          <!-- Section Choix & Sélection du Parent avec Select2 avec Recherche -->
+          <!-- Section Choix & Sélection du Parent avec Select2 -->
           <div v-if="modalType === 'STUDENT'" class="space-y-3 pt-2">
             <h4 class="font-bold text-brand-600 dark:text-gold-400 border-b pb-1 flex items-center justify-between">
               <span>👨‍👩‍👧 2. Responsable Légal / Parent</span>
@@ -362,7 +460,7 @@ async function toggleStatus(user) {
 }
 
 function openIdCard(user) {
-  selectedUserForCard.value = user
+  selectedUserForCard.value = { ...user }
 }
 
 onMounted(() => {
@@ -388,18 +486,28 @@ async function saveUser() {
   submitting.value = true
   try {
     if (modalType.value === 'STUDENT') {
-      const response = await apiClient.post('/admin/students', form.value)
+      const payload = {
+        studentFirstName: form.value.studentFirstName.trim(),
+        studentLastName: form.value.studentLastName.trim(),
+        studentEmail: form.value.studentEmail.trim(),
+        assignedGroup: form.value.assignedGroup,
+        parentFullName: form.value.parentFullName.trim(),
+        parentEmail: form.value.parentEmail.trim(),
+        parentPhone: form.value.parentPhone.trim()
+      }
+
+      const response = await apiClient.post('/admin/students', payload)
       if (response.data.student) {
         usersList.value.unshift(response.data.student)
       }
       showModal.value = false
 
-      const isExisting = parents.value.some(p => p.email.toLowerCase() === form.value.parentEmail.toLowerCase())
+      const isExisting = parents.value.some(p => p.email.toLowerCase() === payload.parentEmail.toLowerCase())
       showSuccessAlert(
         'Inscription Validée ! 🎉',
         isExisting
-          ? `L'élève <strong>${form.value.studentFirstName} ${form.value.studentLastName}</strong> a été rattaché avec succès au compte Parent existant de <strong>${form.value.parentFullName}</strong> (${form.value.parentEmail}) !`
-          : `L'élève <strong>${form.value.studentFirstName} ${form.value.studentLastName}</strong> et le nouveau compte Parent <strong>${form.value.parentFullName}</strong> (${form.value.parentEmail}) ont été enregistrés avec succès dans MySQL.`
+          ? `L'élève <strong>${payload.studentFirstName} ${payload.studentLastName}</strong> a été rattaché avec succès au compte Parent existant de <strong>${payload.parentFullName}</strong> (${payload.parentEmail}) !`
+          : `L'élève <strong>${payload.studentFirstName} ${payload.studentLastName}</strong> et le nouveau compte Parent <strong>${payload.parentFullName}</strong> (${payload.parentEmail}) ont été enregistrés avec succès dans MySQL.`
       )
     } else {
       const newTeacher = {
@@ -410,7 +518,8 @@ async function saveUser() {
         assignedGroup: form.value.assignedGroup,
         parentName: null,
         contactInfo: form.value.parentPhone,
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        details: { bio: 'Professeur qualifié en Arabe & Tajwid' }
       }
       usersList.value.unshift(newTeacher)
       showModal.value = false

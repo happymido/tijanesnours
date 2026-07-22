@@ -53,19 +53,25 @@ class AdminStudentController extends AbstractController
         $parents = $em->getRepository(ParentUser::class)->findAll();
         foreach ($parents as $parent) {
             $user = $parent->getUser();
+            // Récupérer les noms des enfants
+            $childrenNames = [];
+            foreach ($parent->getStudents() as $st) {
+                $childrenNames[] = $st->getFirstName() . ' ' . $st->getLastName();
+            }
             $data[] = [
                 'id' => 'parent_' . $parent->getId(),
                 'dbId' => $parent->getId(),
                 'name' => $parent->getFullName(),
                 'email' => $user ? $user->getEmail() : 'parent@tijanesnours.lu',
                 'role' => 'ROLE_PARENT',
-                'assignedGroup' => 'Responsable Légal',
+                'assignedGroup' => !empty($childrenNames) ? 'Enfants: ' . implode(', ', $childrenNames) : 'Responsable Légal',
                 'parentName' => null,
                 'contactInfo' => $parent->getPhone() ?? '+352 691 123 456',
                 'status' => ($user && !$user->isActive()) ? 'INACTIVE' : 'ACTIVE',
                 'details' => [
                     'address' => $parent->getAddress() ?? 'Luxembourg-Ville',
-                    'paymentMethod' => $parent->getPreferredPaymentMethod()
+                    'paymentMethod' => $parent->getPreferredPaymentMethod(),
+                    'children' => implode(', ', $childrenNames) ?: 'Aucun enfant rattaché'
                 ]
             ];
         }
@@ -86,7 +92,8 @@ class AdminStudentController extends AbstractController
                 'contactInfo' => $teacher->getPhone() ?? '+352 691 888 999',
                 'status' => ($user && !$user->isActive()) ? 'INACTIVE' : 'ACTIVE',
                 'details' => [
-                    'bio' => $teacher->getBio() ?? 'Professeur diplômé en Tajwid'
+                    'bio' => $teacher->getBio() ?? 'Professeur qualifié en Langue Arabe et Sciences du Tajwid',
+                    'specialities' => !empty($specs) ? $specs : 'Langue Arabe & Tajwid'
                 ]
             ];
         }
@@ -137,16 +144,21 @@ class AdminStudentController extends AbstractController
     ): JsonResponse {
         $payload = json_decode($request->getContent(), true);
 
-        $studentFirstName = $payload['studentFirstName'] ?? 'Élève';
-        $studentLastName = $payload['studentLastName'] ?? 'Nouveau';
-        $studentEmail = $payload['studentEmail'] ?? strtolower($studentFirstName) . '.' . time() . '@student.lu';
+        $studentFirstName = trim($payload['studentFirstName'] ?? 'Élève');
+        $studentLastName = trim($payload['studentLastName'] ?? 'Nouveau');
+        $studentEmail = trim($payload['studentEmail'] ?? strtolower($studentFirstName) . '.' . time() . '@student.lu');
 
-        $parentFullName = $payload['parentFullName'] ?? 'Parent Responsable';
-        $parentEmail = $payload['parentEmail'] ?? 'parent.' . time() . '@tijanesnours.lu';
-        $parentPhone = $payload['parentPhone'] ?? '+352 691 000 000';
+        $parentFullName = trim($payload['parentFullName'] ?? 'Parent Responsable');
+        $parentEmail = trim($payload['parentEmail'] ?? 'parent.' . time() . '@tijanesnours.lu');
+        $parentPhone = trim($payload['parentPhone'] ?? '+352 691 000 000');
 
-        // 1. Chercher le compte User du Parent
-        $userParent = $em->getRepository(User::class)->findOneBy(['email' => $parentEmail]);
+        // 1. Chercher le compte User du Parent par Email (insensible à la casse)
+        $userParent = $em->getRepository(User::class)->createQueryBuilder('u')
+            ->where('LOWER(u.email) = LOWER(:email)')
+            ->setParameter('email', $parentEmail)
+            ->getQuery()
+            ->getOneOrNullResult();
+
         if (!$userParent) {
             $userParent = new User();
             $userParent->setEmail($parentEmail);
@@ -165,6 +177,11 @@ class AdminStudentController extends AbstractController
             $parentUserEntity->setPhone($parentPhone);
             $parentUserEntity->setAddress('Luxembourg');
             $em->persist($parentUserEntity);
+        } else {
+            // Mettre à jour le téléphone s'il est renseigné
+            if (!empty($parentPhone)) {
+                $parentUserEntity->setPhone($parentPhone);
+            }
         }
 
         // 2. Créer l'Élève
@@ -190,12 +207,15 @@ class AdminStudentController extends AbstractController
             'message' => 'Élève et Parent enregistrés avec succès dans MySQL',
             'student' => [
                 'id' => 'student_' . $studentEntity->getId(),
+                'dbId' => $studentEntity->getId(),
+                'firstName' => $studentEntity->getFirstName(),
+                'lastName' => $studentEntity->getLastName(),
                 'name' => $studentEntity->getFirstName() . ' ' . $studentEntity->getLastName(),
                 'email' => $studentEmail,
                 'role' => 'ROLE_STUDENT',
                 'assignedGroup' => $payload['assignedGroup'] ?? 'Classe Débutant 2A',
                 'parentName' => $parentUserEntity->getFullName(),
-                'contactInfo' => $parentPhone,
+                'contactInfo' => $parentUserEntity->getPhone(),
                 'status' => 'ACTIVE',
                 'details' => [
                     'dateOfBirth' => '12/05/2018',
