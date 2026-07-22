@@ -28,13 +28,27 @@ class AdminClassController extends AbstractController
         $totalStudentsInDb = count($allStudents);
 
         foreach ($classes as $c) {
-            $enrolledCount = (int) $em->getRepository(Student::class)->createQueryBuilder('s')
-                ->select('COUNT(s.id)')
-                ->innerJoin('s.schoolClasses', 'c')
-                ->where('c.id = :classId')
-                ->setParameter('classId', $c->getId())
-                ->getQuery()
-                ->getSingleScalarResult();
+            $cName = strtolower(trim(preg_replace('/\([^)]*\)/', '', $c->getName())));
+            $enrolledCount = 0;
+
+            foreach ($allStudents as $st) {
+                if ($st->getSchoolClasses()->contains($c)) {
+                    $enrolledCount++;
+                } else {
+                    $group = strtolower(trim($st->getAssignedGroup() ?? ''));
+                    if (!empty($group)) {
+                        $assignedList = array_map('trim', explode(',', $group));
+                        foreach ($assignedList as $assignedItem) {
+                            $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
+                            if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $cName) || str_contains($cName, $cleanAssigned))) {
+                                $enrolledCount++;
+                                $st->addSchoolClass($c);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
 
             $classData[] = [
                 'id' => $c->getId(),
@@ -42,12 +56,13 @@ class AdminClassController extends AbstractController
                 'roomNumber' => $c->getRoomNumber() ?? 'Salle Maryam 1',
                 'maxCapacity' => $c->getMaxCapacity(),
                 'currentEnrolled' => $enrolledCount,
-                'schedule' => $c->getSchedule() ?? 'Samedi 09:00 - 12:00 (Matin)',
+                'schedule' => $c->getScheduleSlot() ? $c->getScheduleSlot()->getName() : ($c->getSchedule() ?? 'Samedi 09:00 - 12:00 (Matin)'),
                 'category' => $c->getCategory() ? $c->getCategory()->getName() : 'Langue Arabe',
                 'level' => $c->getLevel() ? $c->getLevel()->getName() : '6-8 ans (Débutant)',
                 'teacher' => $c->getTeacher() ? $c->getTeacher()->getFullName() : 'Cheikh Mahmoud'
             ];
         }
+        $em->flush();
         $em->flush();
 
         // Initialisation si base vide lors de la première requête
@@ -346,29 +361,45 @@ class AdminClassController extends AbstractController
             return $this->json(['error' => 'Classe non trouvée'], Response::HTTP_NOT_FOUND);
         }
 
-        // Requête relationnelle basée sur la table d'association MySQL student_school_classes
-        $studentsInClass = $em->getRepository(Student::class)->createQueryBuilder('s')
-            ->innerJoin('s.schoolClasses', 'c')
-            ->where('c.id = :classId')
-            ->setParameter('classId', $classEntity->getId())
-            ->getQuery()
-            ->getResult();
-
+        $allStudents = $em->getRepository(Student::class)->findAll();
         $roster = [];
-        foreach ($studentsInClass as $st) {
-            $parent = $st->getParent();
-            $roster[] = [
-                'id' => 'student_' . $st->getId(),
-                'dbId' => $st->getId(),
-                'name' => $st->getFirstName() . ' ' . $st->getLastName(),
-                'dateOfBirth' => $st->getDateOfBirth() ? $st->getDateOfBirth()->format('d/m/Y') : '12/05/2018',
-                'parentId' => $parent ? 'parent_' . $parent->getId() : 'parent_1',
-                'parentName' => $parent ? $parent->getFullName() : 'Karim Benali',
-                'contact' => $parent ? $parent->getPhone() : '+352 691 123 456',
-                'status' => 'INSCRIT',
-                'assignedGroup' => $st->getAssignedGroup() ?? $classEntity->getName()
-            ];
+        $cName = strtolower(trim(preg_replace('/\([^)]*\)/', '', $classEntity->getName())));
+
+        foreach ($allStudents as $st) {
+            $isAssigned = false;
+            if ($st->getSchoolClasses()->contains($classEntity)) {
+                $isAssigned = true;
+            } else {
+                $group = strtolower(trim($st->getAssignedGroup() ?? ''));
+                if (!empty($group)) {
+                    $assignedList = array_map('trim', explode(',', $group));
+                    foreach ($assignedList as $assignedItem) {
+                        $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
+                        if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $cName) || str_contains($cName, $cleanAssigned))) {
+                            $isAssigned = true;
+                            $st->addSchoolClass($classEntity);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ($isAssigned) {
+                $parent = $st->getParent();
+                $roster[] = [
+                    'id' => 'student_' . $st->getId(),
+                    'dbId' => $st->getId(),
+                    'name' => $st->getFirstName() . ' ' . $st->getLastName(),
+                    'dateOfBirth' => $st->getDateOfBirth() ? $st->getDateOfBirth()->format('d/m/Y') : '12/05/2018',
+                    'parentId' => $parent ? 'parent_' . $parent->getId() : 'parent_1',
+                    'parentName' => $parent ? $parent->getFullName() : 'Karim Benali',
+                    'contact' => $parent ? $parent->getPhone() : '+352 691 123 456',
+                    'status' => 'INSCRIT',
+                    'assignedGroup' => $st->getAssignedGroup() ?? $classEntity->getName()
+                ];
+            }
         }
+        $em->flush();
 
         return $this->json([
             'class' => [
