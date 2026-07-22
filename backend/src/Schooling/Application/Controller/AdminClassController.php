@@ -31,14 +31,19 @@ class AdminClassController extends AbstractController
             $enrolledCount = 0;
 
             foreach ($allStudents as $st) {
-                $group = strtolower(trim($st->getAssignedGroup() ?? ''));
-                if (!empty($group)) {
-                    $assignedList = array_map('trim', explode(',', $group));
-                    foreach ($assignedList as $assignedItem) {
-                        $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
-                        if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $cName) || str_contains($cName, $cleanAssigned))) {
-                            $enrolledCount++;
-                            break;
+                if ($st->getSchoolClasses()->contains($c)) {
+                    $enrolledCount++;
+                } else {
+                    $group = strtolower(trim($st->getAssignedGroup() ?? ''));
+                    if (!empty($group)) {
+                        $assignedList = array_map('trim', explode(',', $group));
+                        foreach ($assignedList as $assignedItem) {
+                            $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
+                            if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $cName) || str_contains($cName, $cleanAssigned))) {
+                                $enrolledCount++;
+                                $st->addSchoolClass($c);
+                                break;
+                            }
                         }
                     }
                 }
@@ -56,6 +61,7 @@ class AdminClassController extends AbstractController
                 'teacher' => $c->getTeacher() ? $c->getTeacher()->getFullName() : 'Cheikh Mahmoud'
             ];
         }
+        $em->flush();
 
         // Initialisation si base vide lors de la première requête
         if (empty($classData)) {
@@ -319,16 +325,20 @@ class AdminClassController extends AbstractController
         $className = strtolower(trim(preg_replace('/\([^)]*\)/', '', $classEntity->getName())));
 
         foreach ($allStudents as $st) {
-            $group = strtolower(trim($st->getAssignedGroup() ?? ''));
             $isAssigned = false;
-
-            if (!empty($group)) {
-                $assignedList = array_map('trim', explode(',', $group));
-                foreach ($assignedList as $assignedItem) {
-                    $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
-                    if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $className) || str_contains($className, $cleanAssigned))) {
-                        $isAssigned = true;
-                        break;
+            if ($st->getSchoolClasses()->contains($classEntity)) {
+                $isAssigned = true;
+            } else {
+                $group = strtolower(trim($st->getAssignedGroup() ?? ''));
+                if (!empty($group)) {
+                    $assignedList = array_map('trim', explode(',', $group));
+                    foreach ($assignedList as $assignedItem) {
+                        $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
+                        if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $className) || str_contains($className, $cleanAssigned))) {
+                            $isAssigned = true;
+                            $st->addSchoolClass($classEntity);
+                            break;
+                        }
                     }
                 }
             }
@@ -348,6 +358,7 @@ class AdminClassController extends AbstractController
                 ];
             }
         }
+        $em->flush();
 
         return $this->json([
             'class' => [

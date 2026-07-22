@@ -161,15 +161,39 @@ class AdminStudentController extends AbstractController
                 if (isset($payload['allergies'])) $student->setAllergies($payload['allergies']);
                 if (isset($payload['address'])) $student->setAddress($payload['address']);
                 if (isset($payload['insurancePolicy'])) $student->setInsurancePolicyNumber($payload['insurancePolicy']);
-                if (isset($payload['assignedGroup'])) {
-                    if (is_array($payload['assignedGroup'])) {
-                        $student->setAssignedGroup(implode(', ', $payload['assignedGroup']));
-                    } else {
-                        $student->setAssignedGroup((string)$payload['assignedGroup']);
-                    }
-                }
+                $classesList = [];
                 if (isset($payload['assignedClasses']) && is_array($payload['assignedClasses'])) {
-                    $student->setAssignedGroup(implode(', ', $payload['assignedClasses']));
+                    $classesList = $payload['assignedClasses'];
+                } elseif (isset($payload['assignedGroup'])) {
+                    $classesList = is_array($payload['assignedGroup']) ? $payload['assignedGroup'] : array_map('trim', explode(',', $payload['assignedGroup']));
+                }
+
+                if (!empty($classesList)) {
+                    $student->clearSchoolClasses();
+                    foreach ($classesList as $cItem) {
+                        $cNameClean = trim(preg_replace('/\([^)]*\)/', '', (string)$cItem));
+                        $classEntity = null;
+
+                        if (is_numeric($cItem)) {
+                            $classEntity = $em->getRepository(SchoolClass::class)->find((int)$cItem);
+                        } else {
+                            $classEntity = $em->getRepository(SchoolClass::class)->findOneBy(['name' => $cNameClean]);
+                            if (!$classEntity) {
+                                $allC = $em->getRepository(SchoolClass::class)->findAll();
+                                foreach ($allC as $ac) {
+                                    if (str_contains(strtolower($ac->getName()), strtolower($cNameClean)) || str_contains(strtolower($cNameClean), strtolower($ac->getName()))) {
+                                        $classEntity = $ac;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if ($classEntity) {
+                            $student->addSchoolClass($classEntity);
+                        }
+                    }
+                    $student->setAssignedGroup(implode(', ', $classesList));
                 }
 
                 if (!empty($payload['parentName'])) {

@@ -2,6 +2,9 @@
 
 namespace App\IdentityAccess\Domain\Entity;
 
+use App\Schooling\Domain\Entity\SchoolClass;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -21,6 +24,10 @@ class Student
     #[ORM\ManyToOne(targetEntity: ParentUser::class, inversedBy: 'students')]
     #[ORM\JoinColumn(nullable: false)]
     private ?ParentUser $parent = null;
+
+    #[ORM\ManyToMany(targetEntity: SchoolClass::class)]
+    #[ORM\JoinTable(name: 'student_school_classes')]
+    private Collection $schoolClasses;
 
     #[ORM\Column(length: 100)]
     private ?string $firstName = null;
@@ -64,6 +71,11 @@ class Student
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $insuranceDocPath = null;
 
+    public function __construct()
+    {
+        $this->schoolClasses = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -91,6 +103,34 @@ class Student
         return $this;
     }
 
+    /**
+     * @return Collection<int, SchoolClass>
+     */
+    public function getSchoolClasses(): Collection
+    {
+        return $this->schoolClasses;
+    }
+
+    public function addSchoolClass(SchoolClass $schoolClass): self
+    {
+        if (!$this->schoolClasses->contains($schoolClass)) {
+            $this->schoolClasses->add($schoolClass);
+        }
+        return $this;
+    }
+
+    public function removeSchoolClass(SchoolClass $schoolClass): self
+    {
+        $this->schoolClasses->removeElement($schoolClass);
+        return $this;
+    }
+
+    public function clearSchoolClasses(): self
+    {
+        $this->schoolClasses->clear();
+        return $this;
+    }
+
     public function getFirstName(): ?string
     {
         return $this->firstName;
@@ -115,6 +155,13 @@ class Student
 
     public function getAssignedGroup(): ?string
     {
+        if (!$this->schoolClasses->isEmpty()) {
+            $names = [];
+            foreach ($this->schoolClasses as $sc) {
+                $names[] = $sc->getName();
+            }
+            return implode(', ', $names);
+        }
         return $this->assignedGroup;
     }
 
