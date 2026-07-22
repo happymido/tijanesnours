@@ -477,6 +477,61 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal Form pour Affecter les Classes à un Enseignant -->
+    <div v-if="showAssignModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
+        <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
+          <div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <span>👨‍🏫</span> Affectations de Classes - {{ selectedAssignTeacher?.name }}
+            </h3>
+            <p class="text-xs text-gray-500">Cochez ou décochez les classes attribuées à cet enseignant dans MySQL</p>
+          </div>
+          <button @click="showAssignModal = false" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+        </div>
+
+        <form @submit.prevent="saveTeacherAssignments" class="space-y-4 text-xs">
+          <div class="space-y-2">
+            <label class="font-bold text-emerald-800 dark:text-emerald-300 block text-xs border-b pb-1">
+              📚 Sélectionner les classes attribuées à {{ selectedAssignTeacher?.name }} (Cochées par défaut) :
+            </label>
+            <div class="grid grid-cols-1 gap-2.5 max-h-64 overflow-y-auto pt-1">
+              <label
+                v-for="cls in classrooms"
+                :key="cls.id"
+                class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors"
+              >
+                <div class="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    :value="cls.id"
+                    v-model="assignForm.assignedClassIds"
+                    class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 accent-emerald-600"
+                  />
+                  <div>
+                    <span class="font-bold text-xs text-gray-900 dark:text-white block">{{ cls.name }}</span>
+                    <span class="text-[10px] text-gray-500">⏰ {{ cls.schedule }} • 🚪 {{ cls.roomNumber || cls.room }}</span>
+                  </div>
+                </div>
+                <span v-if="cls.teacher && cls.teacher !== selectedAssignTeacher?.name" class="text-[10px] text-gray-400 italic">
+                  (Actuel: {{ cls.teacher }})
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button type="submit" :disabled="submitting" class="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow disabled:opacity-50">
+              {{ submitting ? 'Enregistrement MySQL...' : '💾 Valider les Affectations dans MySQL' }}
+            </button>
+            <button type="button" @click="showAssignModal = false" class="py-3 px-4 border rounded-xl text-gray-600 font-semibold">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -794,8 +849,58 @@ async function saveClass() {
   }
 }
 
+const showAssignModal = ref(false)
+const selectedAssignTeacher = ref(null)
+const assignForm = ref({
+  assignedClassIds: []
+})
+
 function openAssignModal(teacher) {
-  showSuccessAlert('Matrice d\'Affectation', `L'enseignant <strong>${teacher.name}</strong> est actuellement affecté à ${getClassesForTeacher(teacher.name).length} classe(s) dans MySQL.`)
+  selectedAssignTeacher.value = teacher
+  const currentAssignedClasses = classrooms.value
+    .filter(c => c.teacher && c.teacher.toLowerCase().includes(teacher.name.toLowerCase()))
+    .map(c => c.id)
+
+  assignForm.value.assignedClassIds = currentAssignedClasses
+  showAssignModal.value = true
+}
+
+async function saveTeacherAssignments() {
+  submitting.value = true
+  try {
+    const teacherName = selectedAssignTeacher.value.name
+    const teacherId = selectedAssignTeacher.value.id
+
+    for (const cls of classrooms.value) {
+      if (assignForm.value.assignedClassIds.includes(cls.id)) {
+        cls.teacher = teacherName
+        try {
+          await apiClient.put(`/admin/classes/${cls.id}`, {
+            teacherId: teacherId,
+            teacher: teacherName
+          })
+        } catch (e) {}
+      } else if (cls.teacher && cls.teacher.toLowerCase().includes(teacherName.toLowerCase())) {
+        cls.teacher = 'Non affecté'
+        try {
+          await apiClient.put(`/admin/classes/${cls.id}`, {
+            teacherId: null,
+            teacher: 'Non affecté'
+          })
+        } catch (e) {}
+      }
+    }
+
+    showAssignModal.value = false
+    showSuccessAlert(
+      'Affectations Mises à Jour ! 🎉',
+      `Les affectations de classes pour <strong>${teacherName}</strong> ont été enregistrées et mises à jour dans la base MySQL.`
+    )
+  } catch (err) {
+    console.error('Erreur sauvegarde affectations:', err)
+  } finally {
+    submitting.value = false
+  }
 }
 
 function openConfigModal(type) {

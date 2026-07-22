@@ -253,6 +253,22 @@ class AdminClassController extends AbstractController
         if (isset($payload['maxCapacity'])) $classEntity->setMaxCapacity((int)$payload['maxCapacity']);
         if (isset($payload['schedule'])) $classEntity->setSchedule($payload['schedule']);
 
+        if (array_key_exists('teacherId', $payload)) {
+            if ($payload['teacherId'] !== null && (int)$payload['teacherId'] > 0) {
+                $teacher = $em->getRepository(Teacher::class)->find((int)$payload['teacherId']);
+                if ($teacher) $classEntity->setTeacher($teacher);
+            } else {
+                $classEntity->setTeacher(null);
+            }
+        } elseif (isset($payload['teacher'])) {
+            $teacher = $em->getRepository(Teacher::class)->findOneBy(['fullName' => trim($payload['teacher'])]);
+            if ($teacher) {
+                $classEntity->setTeacher($teacher);
+            } else {
+                $classEntity->setTeacher(null);
+            }
+        }
+
         $em->flush();
 
         return $this->json(['message' => 'Classe mise à jour avec succès dans MySQL']);
