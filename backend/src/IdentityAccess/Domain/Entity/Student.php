@@ -28,6 +28,9 @@ class Student
     #[ORM\Column(length: 100)]
     private ?string $lastName = null;
 
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $assignedGroup = 'Classe Débutant 2A (6-8 ans)';
+
     #[ORM\Column(type: 'date_immutable')]
     private ?\DateTimeImmutable $dateOfBirth = null;
 
@@ -107,6 +110,17 @@ class Student
     public function setLastName(string $lastName): self
     {
         $this->lastName = $lastName;
+        return $this;
+    }
+
+    public function getAssignedGroup(): ?string
+    {
+        return $this->assignedGroup;
+    }
+
+    public function setAssignedGroup(?string $assignedGroup): self
+    {
+        $this->assignedGroup = $assignedGroup;
         return $this;
     }
 

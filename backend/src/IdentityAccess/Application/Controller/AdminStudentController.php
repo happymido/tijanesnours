@@ -23,7 +23,7 @@ class AdminStudentController extends AbstractController
     {
         $data = [];
 
-        // 1. Récupérer tous les Élèves avec leur classe et parent
+        // 1. Récupérer tous les Élèves avec leur classe et parent depuis MySQL
         $students = $em->getRepository(Student::class)->findAll();
         foreach ($students as $student) {
             $parent = $student->getParent();
@@ -38,7 +38,7 @@ class AdminStudentController extends AbstractController
                 'name' => $student->getFirstName() . ' ' . $student->getLastName(),
                 'email' => $user ? $user->getEmail() : '',
                 'role' => 'ROLE_STUDENT',
-                'assignedGroup' => 'Classe Débutant 2A (6-8 ans)',
+                'assignedGroup' => $student->getAssignedGroup() ?? 'Classe Débutant 2A (6-8 ans)',
                 'parentId' => $parentIdStr,
                 'parentName' => $parent ? $parent->getFullName() : 'Karim Benali',
                 'contactInfo' => $parent ? $parent->getPhone() : '+352 691 123 456',
@@ -62,7 +62,7 @@ class AdminStudentController extends AbstractController
                 $childrenArray[] = [
                     'id' => 'student_' . $st->getId(),
                     'name' => $st->getFirstName() . ' ' . $st->getLastName(),
-                    'class' => 'Classe Débutant 2A (6-8 ans)',
+                    'class' => $st->getAssignedGroup() ?? 'Classe Débutant 2A (6-8 ans)',
                     'dateOfBirth' => $st->getDateOfBirth() ? $st->getDateOfBirth()->format('d/m/Y') : '12/05/2018'
                 ];
             }
@@ -166,6 +166,7 @@ class AdminStudentController extends AbstractController
                 if (isset($payload['allergies'])) $student->setAllergies($payload['allergies']);
                 if (isset($payload['address'])) $student->setAddress($payload['address']);
                 if (isset($payload['insurancePolicy'])) $student->setInsurancePolicyNumber($payload['insurancePolicy']);
+                if (isset($payload['assignedGroup'])) $student->setAssignedGroup($payload['assignedGroup']);
 
                 if (!empty($payload['parentName'])) {
                     $parentUserEntity = $em->getRepository(ParentUser::class)->findOneBy(['fullName' => trim($payload['parentName'])]);
@@ -338,6 +339,7 @@ class AdminStudentController extends AbstractController
         $studentEntity->setFirstName($studentFirstName);
         $studentEntity->setLastName($studentLastName);
         $studentEntity->setDateOfBirth(new \DateTimeImmutable('-8 years'));
+        $studentEntity->setAssignedGroup($payload['assignedGroup'] ?? 'Classe Débutant 2A (6-8 ans)');
         $em->persist($studentEntity);
 
         $em->flush();
@@ -352,7 +354,7 @@ class AdminStudentController extends AbstractController
                 'name' => $studentEntity->getFirstName() . ' ' . $studentEntity->getLastName(),
                 'email' => $studentEmail,
                 'role' => 'ROLE_STUDENT',
-                'assignedGroup' => $payload['assignedGroup'] ?? 'Classe Débutant 2A',
+                'assignedGroup' => $studentEntity->getAssignedGroup(),
                 'parentId' => 'parent_' . $parentUserEntity->getId(),
                 'parentName' => $parentUserEntity->getFullName(),
                 'contactInfo' => $parentUserEntity->getPhone(),
