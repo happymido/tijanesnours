@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Gestion des Élèves, Parents & Enseignants</h1>
-        <p class="text-xs text-gray-500">Statuts Actif/Inactif en BBD, Fiches d'identité détaillées et rattachements</p>
+        <p class="text-xs text-gray-500">Statuts Actif/Inactif en BBD, Fiches d'identité détaillées et rattachement parent existant</p>
       </div>
       <div class="flex gap-3">
         <button @click="openModal('STUDENT')" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
@@ -93,7 +93,6 @@
                     @click="toggleStatus(user)"
                     :class="user.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200' : 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200'"
                     class="px-3 py-1 rounded-full text-[10px] font-extrabold border transition-all flex items-center gap-1.5 shadow-sm"
-                    title="Cliquer pour basculer le statut en base de données"
                   >
                     <span :class="user.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-red-500'" class="w-2 h-2 rounded-full"></span>
                     {{ user.status === 'ACTIVE' ? 'Actif' : 'Inactif' }}
@@ -145,73 +144,7 @@
       </div>
     </div>
 
-    <!-- Modal Fiche d'Identité Détaillée -->
-    <div v-if="selectedUserForCard" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
-        <div class="flex justify-between items-start border-b pb-4 dark:border-gray-700">
-          <div class="flex items-center gap-4">
-            <div :class="getAvatarBg(selectedUserForCard.role)" class="w-14 h-14 rounded-2xl font-extrabold text-white text-xl flex items-center justify-center shadow-lg">
-              {{ selectedUserForCard.name[0] }}
-            </div>
-            <div>
-              <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ selectedUserForCard.name }}</h3>
-              <div class="flex items-center gap-2 mt-1">
-                <span :class="getRoleBadge(selectedUserForCard.role)" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold">
-                  {{ getRoleLabel(selectedUserForCard.role) }}
-                </span>
-                <span :class="selectedUserForCard.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold">
-                  {{ selectedUserForCard.status === 'ACTIVE' ? 'Compte Actif' : 'Compte Inactif' }}
-                </span>
-              </div>
-            </div>
-          </div>
-          <button @click="selectedUserForCard = null" class="text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
-        </div>
-
-        <!-- Corps de la Fiche d'Identité -->
-        <div class="space-y-4 text-xs">
-          <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl space-y-2">
-            <h4 class="font-bold text-gray-900 dark:text-white uppercase tracking-wider text-[10px] text-gray-400">Coordonnées & Contact</h4>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <span class="text-gray-400 font-semibold block">Email :</span>
-                <strong class="text-gray-800 dark:text-gray-200">{{ selectedUserForCard.email }}</strong>
-              </div>
-              <div>
-                <span class="text-gray-400 font-semibold block">Téléphone :</span>
-                <strong class="text-gray-800 dark:text-gray-200">{{ selectedUserForCard.contactInfo || '+352 691 123 456' }}</strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- Spécifique Élève -->
-          <div v-if="selectedUserForCard.role === 'ROLE_STUDENT'" class="p-4 bg-brand-50/50 dark:bg-brand-900/20 rounded-2xl space-y-3 border border-brand-100 dark:border-brand-800">
-            <h4 class="font-bold text-brand-700 dark:text-brand-300 uppercase tracking-wider text-[10px]">Fiche Élève & Scolarité</h4>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <span class="text-gray-400 font-semibold block">Classe Affectée :</span>
-                <strong class="text-brand-600 font-bold">{{ selectedUserForCard.assignedGroup }}</strong>
-              </div>
-              <div>
-                <span class="text-gray-400 font-semibold block">Parent Responsable :</span>
-                <strong class="text-gray-900 dark:text-white">👨‍👩‍👧 {{ selectedUserForCard.parentName }}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex gap-3 pt-2">
-          <button @click="toggleStatus(selectedUserForCard)" class="flex-1 py-3 bg-gray-900 text-white font-bold rounded-xl text-xs">
-            Basculer Statut ({{ selectedUserForCard.status === 'ACTIVE' ? 'Désactiver' : 'Activer' }})
-          </button>
-          <button @click="selectedUserForCard = null" class="py-3 px-5 border rounded-xl font-semibold text-xs">
-            Fermer
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal Form (Ajout Élève / Enseignant) -->
+    <!-- Modal Form avec choix du Parent (Existant ou Nouveau) -->
     <div v-if="showModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
         <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
@@ -220,7 +153,7 @@
               {{ modalType === 'STUDENT' ? 'Ajouter un Élève' : 'Ajouter un Enseignant' }}
             </h3>
             <p v-if="modalType === 'STUDENT'" class="text-xs text-emerald-600 font-semibold mt-0.5">
-              ⚡ Persistance MySQL direct & création automatique du compte Parent
+              ⚡ Rattachement à un Parent Existant ou Création automatique du compte
             </p>
           </div>
           <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
@@ -260,11 +193,24 @@
             </div>
           </div>
 
-          <!-- Section Responsable Légal / Parent -->
+          <!-- Section Choix & Sélection du Parent -->
           <div v-if="modalType === 'STUDENT'" class="space-y-3 pt-2">
             <h4 class="font-bold text-brand-600 dark:text-gold-400 border-b pb-1 flex items-center justify-between">
-              <span>👨‍👩‍👧 2. Responsable Légal (Compte Parent BBD)</span>
+              <span>👨‍👩‍👧 2. Responsable Légal / Parent</span>
             </h4>
+
+            <!-- Option 1: Sélectionner un Parent existant -->
+            <div>
+              <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-300">Sélectionner un Parent déjà inscrit :</label>
+              <select v-model="selectedExistingParentId" @change="onSelectExistingParent" class="w-full px-3 py-2.5 rounded-xl border bg-brand-50/50 dark:bg-gray-700 font-semibold text-brand-700 dark:text-gold-300">
+                <option value="">-- Créer un Nouveau Parent --</option>
+                <option v-for="p in parents" :key="p.id" :value="p.id">
+                  👨‍👩‍👧 {{ p.name }} ({{ p.email }})
+                </option>
+              </select>
+            </div>
+
+            <!-- Champs Saisie / Préremplis -->
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block font-semibold mb-1">Nom & Prénom du Parent</label>
@@ -307,6 +253,7 @@ const modalType = ref('STUDENT')
 const loading = ref(false)
 const submitting = ref(false)
 const selectedUserForCard = ref(null)
+const selectedExistingParentId = ref('')
 
 const currentPage = ref(1)
 const itemsPerPage = ref(5)
@@ -363,6 +310,21 @@ async function fetchUsers() {
   }
 }
 
+function onSelectExistingParent() {
+  if (!selectedExistingParentId.value) {
+    form.value.parentFullName = ''
+    form.value.parentEmail = ''
+    form.value.parentPhone = ''
+    return
+  }
+  const parentObj = parents.value.find(p => p.id === selectedExistingParentId.value)
+  if (parentObj) {
+    form.value.parentFullName = parentObj.name
+    form.value.parentEmail = parentObj.email
+    form.value.parentPhone = parentObj.contactInfo || '+352 691 123 456'
+  }
+}
+
 async function toggleStatus(user) {
   try {
     const response = await apiClient.put(`/admin/students/${user.id}/toggle-status`)
@@ -390,6 +352,7 @@ onMounted(() => {
 
 function openModal(type) {
   modalType.value = type
+  selectedExistingParentId.value = ''
   form.value = {
     studentFirstName: '',
     studentLastName: '',
@@ -411,10 +374,13 @@ async function saveUser() {
         usersList.value.unshift(response.data.student)
       }
       showModal.value = false
-      // SweetAlert2 Modal Ultra Élégant
+
+      const isExisting = parents.value.some(p => p.email.toLowerCase() === form.value.parentEmail.toLowerCase())
       showSuccessAlert(
         'Inscription Validée ! 🎉',
-        `L'élève <strong>${form.value.studentFirstName} ${form.value.studentLastName}</strong> et le compte Parent <strong>${form.value.parentFullName}</strong> (${form.value.parentEmail}) ont été enregistrés et rattachés avec succès dans la base MySQL <code class="bg-gray-100 text-brand-700 px-2 py-0.5 rounded">tijanes_db</code>.`
+        isExisting
+          ? `L'élève <strong>${form.value.studentFirstName} ${form.value.studentLastName}</strong> a été rattaché avec succès au compte Parent existant de <strong>${form.value.parentFullName}</strong> (${form.value.parentEmail}) !`
+          : `L'élève <strong>${form.value.studentFirstName} ${form.value.studentLastName}</strong> et le nouveau compte Parent <strong>${form.value.parentFullName}</strong> (${form.value.parentEmail}) ont été enregistrés avec succès dans MySQL.`
       )
     } else {
       const newTeacher = {
@@ -429,10 +395,7 @@ async function saveUser() {
       }
       usersList.value.unshift(newTeacher)
       showModal.value = false
-      showSuccessAlert(
-        'Enseignant Créé !',
-        `L'enseignant <strong>${newTeacher.name}</strong> a été enregistré avec succès.`
-      )
+      showSuccessAlert('Enseignant Créé !', `L'enseignant <strong>${newTeacher.name}</strong> a été créé.`)
     }
   } catch (err) {
     console.error('Erreur enregistrement BBD:', err)
