@@ -166,6 +166,15 @@ class AdminStudentController extends AbstractController
                 if (isset($payload['allergies'])) $student->setAllergies($payload['allergies']);
                 if (isset($payload['address'])) $student->setAddress($payload['address']);
                 if (isset($payload['insurancePolicy'])) $student->setInsurancePolicyNumber($payload['insurancePolicy']);
+
+                // Mise à jour de la relation Parent dans MySQL lors d'un changement de parent !
+                if (!empty($payload['parentName'])) {
+                    $parentUserEntity = $em->getRepository(ParentUser::class)->findOneBy(['fullName' => trim($payload['parentName'])]);
+                    if ($parentUserEntity) {
+                        $student->setParent($parentUserEntity);
+                    }
+                }
+
                 $em->flush();
             }
         } elseif (str_starts_with($id, 'parent_')) {
@@ -193,7 +202,7 @@ class AdminStudentController extends AbstractController
             }
         }
 
-        return $this->json(['message' => 'Données utilisateur mises à jour avec succès dans MySQL']);
+        return $this->json(['message' => 'Données utilisateur et rattachement parent mis à jour avec succès dans MySQL']);
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]

@@ -537,6 +537,15 @@ async function saveChanges() {
     user.value.assignedGroup = editForm.value.assignedGroup
     user.value.parentName = editForm.value.parentName
 
+    // Mise à jour immédiate du parentId et du contact du parent sélectionné
+    const selectedParentObj = allParentsList.value.find(p => p.name.toLowerCase() === editForm.value.parentName.toLowerCase())
+    if (selectedParentObj) {
+      user.value.parentId = selectedParentObj.id
+      if (selectedParentObj.contactInfo) {
+        user.value.contactInfo = selectedParentObj.contactInfo
+      }
+    }
+
     if (!user.value.details) user.value.details = {}
     user.value.details.address = editForm.value.address
     user.value.details.dateOfBirth = editForm.value.dateOfBirth
