@@ -168,11 +168,34 @@ class AdminClassController extends AbstractController
             ['id' => 6, 'day' => 'Vendredi', 'startTime' => '17:30', 'endTime' => '19:30', 'label' => 'Soirée', 'name' => 'Vendredi 17:30 - 19:30 (Soirée)']
         ];
 
+        // 5. Récupérer tous les Enseignants réels depuis la base de données MySQL
+        $teachers = $em->getRepository(Teacher::class)->findAll();
+        $teacherData = [];
+        foreach ($teachers as $t) {
+            $specs = $t->getSpecialities();
+            $teacherData[] = [
+                'id' => $t->getId(),
+                'name' => $t->getFullName(),
+                'speciality' => !empty($specs) ? implode(', ', $specs) : 'Langue Arabe & Tajwid',
+                'email' => $t->getUser() ? $t->getUser()->getEmail() : '',
+                'phone' => $t->getPhone() ?? '+352 691 888 999'
+            ];
+        }
+
+        if (empty($teacherData)) {
+            $teacherData = [
+                ['id' => 1, 'name' => 'Cheikh Mahmoud', 'speciality' => 'Langue Arabe & Tajwid'],
+                ['id' => 2, 'name' => 'Oustaz Hassan', 'speciality' => 'Coran & Mémorisation'],
+                ['id' => 3, 'name' => 'Mme Souad', 'speciality' => 'Éducation Éthique & Arabe']
+            ];
+        }
+
         return $this->json([
             'classes' => $classData,
             'categories' => $catData,
             'levels' => $levelData,
-            'schedules' => $schedulesList
+            'schedules' => $schedulesList,
+            'teachers' => $teacherData
         ]);
     }
 

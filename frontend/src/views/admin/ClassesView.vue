@@ -589,6 +589,9 @@ async function fetchClassesData() {
       if (Array.isArray(res.data.schedules) && res.data.schedules.length > 0) {
         schedules.value = res.data.schedules
       }
+      if (Array.isArray(res.data.teachers) && res.data.teachers.length > 0) {
+        teachersList.value = res.data.teachers
+      }
     }
   } catch (err) {
     console.error('Erreur API /admin/classes:', err)
