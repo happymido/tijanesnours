@@ -88,7 +88,6 @@
                   </div>
                   <div class="text-[10px] text-gray-400">{{ user.contactInfo || '-' }}</div>
                 </td>
-                <!-- Statut BBD Actif / Inactif avec bouton de bascule -->
                 <td class="py-3.5 px-4">
                   <button
                     @click="toggleStatus(user)"
@@ -102,7 +101,7 @@
                 </td>
                 <td class="py-3.5 px-4 text-right space-x-2">
                   <button @click="openIdCard(user)" class="text-brand-600 font-bold hover:underline">🪪 Fiche d'identité</button>
-                  <button @click="deleteUser(user.id)" class="text-red-600 font-bold hover:underline">Supprimer</button>
+                  <button @click="deleteUser(user)" class="text-red-600 font-bold hover:underline">Supprimer</button>
                 </td>
               </tr>
             </tbody>
@@ -146,7 +145,7 @@
       </div>
     </div>
 
-    <!-- Modal Fiche d'Identité Détaillée (Identity Card) -->
+    <!-- Modal Fiche d'Identité Détaillée -->
     <div v-if="selectedUserForCard" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
         <div class="flex justify-between items-start border-b pb-4 dark:border-gray-700">
@@ -169,9 +168,8 @@
           <button @click="selectedUserForCard = null" class="text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
         </div>
 
-        <!-- Corps de la Fiche d'Identité selon le rôle -->
+        <!-- Corps de la Fiche d'Identité -->
         <div class="space-y-4 text-xs">
-          <!-- Infos communes -->
           <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl space-y-2">
             <h4 class="font-bold text-gray-900 dark:text-white uppercase tracking-wider text-[10px] text-gray-400">Coordonnées & Contact</h4>
             <div class="grid grid-cols-2 gap-3">
@@ -198,38 +196,6 @@
                 <span class="text-gray-400 font-semibold block">Parent Responsable :</span>
                 <strong class="text-gray-900 dark:text-white">👨‍👩‍👧 {{ selectedUserForCard.parentName }}</strong>
               </div>
-              <div>
-                <span class="text-gray-400 font-semibold block">Date de Naissance :</span>
-                <strong>{{ selectedUserForCard.details?.dateOfBirth || '12/05/2018' }}</strong>
-              </div>
-              <div>
-                <span class="text-gray-400 font-semibold block">Nationalité :</span>
-                <strong>{{ selectedUserForCard.details?.nationality || 'Luxembourgeoise' }}</strong>
-              </div>
-            </div>
-            <div class="pt-2 border-t text-[11px] space-y-1">
-              <p>🏥 <strong>Allergies / Santé :</strong> {{ selectedUserForCard.details?.allergies || 'Aucune allergie signalée' }}</p>
-              <p>📄 <strong>Police Assurance :</strong> {{ selectedUserForCard.details?.insurancePolicy || 'LU-890421-AXA' }}</p>
-            </div>
-          </div>
-
-          <!-- Spécifique Parent -->
-          <div v-if="selectedUserForCard.role === 'ROLE_PARENT'" class="p-4 bg-gold-50/50 dark:bg-gold-900/20 rounded-2xl space-y-3 border border-gold-200">
-            <h4 class="font-bold text-gold-700 uppercase tracking-wider text-[10px]">Fiche Responsable Légal & Finances</h4>
-            <div class="space-y-1.5">
-              <p>💳 <strong>Mode de Paiement Préféré :</strong> Prélèvement SEPA / Stripe</p>
-              <p>🏦 <strong>Référence Mandat SEPA :</strong> SEPA-2026-0042-LU</p>
-              <p>🎓 <strong>Enfants rattachés :</strong> Youssef Benali (Débutant 2A)</p>
-            </div>
-          </div>
-
-          <!-- Spécifique Enseignant -->
-          <div v-if="selectedUserForCard.role === 'ROLE_TEACHER'" class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl space-y-3 border border-emerald-200">
-            <h4 class="font-bold text-emerald-700 uppercase tracking-wider text-[10px]">Fiche Enseignant & Qualifications</h4>
-            <div class="space-y-1.5">
-              <p>📚 <strong>Spécialité :</strong> {{ selectedUserForCard.assignedGroup }}</p>
-              <p>🏫 <strong>Classes Enseignées :</strong> Classe Éveil 1, Classe Avancé Tajwid</p>
-              <p>✨ <strong>Qualificatifs :</strong> Diplômé en Sciences de la Langue Arabe & Tajwid</p>
             </div>
           </div>
         </div>
@@ -294,7 +260,7 @@
             </div>
           </div>
 
-          <!-- Section Responsable Légal / Parent (Création Automatique BBD) -->
+          <!-- Section Responsable Légal / Parent -->
           <div v-if="modalType === 'STUDENT'" class="space-y-3 pt-2">
             <h4 class="font-bold text-brand-600 dark:text-gold-400 border-b pb-1 flex items-center justify-between">
               <span>👨‍👩‍👧 2. Responsable Légal (Compte Parent BBD)</span>
@@ -315,21 +281,6 @@
             </div>
           </div>
 
-          <div v-if="modalType === 'TEACHER'" class="space-y-3">
-            <div>
-              <label class="block font-semibold mb-1">Spécialité Enseignée</label>
-              <select v-model="form.assignedGroup" class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold">
-                <option value="Langue Arabe & Tajwid">Langue Arabe & Tajwid</option>
-                <option value="Coran & Mémorisation">Coran & Mémorisation</option>
-                <option value="Éducation Éthique">Éducation Éthique</option>
-              </select>
-            </div>
-            <div>
-              <label class="block font-semibold mb-1">Téléphone de contact</label>
-              <input v-model="form.parentPhone" type="text" class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="+352 691 999 888" />
-            </div>
-          </div>
-
           <div class="flex gap-3 pt-4">
             <button type="submit" :disabled="submitting" class="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow disabled:opacity-50">
               {{ submitting ? 'Enregistrement MySQL...' : 'Enregistrer dans la BBD MySQL' }}
@@ -347,6 +298,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import apiClient from '../../plugins/axios'
+import { showSuccessAlert, showErrorAlert, showConfirmDialog } from '../../plugins/notify'
 
 const activeTab = ref('ALL')
 const searchQuery = ref('')
@@ -356,7 +308,6 @@ const loading = ref(false)
 const submitting = ref(false)
 const selectedUserForCard = ref(null)
 
-// Pagination State
 const currentPage = ref(1)
 const itemsPerPage = ref(5)
 
@@ -389,9 +340,7 @@ const filteredUsers = computed(() => {
   return list
 })
 
-// Pagination Computations
 const totalPages = computed(() => Math.ceil(filteredUsers.value.length / itemsPerPage.value) || 1)
-
 const paginatedUsers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   return filteredUsers.value.slice(start, start + itemsPerPage.value)
@@ -406,14 +355,6 @@ async function fetchUsers() {
     const response = await apiClient.get('/admin/students')
     if (Array.isArray(response.data) && response.data.length > 0) {
       usersList.value = response.data
-    } else {
-      usersList.value = [
-        { id: 1, name: 'Youssef Benali', email: 'youssef@student.lu', role: 'ROLE_STUDENT', assignedGroup: 'Classe Débutant 2A (6-8 ans)', parentName: 'Karim Benali', contactInfo: '+352 691 123 456', status: 'ACTIVE' },
-        { id: 2, name: 'Maryam El Amrani', email: 'maryam@student.lu', role: 'ROLE_STUDENT', assignedGroup: 'Classe Éveil 1 (4-5 ans)', parentName: 'Fatima El Amrani', contactInfo: '+352 691 222 333', status: 'ACTIVE' },
-        { id: 3, name: 'Adam Mansouri', email: 'adam@student.lu', role: 'ROLE_STUDENT', assignedGroup: 'Classe Intermédiaire 1 (9-12 ans)', parentName: 'Tariq Mansouri', contactInfo: '+352 691 444 555', status: 'INACTIVE' },
-        { id: 6, name: 'Cheikh Mahmoud', email: 'mahmoud@tijanesnours.lu', role: 'ROLE_TEACHER', assignedGroup: 'Langue Arabe & Tajwid', parentName: null, contactInfo: '+352 691 888 999', status: 'ACTIVE' },
-        { id: 8, name: 'Karim Benali', email: 'parent@tijanesnours.lu', role: 'ROLE_PARENT', assignedGroup: 'Enfants: Youssef', parentName: null, contactInfo: '+352 691 123 456', status: 'ACTIVE' }
-      ]
     }
   } catch (err) {
     console.error('Erreur API /admin/students:', err)
@@ -430,7 +371,10 @@ async function toggleStatus(user) {
     } else {
       user.status = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
     }
-    alert(`Le statut de ${user.name} a été mis à jour dans la BBD MySQL : ${user.status === 'ACTIVE' ? 'ACTIF' : 'INACTIF'}`)
+    showSuccessAlert(
+      'Statut Modifié',
+      `Le compte de <strong>${user.name}</strong> est désormais <strong>${user.status === 'ACTIVE' ? 'ACTIF' : 'INACTIF'}</strong> dans la base MySQL.`
+    )
   } catch (err) {
     user.status = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
   }
@@ -467,10 +411,14 @@ async function saveUser() {
         usersList.value.unshift(response.data.student)
       }
       showModal.value = false
-      alert('✅ Élève et compte Parent enregistrés et persistés avec succès dans la base de données MySQL `tijanes_db` !')
+      // SweetAlert2 Modal Ultra Élégant
+      showSuccessAlert(
+        'Inscription Validée ! 🎉',
+        `L'élève <strong>${form.value.studentFirstName} ${form.value.studentLastName}</strong> et le compte Parent <strong>${form.value.parentFullName}</strong> (${form.value.parentEmail}) ont été enregistrés et rattachés avec succès dans la base MySQL <code class="bg-gray-100 text-brand-700 px-2 py-0.5 rounded">tijanes_db</code>.`
+      )
     } else {
       const newTeacher = {
-        id: Date.now(),
+        id: 'teacher_' + Date.now(),
         name: `${form.value.studentFirstName} ${form.value.studentLastName}`,
         email: form.value.studentEmail,
         role: 'ROLE_TEACHER',
@@ -481,18 +429,28 @@ async function saveUser() {
       }
       usersList.value.unshift(newTeacher)
       showModal.value = false
-      alert(`Enseignant ${newTeacher.name} créé dans la BBD !`)
+      showSuccessAlert(
+        'Enseignant Créé !',
+        `L'enseignant <strong>${newTeacher.name}</strong> a été enregistré avec succès.`
+      )
     }
   } catch (err) {
     console.error('Erreur enregistrement BBD:', err)
+    showErrorAlert('Erreur', 'Une erreur est survenue lors de la persistance en base de données.')
   } finally {
     submitting.value = false
   }
 }
 
-function deleteUser(id) {
-  if (confirm('Voulez-vous vraiment supprimer cet utilisateur de la base de données MySQL ?')) {
-    usersList.value = usersList.value.filter(u => u.id !== id)
+async function deleteUser(user) {
+  const result = await showConfirmDialog(
+    'Confirmation de Suppression',
+    `Êtes-vous sûr de vouloir supprimer <strong>${user.name}</strong> de la base de données ?`,
+    'Oui, supprimer'
+  )
+  if (result.isConfirmed) {
+    usersList.value = usersList.value.filter(u => u.id !== user.id)
+    showSuccessAlert('Supprimé', `L'utilisateur ${user.name} a été supprimé.`)
   }
 }
 
