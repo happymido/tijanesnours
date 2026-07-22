@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Gestion des Élèves, Parents & Enseignants</h1>
-        <p class="text-xs text-gray-500">Statuts Actif/Inactif en BBD, Fiches d'identité détaillées et rattachement parent existant</p>
+        <p class="text-xs text-gray-500">Statuts Actif/Inactif en BBD, Fiches d'identité détaillées et sélecteurs recherchables (Select2)</p>
       </div>
       <div class="flex gap-3">
         <button @click="openModal('STUDENT')" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
@@ -45,7 +45,7 @@
       </div>
     </div>
 
-    <!-- Datatable avec Statuts Actif/Inactif BBD & Fiches d'identité -->
+    <!-- Datatable -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
       <div v-if="loading" class="text-center py-8 text-xs font-bold text-gray-500">
         Chargement des données depuis MySQL...
@@ -144,16 +144,16 @@
       </div>
     </div>
 
-    <!-- Modal Form avec choix du Parent (Existant ou Nouveau) -->
+    <!-- Modal Form avec Select2 Recherchable pour la sélection des Parents et des Classes -->
     <div v-if="showModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6 overflow-visible">
         <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
           <div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white">
               {{ modalType === 'STUDENT' ? 'Ajouter un Élève' : 'Ajouter un Enseignant' }}
             </h3>
             <p v-if="modalType === 'STUDENT'" class="text-xs text-emerald-600 font-semibold mt-0.5">
-              ⚡ Rattachement à un Parent Existant ou Création automatique du compte
+              ⚡ Sélecteur Select2 avec recherche intégrée
             </p>
           </div>
           <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
@@ -182,32 +182,31 @@
                 <input v-model="form.studentEmail" type="email" class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="youssef@student.lu" />
               </div>
               <div>
-                <label class="block font-semibold mb-1">Classe Affectée</label>
-                <select v-model="form.assignedGroup" class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold">
-                  <option value="Classe Éveil 1 (4-5 ans)">Classe Éveil 1 (4-5 ans)</option>
-                  <option value="Classe Débutant 2A (6-8 ans)">Classe Débutant 2A (6-8 ans)</option>
-                  <option value="Classe Intermédiaire 1 (9-12 ans)">Classe Intermédiaire 1 (9-12 ans)</option>
-                  <option value="Classe Avancé Tajwid (13-16 ans)">Classe Avancé Tajwid (13-16 ans)</option>
-                </select>
+                <label class="block font-semibold mb-1">Classe Affectée (Select2)</label>
+                <SearchableSelect
+                  v-model="form.assignedGroup"
+                  :options="classOptions"
+                  placeholder="Rechercher une classe..."
+                />
               </div>
             </div>
           </div>
 
-          <!-- Section Choix & Sélection du Parent -->
+          <!-- Section Choix & Sélection du Parent avec Select2 avec Recherche -->
           <div v-if="modalType === 'STUDENT'" class="space-y-3 pt-2">
             <h4 class="font-bold text-brand-600 dark:text-gold-400 border-b pb-1 flex items-center justify-between">
               <span>👨‍👩‍👧 2. Responsable Légal / Parent</span>
             </h4>
 
-            <!-- Option 1: Sélectionner un Parent existant -->
+            <!-- Select2 Recherchable des Parents Existants -->
             <div>
-              <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-300">Sélectionner un Parent déjà inscrit :</label>
-              <select v-model="selectedExistingParentId" @change="onSelectExistingParent" class="w-full px-3 py-2.5 rounded-xl border bg-brand-50/50 dark:bg-gray-700 font-semibold text-brand-700 dark:text-gold-300">
-                <option value="">-- Créer un Nouveau Parent --</option>
-                <option v-for="p in parents" :key="p.id" :value="p.id">
-                  👨‍👩‍👧 {{ p.name }} ({{ p.email }})
-                </option>
-              </select>
+              <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-300">Rechercher / Sélectionner un Parent (Select2) :</label>
+              <SearchableSelect
+                v-model="selectedExistingParentId"
+                :options="parentOptions"
+                placeholder="🔍 Rechercher par nom ou email du parent..."
+                @change="onSelectExistingParent"
+              />
             </div>
 
             <!-- Champs Saisie / Préremplis -->
@@ -245,6 +244,7 @@
 import { ref, computed, onMounted } from 'vue'
 import apiClient from '../../plugins/axios'
 import { showSuccessAlert, showErrorAlert, showConfirmDialog } from '../../plugins/notify'
+import SearchableSelect from '../../components/common/SearchableSelect.vue'
 
 const activeTab = ref('ALL')
 const searchQuery = ref('')
@@ -257,6 +257,13 @@ const selectedExistingParentId = ref('')
 
 const currentPage = ref(1)
 const itemsPerPage = ref(5)
+
+const classOptions = ref([
+  { value: 'Classe Éveil 1 (4-5 ans)', label: 'Classe Éveil 1 (4-5 ans)' },
+  { value: 'Classe Débutant 2A (6-8 ans)', label: 'Classe Débutant 2A (6-8 ans)' },
+  { value: 'Classe Intermédiaire 1 (9-12 ans)', label: 'Classe Intermédiaire 1 (9-12 ans)' },
+  { value: 'Classe Avancé Tajwid (13-16 ans)', label: 'Classe Avancé Tajwid (13-16 ans)' }
+])
 
 const form = ref({
   studentFirstName: '',
@@ -273,6 +280,17 @@ const usersList = ref([])
 const students = computed(() => usersList.value.filter(u => u.role === 'ROLE_STUDENT'))
 const teachers = computed(() => usersList.value.filter(u => u.role === 'ROLE_TEACHER'))
 const parents = computed(() => usersList.value.filter(u => u.role === 'ROLE_PARENT'))
+
+const parentOptions = computed(() => {
+  const list = [{ value: '', label: '-- Créer un Nouveau Parent --' }]
+  parents.value.forEach(p => {
+    list.push({
+      value: p.id,
+      label: `👨‍👩‍👧 ${p.name} (${p.email})`
+    })
+  })
+  return list
+})
 
 const filteredUsers = computed(() => {
   let list = usersList.value
@@ -310,14 +328,15 @@ async function fetchUsers() {
   }
 }
 
-function onSelectExistingParent() {
-  if (!selectedExistingParentId.value) {
+function onSelectExistingParent(opt) {
+  const parentId = opt ? opt.value : selectedExistingParentId.value
+  if (!parentId) {
     form.value.parentFullName = ''
     form.value.parentEmail = ''
     form.value.parentPhone = ''
     return
   }
-  const parentObj = parents.value.find(p => p.id === selectedExistingParentId.value)
+  const parentObj = parents.value.find(p => p.id === parentId)
   if (parentObj) {
     form.value.parentFullName = parentObj.name
     form.value.parentEmail = parentObj.email
