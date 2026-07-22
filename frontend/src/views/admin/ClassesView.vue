@@ -205,12 +205,25 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block font-semibold mb-1">Créneau Horaire</label>
-              <input v-model="classForm.schedule" type="text" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="Samedi 09:00 - 12:00" />
+              <label class="block font-semibold mb-1">Créneau Horaire (Sélection)</label>
+              <select v-model="classForm.schedule" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold">
+                <option value="Samedi 09:00 - 12:00">Samedi 09:00 - 12:00 (Matin)</option>
+                <option value="Samedi 14:00 - 17:00">Samedi 14:00 - 17:00 (Après-Midi)</option>
+                <option value="Dimanche 09:00 - 12:00">Dimanche 09:00 - 12:00 (Matin)</option>
+                <option value="Dimanche 14:00 - 17:00">Dimanche 14:00 - 17:00 (Après-Midi)</option>
+                <option value="Mercredi 14:00 - 17:00">Mercredi 14:00 - 17:00 (Rattrapage)</option>
+                <option value="Vendredi 17:30 - 19:30">Vendredi 17:30 - 19:30 (Soirée)</option>
+              </select>
             </div>
             <div>
               <label class="block font-semibold mb-1">Salle de cours</label>
-              <input v-model="classForm.room" type="text" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="Salle Maryam 1" />
+              <select v-model="classForm.room" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold">
+                <option value="Salle Maryam 1">Salle Maryam 1</option>
+                <option value="Salle Maryam 2">Salle Maryam 2</option>
+                <option value="Salle Khadija 1">Salle Khadija 1</option>
+                <option value="Salle Khadija 2">Salle Khadija 2</option>
+                <option value="Grand Amphi A">Grand Amphi A</option>
+              </select>
             </div>
           </div>
 
