@@ -12,6 +12,7 @@
   "dependencies": {
     "@stripe/stripe-js": "^3.3.0",
     "axios": "^1.6.8",
+    "jspdf": "^4.2.1",
     "lucide-vue-next": "^0.378.0",
     "pinia": "^2.1.7",
     "sweetalert2": "^11.26.25",

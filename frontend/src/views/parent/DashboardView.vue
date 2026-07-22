@@ -7,7 +7,7 @@
           Espace Parent & Famille
         </span>
         <h1 class="text-3xl font-extrabold mt-2">Bienvenue, {{ parentName }}</h1>
-        <p class="text-brand-100 text-sm mt-1">Suivi scolaire, notes, absences et facturation de vos enfants inscrits</p>
+        <p class="text-brand-100 text-sm mt-1">Suivi scolaire, bulletins PDF, assiduité et facturation de vos enfants inscrits</p>
       </div>
       <router-link
         to="/register"
@@ -26,12 +26,12 @@
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
           <div class="flex items-center justify-between border-b pb-4 dark:border-gray-700">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-2xl bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-lg">
+              <div class="w-12 h-12 rounded-2xl bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-lg shadow-sm">
                 YB
               </div>
               <div>
                 <h3 class="font-bold text-lg text-gray-900 dark:text-white">Youssef Benali</h3>
-                <p class="text-xs text-gray-500">8 ans • Niveau Débutant 2</p>
+                <p class="text-xs text-gray-500">8 ans • Classe Débutant 2A (6-8 ans)</p>
               </div>
             </div>
             <span class="px-3 py-1 bg-emerald-100 text-emerald-700 font-bold text-xs rounded-full">Inscrit</span>
@@ -53,11 +53,11 @@
           </div>
 
           <div class="flex gap-3 pt-2">
-            <button @click="downloadBulletin('Youssef')" class="flex-1 py-2.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold text-xs rounded-xl transition-all">
-              Bulletin PDF
+            <button @click="downloadBulletin('Youssef Benali', 'Classe Débutant 2A')" class="flex-1 py-2.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm">
+              <span>📄</span> Bulletin PDF
             </button>
-            <button @click="downloadInvoice('Youssef')" class="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 font-bold text-xs rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-              Facture PDF
+            <button @click="downloadInvoice('Youssef Benali')" class="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 font-bold text-xs rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-1.5">
+              <span>💳</span> Facture PDF
             </button>
           </div>
         </div>
@@ -66,15 +66,15 @@
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
           <div class="flex items-center justify-between border-b pb-4 dark:border-gray-700">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-2xl bg-gold-100 text-gold-700 font-bold flex items-center justify-center text-lg">
-                SB
+              <div class="w-12 h-12 rounded-2xl bg-gold-100 text-gold-700 font-bold flex items-center justify-center text-lg shadow-sm">
+                AB
               </div>
               <div>
-                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Sarah Benali</h3>
-                <p class="text-xs text-gray-500">5 ans • Maternelle / Éveil</p>
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Aya Benali</h3>
+                <p class="text-xs text-gray-500">5 ans • Classe Éveil 1 (4-5 ans)</p>
               </div>
             </div>
-            <span class="px-3 py-1 bg-emerald-100 text-emerald-700 font-bold text-xs rounded-full">Inscrit</span>
+            <span class="px-3 py-1 bg-emerald-100 text-emerald-700 font-bold text-xs rounded-full">Inscrite</span>
           </div>
 
           <div class="grid grid-cols-3 gap-3 text-center">
@@ -93,11 +93,11 @@
           </div>
 
           <div class="flex gap-3 pt-2">
-            <button @click="downloadBulletin('Sarah')" class="flex-1 py-2.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold text-xs rounded-xl transition-all">
-              Bulletin PDF
+            <button @click="downloadBulletin('Aya Benali', 'Classe Éveil 1')" class="flex-1 py-2.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm">
+              <span>📄</span> Bulletin PDF
             </button>
-            <button @click="downloadInvoice('Sarah')" class="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 font-bold text-xs rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-              Facture PDF
+            <button @click="downloadInvoice('Aya Benali')" class="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 font-bold text-xs rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-1.5">
+              <span>💳</span> Facture PDF
             </button>
           </div>
         </div>
@@ -126,19 +126,23 @@
 
 <script setup>
 import { ref } from 'vue'
+import { generateBulletinPdf, generateInvoicePdf } from '../../plugins/pdfGenerator'
+import { showSuccessAlert } from '../../plugins/notify'
 
 const parentName = ref('Karim Benali')
 
-function downloadBulletin(child) {
-  alert(`Téléchargement du bulletin trimestriel PDF pour ${child}.`)
+function downloadBulletin(childName, className) {
+  generateBulletinPdf(childName, className)
+  showSuccessAlert('Génération PDF', `Le bulletin scolaire de ${childName} a été généré et téléchargé au format PDF.`)
 }
 
-function downloadInvoice(child) {
-  alert(`Téléchargement de la facture PDF acquittée pour ${child}.`)
+function downloadInvoice(childName) {
+  generateInvoicePdf(parentName.value, childName, 450)
+  showSuccessAlert('Génération PDF', `La facture officielle acquittée pour ${childName} a été téléchargée au format PDF.`)
 }
 
 function copyRef() {
   navigator.clipboard.writeText('RF12-2026-0042-89')
-  alert('Référence bancaire RF12-2026-0042-89 copiée dans le presse-papier !')
+  showSuccessAlert('Référence Copiée', 'La référence de virement bancaire RF12-2026-0042-89 a été copiée dans le presse-papier !')
 }
 </script>
