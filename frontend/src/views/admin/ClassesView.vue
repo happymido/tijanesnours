@@ -98,10 +98,31 @@
                   <div :style="{ width: Math.min(((cls.currentEnrolled ?? 0) / (cls.maxCapacity || 20) * 100), 100) + '%' }" class="h-full bg-emerald-500"></div>
                 </div>
               </td>
-              <td class="py-3.5 px-4 text-right space-x-2">
-                <button @click="openRoster(cls)" class="text-brand-600 font-bold hover:underline">Élèves ({{ cls.currentEnrolled ?? 0 }})</button>
-                <button @click="openClassModal(cls)" class="text-gray-600 font-bold hover:underline">✏️ Éditer</button>
-                <button @click="deleteClass(cls)" class="text-red-600 font-bold hover:underline">🗑️ Supprimer</button>
+              <td class="py-3.5 px-4 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button
+                    @click="openRoster(cls)"
+                    title="Voir l'effectif des élèves"
+                    class="px-2.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300 rounded-xl font-bold text-xs flex items-center gap-1 transition-all shadow-sm"
+                  >
+                    <span>👩‍🎓</span>
+                    <span class="text-[11px] font-extrabold">({{ cls.currentEnrolled ?? 0 }})</span>
+                  </button>
+                  <button
+                    @click="openClassModal(cls)"
+                    title="Éditer la classe"
+                    class="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    @click="deleteClass(cls)"
+                    title="Supprimer la classe"
+                    class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+                  >
+                    🗑️
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -146,9 +167,23 @@
                   {{ sch.label || 'Standard' }}
                 </span>
               </td>
-              <td class="py-3.5 px-4 text-right space-x-3">
-                <button @click="openScheduleConfigModal(sch)" class="text-brand-600 font-bold hover:underline">✏️ Éditer</button>
-                <button @click="deleteSchedule(sch)" class="text-red-600 font-bold hover:underline">🗑️ Supprimer</button>
+              <td class="py-3.5 px-4 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button
+                    @click="openScheduleConfigModal(sch)"
+                    title="Éditer le créneau"
+                    class="w-8 h-8 rounded-xl bg-gold-50 hover:bg-gold-100 text-gold-700 dark:bg-gold-900/50 dark:text-gold-300 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    @click="deleteSchedule(sch)"
+                    title="Supprimer le créneau"
+                    class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+                  >
+                    🗑️
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -181,11 +216,19 @@
             <p class="text-xs text-gray-500 leading-relaxed">{{ cat.description }}</p>
           </div>
 
-          <div class="flex gap-2 pt-3 border-t dark:border-gray-700">
-            <button @click="openCategoryModal(cat)" class="flex-1 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-800 dark:text-white font-bold text-xs rounded-xl transition-all">
-              ✏️ Éditer
+          <div class="flex justify-end gap-2 pt-3 border-t dark:border-gray-700">
+            <button
+              @click="openCategoryModal(cat)"
+              title="Éditer la catégorie"
+              class="w-9 h-9 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+            >
+              ✏️
             </button>
-            <button @click="deleteCategory(cat)" class="py-1.5 px-3 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded-xl transition-all">
+            <button
+              @click="deleteCategory(cat)"
+              title="Supprimer la catégorie"
+              class="w-9 h-9 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+            >
               🗑️
             </button>
           </div>
@@ -217,11 +260,19 @@
             <p class="text-xs text-gray-500 leading-relaxed">{{ lvl.description }}</p>
           </div>
 
-          <div class="flex gap-2 pt-3 border-t dark:border-gray-700">
-            <button @click="openLevelModal(lvl)" class="flex-1 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-800 dark:text-white font-bold text-xs rounded-xl transition-all">
-              ✏️ Éditer
+          <div class="flex justify-end gap-2 pt-3 border-t dark:border-gray-700">
+            <button
+              @click="openLevelModal(lvl)"
+              title="Éditer le niveau"
+              class="w-9 h-9 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+            >
+              ✏️
             </button>
-            <button @click="deleteLevel(lvl)" class="py-1.5 px-3 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded-xl transition-all">
+            <button
+              @click="deleteLevel(lvl)"
+              title="Supprimer le niveau"
+              class="w-9 h-9 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+            >
               🗑️
             </button>
           </div>
