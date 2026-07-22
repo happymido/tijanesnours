@@ -38,6 +38,10 @@ class SchoolClass
     #[ORM\JoinColumn(name: 'teacher_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Teacher $teacher = null;
 
+    #[ORM\ManyToOne(targetEntity: ScheduleSlot::class)]
+    #[ORM\JoinColumn(name: 'schedule_slot_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?ScheduleSlot $scheduleSlot = null;
+
     public function getId(): ?int
     {
         return $this->id;

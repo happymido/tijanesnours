@@ -5,6 +5,7 @@ namespace App\Schooling\Application\Controller;
 use App\Schooling\Domain\Entity\SchoolClass;
 use App\Schooling\Domain\Entity\CourseCategory;
 use App\Schooling\Domain\Entity\CourseLevel;
+use App\Schooling\Domain\Entity\ScheduleSlot;
 use App\IdentityAccess\Domain\Entity\Teacher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -184,15 +185,19 @@ class AdminClassController extends AbstractController
             ];
         }
 
-        // 4. Liste des Créneaux Horaires configurables
-        $schedulesList = [
-            ['id' => 1, 'day' => 'Samedi', 'startTime' => '09:00', 'endTime' => '12:00', 'label' => 'Matin', 'name' => 'Samedi 09:00 - 12:00 (Matin)'],
-            ['id' => 2, 'day' => 'Samedi', 'startTime' => '14:00', 'endTime' => '17:00', 'label' => 'Après-Midi', 'name' => 'Samedi 14:00 - 17:00 (Après-Midi)'],
-            ['id' => 3, 'day' => 'Dimanche', 'startTime' => '09:00', 'endTime' => '12:00', 'label' => 'Matin', 'name' => 'Dimanche 09:00 - 12:00 (Matin)'],
-            ['id' => 4, 'day' => 'Dimanche', 'startTime' => '14:00', 'endTime' => '17:00', 'label' => 'Après-Midi', 'name' => 'Dimanche 14:00 - 17:00 (Après-Midi)'],
-            ['id' => 5, 'day' => 'Mercredi', 'startTime' => '14:00', 'endTime' => '17:00', 'label' => 'Rattrapage', 'name' => 'Mercredi 14:00 - 17:00 (Rattrapage)'],
-            ['id' => 6, 'day' => 'Vendredi', 'startTime' => '17:30', 'endTime' => '19:30', 'label' => 'Soirée', 'name' => 'Vendredi 17:30 - 19:30 (Soirée)']
-        ];
+        // 4. Liste des Créneaux Horaires configurables depuis la BBD MySQL (schedule_slots)
+        $scheduleEntities = $em->getRepository(ScheduleSlot::class)->findAll();
+        $schedulesList = [];
+        foreach ($scheduleEntities as $sch) {
+            $schedulesList[] = [
+                'id' => $sch->getId(),
+                'day' => $sch->getDay(),
+                'startTime' => $sch->getStartTime(),
+                'endTime' => $sch->getEndTime(),
+                'label' => $sch->getLabel() ?? 'Standard',
+                'name' => $sch->getName()
+            ];
+        }
 
         // 5. Récupérer tous les Enseignants réels depuis la base de données MySQL
         $teachers = $em->getRepository(Teacher::class)->findAll();
@@ -471,5 +476,57 @@ class AdminClassController extends AbstractController
             $em->flush();
         }
         return $this->json(['message' => 'Niveau supprimé de MySQL']);
+    }
+
+    // CRUD CRÉNEAUX HORAIRES EN BBD MYSQL
+    #[Route('/schedules', name: 'schedule_create', methods: ['POST'])]
+    public function createSchedule(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+        $sch = new ScheduleSlot();
+        $sch->setDay(trim($payload['day'] ?? 'Samedi'));
+        $sch->setStartTime(trim($payload['startTime'] ?? '09:00'));
+        $sch->setEndTime(trim($payload['endTime'] ?? '12:00'));
+        $sch->setLabel(trim($payload['label'] ?? 'Standard'));
+        $em->persist($sch);
+        $em->flush();
+
+        return $this->json([
+            'message' => 'Créneau créé dans MySQL',
+            'schedule' => [
+                'id' => $sch->getId(),
+                'day' => $sch->getDay(),
+                'startTime' => $sch->getStartTime(),
+                'endTime' => $sch->getEndTime(),
+                'label' => $sch->getLabel(),
+                'name' => $sch->getName()
+            ]
+        ], Response::HTTP_CREATED);
+    }
+
+    #[Route('/schedules/{id}', name: 'schedule_update', methods: ['PUT', 'PATCH'])]
+    public function updateSchedule(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $sch = $em->getRepository(ScheduleSlot::class)->find($id);
+        if ($sch) {
+            $payload = json_decode($request->getContent(), true);
+            if (isset($payload['day'])) $sch->setDay($payload['day']);
+            if (isset($payload['startTime'])) $sch->setStartTime($payload['startTime']);
+            if (isset($payload['endTime'])) $sch->setEndTime($payload['endTime']);
+            if (isset($payload['label'])) $sch->setLabel($payload['label']);
+            $em->flush();
+        }
+        return $this->json(['message' => 'Créneau mis à jour dans MySQL']);
+    }
+
+    #[Route('/schedules/{id}', name: 'schedule_delete', methods: ['DELETE'])]
+    public function deleteSchedule(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $sch = $em->getRepository(ScheduleSlot::class)->find($id);
+        if ($sch) {
+            $em->remove($sch);
+            $em->flush();
+        }
+        return $this->json(['message' => 'Créneau supprimé de MySQL']);
     }
 }

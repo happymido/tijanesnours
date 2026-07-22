@@ -801,32 +801,46 @@ function openScheduleConfigModal(sch = null) {
   showScheduleModal.value = true
 }
 
-function saveScheduleConfig() {
+async function saveScheduleConfig() {
   const generatedName = `${scheduleForm.value.day} ${scheduleForm.value.startTime} - ${scheduleForm.value.endTime} (${scheduleForm.value.label})`
-
-  if (scheduleEditingId.value) {
-    const existing = schedules.value.find(s => s.id === scheduleEditingId.value)
-    if (existing) {
-      existing.day = scheduleForm.value.day
-      existing.startTime = scheduleForm.value.startTime
-      existing.endTime = scheduleForm.value.endTime
-      existing.label = scheduleForm.value.label
-      existing.name = generatedName
+  try {
+    if (scheduleEditingId.value) {
+      await apiClient.put(`/admin/classes/schedules/${scheduleEditingId.value}`, scheduleForm.value)
+      const existing = schedules.value.find(s => s.id === scheduleEditingId.value)
+      if (existing) {
+        existing.day = scheduleForm.value.day
+        existing.startTime = scheduleForm.value.startTime
+        existing.endTime = scheduleForm.value.endTime
+        existing.label = scheduleForm.value.label
+        existing.name = generatedName
+      }
+      showSuccessAlert('Créneau Mis à Jour ! ⏰', `Le créneau <strong>${generatedName}</strong> a été mis à jour dans la BBD MySQL.`)
+    } else {
+      const res = await apiClient.post('/admin/classes/schedules', scheduleForm.value)
+      if (res.data && res.data.schedule) {
+        schedules.value.push(res.data.schedule)
+      } else {
+        schedules.value.push({ id: Date.now(), day: scheduleForm.value.day, startTime: scheduleForm.value.startTime, endTime: scheduleForm.value.endTime, label: scheduleForm.value.label, name: generatedName })
+      }
+      showSuccessAlert('Nouveau Créneau Enregistré ! 🎉', `Le créneau <strong>${generatedName}</strong> a été enregistré en BBD MySQL.`)
     }
-    showSuccessAlert('Créneau Mis à Jour ! ⏰', `Le créneau <strong>${generatedName}</strong> a été mis à jour dans la BBD.`)
-  } else {
-    const newSch = { id: Date.now(), day: scheduleForm.value.day, startTime: scheduleForm.value.startTime, endTime: scheduleForm.value.endTime, label: scheduleForm.value.label, name: generatedName }
-    schedules.value.push(newSch)
-    showSuccessAlert('Nouveau Créneau Enregistré ! 🎉', `Le créneau <strong>${generatedName}</strong> a été ajouté dans la BBD.`)
+  } catch (err) {
+    console.error('Erreur sauvegarde créneau:', err)
+  } finally {
+    showScheduleModal.value = false
   }
-  showScheduleModal.value = false
 }
 
 async function deleteSchedule(sch) {
   const res = await showDeleteConfirmDialog(`le créneau ${sch.name}`)
   if (res.isConfirmed) {
+    try {
+      await apiClient.delete(`/admin/classes/schedules/${sch.id}`)
+    } catch (err) {
+      console.warn('Suppression créneau locale :', err)
+    }
     schedules.value = schedules.value.filter(s => s.id !== sch.id)
-    showSuccessAlert('Créneau Supprimé ! 🗑️', `Le créneau <strong>${sch.name}</strong> a été retiré de la BBD.`)
+    showSuccessAlert('Créneau Supprimé ! 🗑️', `Le créneau <strong>${sch.name}</strong> a été retiré de la BBD MySQL.`)
   }
 }
 
