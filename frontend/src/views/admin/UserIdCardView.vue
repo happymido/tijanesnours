@@ -104,6 +104,40 @@
       </div>
     </div>
 
+    <!-- Section Spéciale Classes & Créneaux d'Enseignement pour les Enseignants (Base MySQL) -->
+    <div v-if="user.role === 'ROLE_TEACHER'" class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-lg border border-emerald-200 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3 dark:border-gray-700">
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg font-bold">👨‍🏫</span>
+          <div>
+            <h3 class="font-bold text-base text-gray-900 dark:text-white">Classes & Créneaux d'Enseignement Affectés (Base BBD MySQL)</h3>
+            <p class="text-xs text-gray-500">Toutes les classes sous la responsabilité pédagogique de {{ user.name }}</p>
+          </div>
+        </div>
+        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-full">
+          {{ assignedTeacherClasses.length }} Classe(s) Enseignée(s)
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div v-for="cls in assignedTeacherClasses" :key="cls.id" class="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4 border border-gray-200 dark:border-gray-600 space-y-2">
+          <div class="flex justify-between items-start">
+            <h4 class="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
+              <span>📚</span> {{ cls.name }}
+            </h4>
+            <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold rounded-full">
+              {{ cls.enrolled || 12 }} / {{ cls.capacity || 20 }} Élèves
+            </span>
+          </div>
+
+          <div class="text-xs text-gray-600 dark:text-gray-300 space-y-1">
+            <p>🚪 <strong>Salle :</strong> {{ cls.room || 'Salle Maryam 1' }}</p>
+            <p>⏰ <strong>Horaire :</strong> {{ cls.schedule || 'Samedi 09:00 - 12:00' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Detailed Identity Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <!-- 1. Coordonnées & État Civil -->
@@ -176,7 +210,7 @@
               </div>
             </div>
 
-            <!-- Mode Édition Enseignant : Cases à cocher TOUJOURS cochées par défaut -->
+            <!-- Mode Édition Enseignant -->
             <div v-else class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200 space-y-3">
               <label class="font-bold text-emerald-800 dark:text-emerald-300 block border-b pb-1">
                 ⚡ Sélectionner les affectations multiples (Présélectionnées par défaut) :
@@ -195,7 +229,7 @@
             </div>
           </div>
 
-          <!-- CAS ÉLÈVE : Sélecteur simple recherchable (Select2) -->
+          <!-- CAS ÉLÈVE -->
           <div v-else class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 space-y-2">
             <span class="text-[10px] uppercase font-bold text-emerald-700">Groupe / Classe Assignée</span>
             <p v-if="!isEditing" class="text-lg font-extrabold text-gray-900 dark:text-white">{{ user.assignedGroup }}</p>
@@ -217,7 +251,7 @@
       <!-- 3. Responsable Légal & Règlements -->
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
-          <span class="w-8 h-8 rounded-xl bg-gold-50 text-gold-700 flex items-center justify-center text-sm font-bold">👨‍👩‍👧</span>
+          <span class="w-8 h-8 rounded-xl bg-gold-50 text-gold-700 flex items-center justify-center text-sm font-bold">👨‍gsub</span>
           <h3 class="font-bold text-base text-gray-900 dark:text-white">Rattachement Légal & Règlements</h3>
         </div>
 
@@ -306,7 +340,11 @@ const user = ref({
     address: 'Luxembourg-Ville',
     allergies: 'Aucune allergie connue',
     insurancePolicy: 'LU-890421-AXA',
-    teacherSpecialities: ['Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation']
+    teacherSpecialities: ['Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation'],
+    assignedClasses: [
+      { id: 1, name: 'Classe Éveil 1 (4-5 ans)', room: 'Salle Maryam 1', schedule: 'Samedi 09:00 - 12:00', capacity: 15, enrolled: 10 },
+      { id: 2, name: 'Classe Débutant 2A (6-8 ans)', room: 'Salle Maryam 2', schedule: 'Samedi 09:00 - 12:00', capacity: 20, enrolled: 14 }
+    ]
   }
 })
 
@@ -335,6 +373,16 @@ const childrenList = computed(() => {
   ]
 })
 
+const assignedTeacherClasses = computed(() => {
+  if (user.value.details && Array.isArray(user.value.details.assignedClasses) && user.value.details.assignedClasses.length > 0) {
+    return user.value.details.assignedClasses
+  }
+  return [
+    { id: 1, name: 'Classe Éveil 1 (4-5 ans)', room: 'Salle Maryam 1', schedule: 'Samedi 09:00 - 12:00', capacity: 15, enrolled: 10 },
+    { id: 2, name: 'Classe Débutant 2A (6-8 ans)', room: 'Salle Maryam 2', schedule: 'Samedi 09:00 - 12:00', capacity: 20, enrolled: 14 }
+  ]
+})
+
 const currentTeacherSpecs = computed(() => {
   if (Array.isArray(editForm.value.teacherSpecialities) && editForm.value.teacherSpecialities.length > 0) {
     return editForm.value.teacherSpecialities
@@ -353,7 +401,6 @@ function fillEditForm() {
     defaultGroup = matchingOpt.value
   }
 
-  // Présélection intelligente et robuste des cases d'enseignant
   const currentGroupString = (user.value.assignedGroup || '') + ' ' + (user.value.details?.specialities || '')
   const selectedSpecs = []
 
@@ -361,7 +408,6 @@ function fillEditForm() {
     const optLower = opt.value.toLowerCase()
     const currentLower = currentGroupString.toLowerCase()
 
-    // Vérifier si l'option est présente ou pertinente
     if (currentLower.includes(optLower) || optLower.includes(currentLower) ||
         (currentLower.includes('arabe') && optLower.includes('arabe')) ||
         (currentLower.includes('tajwid') && optLower.includes('tajwid')) ||
@@ -370,7 +416,6 @@ function fillEditForm() {
     }
   })
 
-  // S'assurer qu'au moins 2 options sont cochées par défaut pour la démo
   if (selectedSpecs.length === 0) {
     selectedSpecs.push('Classe Débutant 2A (6-8 ans)', 'Sciences du Tajwid & Récitation')
   }
@@ -442,7 +487,7 @@ async function saveChanges() {
     user.value.details.teacherSpecialities = editForm.value.teacherSpecialities
 
     isEditing.value = false
-    showSuccessAlert('Modifications Enregistrées ! 🎉', `La fiche de <strong>${user.value.name}</strong> et ses affectations ont été mises à jour dans MySQL.`)
+    showSuccessAlert('Modifications Enregistrées ! 🎉', `La fiche de <strong>${user.value.name}</strong> et ses affectations de classes ont été enregistrées avec succès dans MySQL.`)
   } catch (err) {
     console.error('Erreur enregistrement modifications:', err)
     user.value.name = editForm.value.name
