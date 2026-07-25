@@ -679,38 +679,11 @@ const scheduleEditingId = ref(null)
 const categoryEditingId = ref(null)
 const levelEditingId = ref(null)
 
-const categories = ref([
-  { id: 1, name: 'Langue Arabe', icon: '🗣️', color: '#047857', description: 'Apprentissage de la lecture, écriture, grammaire & vocabulaire' },
-  { id: 2, name: 'Coran & Tajwid', icon: '📖', color: '#d97706', description: 'Mémorisation, récitation et règles de Tajwid' },
-  { id: 3, name: 'Éducation Éthique', icon: '✨', color: '#2563eb', description: 'Valeurs morales et comportementales' }
-])
-
-const levels = ref([
-  { id: 1, name: '4-5 ans (Éveil)', minAge: 4, maxAge: 5, ageGroup: '4-5 ans', description: 'Initiation ludique aux lettres et à la langue' },
-  { id: 2, name: '6-8 ans (Débutant)', minAge: 6, maxAge: 8, ageGroup: '6-8 ans', description: 'Apprentissage de la lecture fluide' },
-  { id: 3, name: '9-12 ans (Intermédiaire)', minAge: 9, maxAge: 12, ageGroup: '9-12 ans', description: 'Grammaire et mémorisation du Saint Coran' },
-  { id: 4, name: '13-16 ans (Avancé Tajwid)', minAge: 13, maxAge: 16, ageGroup: '13-16 ans', description: 'Étude approfondie des règles de Tajwid' }
-])
-
-const teachersList = ref([
-  { id: 1, name: 'Cheikh Mahmoud', speciality: 'Langue Arabe & Tajwid' },
-  { id: 2, name: 'Oustaz Hassan', speciality: 'Coran & Mémorisation' },
-  { id: 3, name: 'Mme Souad', speciality: 'Éducation Éthique & Arabe' }
-])
-
-const schedules = ref([
-  { id: 1, day: 'Samedi', startTime: '09:00', endTime: '12:00', label: 'Matin', name: 'Samedi 09:00 - 12:00 (Matin)' },
-  { id: 2, day: 'Samedi', startTime: '14:00', endTime: '17:00', label: 'Après-Midi', name: 'Samedi 14:00 - 17:00 (Après-Midi)' },
-  { id: 3, day: 'Dimanche', startTime: '09:00', endTime: '12:00', label: 'Matin', name: 'Dimanche 09:00 - 12:00 (Matin)' },
-  { id: 4, day: 'Dimanche', startTime: '14:00', endTime: '17:00', label: 'Après-Midi', name: 'Dimanche 14:00 - 17:00 (Après-Midi)' },
-  { id: 5, day: 'Mercredi', startTime: '14:00', endTime: '17:00', label: 'Rattrapage', name: 'Mercredi 14:00 - 17:00 (Rattrapage)' },
-  { id: 6, day: 'Vendredi', startTime: '17:30', endTime: '19:30', label: 'Soirée', name: 'Vendredi 17:30 - 19:30 (Soirée)' }
-])
-
-const classrooms = ref([
-  { id: 1, name: 'Classe Éveil 1', level: '4-5 ans (Éveil)', category: 'Langue Arabe', teacher: 'Cheikh Mahmoud', schedule: 'Samedi 09:00 - 12:00 (Matin)', roomNumber: 'Salle Maryam 1', maxCapacity: 12, currentEnrolled: 1 },
-  { id: 2, name: 'Classe Débutant 2A', level: '6-8 ans (Débutant)', category: 'Coran & Tajwid', teacher: 'Cheikh Mahmoud', schedule: 'Samedi 09:00 - 12:00 (Matin)', roomNumber: 'Salle Maryam 2', maxCapacity: 15, currentEnrolled: 2 }
-])
+const categories = ref([])
+const levels = ref([])
+const teachersList = ref([])
+const schedules = ref([])
+const classrooms = ref([])
 
 const filteredClassrooms = computed(() => {
   if (!classSearch.value) return classrooms.value
@@ -721,10 +694,10 @@ const filteredClassrooms = computed(() => {
 const classForm = ref({
   id: null,
   name: '',
-  category: 'Langue Arabe',
-  level: '6-8 ans (Débutant)',
-  teacher: 'Cheikh Mahmoud',
-  schedule: 'Samedi 09:00 - 12:00 (Matin)',
+  category: '',
+  level: '',
+  teacher: '',
+  schedule: '',
   room: 'Salle Maryam 1',
   capacity: 20
 })
@@ -759,27 +732,22 @@ async function fetchClassesData() {
   try {
     const res = await apiClient.get('/admin/classes')
     if (res.data) {
-      let rawClasses = []
       if (Array.isArray(res.data.classes)) {
-        rawClasses = res.data.classes
+        classrooms.value = res.data.classes
       } else if (Array.isArray(res.data)) {
-        rawClasses = res.data
+        classrooms.value = res.data
       }
 
-      if (rawClasses.length > 0) {
-        classrooms.value = rawClasses
-      }
-
-      if (Array.isArray(res.data.categories) && res.data.categories.length > 0) {
+      if (Array.isArray(res.data.categories)) {
         categories.value = res.data.categories
       }
-      if (Array.isArray(res.data.levels) && res.data.levels.length > 0) {
+      if (Array.isArray(res.data.levels)) {
         levels.value = res.data.levels
       }
-      if (Array.isArray(res.data.schedules) && res.data.schedules.length > 0) {
+      if (Array.isArray(res.data.schedules)) {
         schedules.value = res.data.schedules
       }
-      if (Array.isArray(res.data.teachers) && res.data.teachers.length > 0) {
+      if (Array.isArray(res.data.teachers)) {
         teachersList.value = res.data.teachers
       }
     }

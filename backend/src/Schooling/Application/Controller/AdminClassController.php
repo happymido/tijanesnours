@@ -25,7 +25,6 @@ class AdminClassController extends AbstractController
         $classData = [];
 
         $allStudents = $em->getRepository(Student::class)->findAll();
-        $totalStudentsInDb = count($allStudents);
 
         foreach ($classes as $c) {
             $cName = strtolower(trim(preg_replace('/\([^)]*\)/', '', $c->getName())));
@@ -53,111 +52,16 @@ class AdminClassController extends AbstractController
             $classData[] = [
                 'id' => $c->getId(),
                 'name' => $c->getName(),
-                'roomNumber' => $c->getRoomNumber() ?? 'Salle Maryam 1',
+                'roomNumber' => $c->getRoomNumber() ?? 'Salle Principale',
                 'maxCapacity' => $c->getMaxCapacity(),
                 'currentEnrolled' => $enrolledCount,
-                'schedule' => $c->getScheduleSlot() ? $c->getScheduleSlot()->getName() : ($c->getSchedule() ?? 'Samedi 09:00 - 12:00 (Matin)'),
-                'category' => $c->getCategory() ? $c->getCategory()->getName() : 'Langue Arabe',
-                'level' => $c->getLevel() ? $c->getLevel()->getName() : '6-8 ans (Débutant)',
-                'teacher' => $c->getTeacher() ? $c->getTeacher()->getFullName() : 'Cheikh Mahmoud'
+                'schedule' => $c->getScheduleSlot() ? $c->getScheduleSlot()->getName() : ($c->getSchedule() ?? 'Non défini'),
+                'category' => $c->getCategory() ? $c->getCategory()->getName() : 'Non catégorisé',
+                'level' => $c->getLevel() ? $c->getLevel()->getName() : 'Non spécifié',
+                'teacher' => $c->getTeacher() ? $c->getTeacher()->getFullName() : 'Non affecté'
             ];
         }
         $em->flush();
-        $em->flush();
-
-        // Initialisation si base vide lors de la première requête
-        if (empty($classData)) {
-            $cat1 = new CourseCategory();
-            $cat1->setName('Langue Arabe');
-            $cat1->setDescription('Apprentissage de la lecture, écriture, grammaire & vocabulaire');
-            $cat1->setColor('#047857');
-            $em->persist($cat1);
-
-            $cat2 = new CourseCategory();
-            $cat2->setName('Coran & Tajwid');
-            $cat2->setDescription('Mémorisation, récitation et règles de Tajwid');
-            $cat2->setColor('#d97706');
-            $em->persist($cat2);
-
-            $cat3 = new CourseCategory();
-            $cat3->setName('Éducation Éthique');
-            $cat3->setDescription('Valeurs morales et comportementales');
-            $cat3->setColor('#2563eb');
-            $em->persist($cat3);
-
-            $lvl1 = new CourseLevel();
-            $lvl1->setName('4-5 ans (Éveil)');
-            $lvl1->setTargetAgeMin(4);
-            $lvl1->setTargetAgeMax(5);
-            $lvl1->setDescription('Initiation ludique aux lettres et à la langue');
-            $em->persist($lvl1);
-
-            $lvl2 = new CourseLevel();
-            $lvl2->setName('6-8 ans (Débutant)');
-            $lvl2->setTargetAgeMin(6);
-            $lvl2->setTargetAgeMax(8);
-            $lvl2->setDescription('Apprentissage de la lecture fluide');
-            $em->persist($lvl2);
-
-            $lvl3 = new CourseLevel();
-            $lvl3->setName('9-12 ans (Intermédiaire)');
-            $lvl3->setTargetAgeMin(9);
-            $lvl3->setTargetAgeMax(12);
-            $lvl3->setDescription('Grammaire et mémorisation du Saint Coran');
-            $em->persist($lvl3);
-
-            $lvl4 = new CourseLevel();
-            $lvl4->setName('13-16 ans (Avancé Tajwid)');
-            $lvl4->setTargetAgeMin(13);
-            $lvl4->setTargetAgeMax(16);
-            $lvl4->setDescription('Étude approfondie des règles de Tajwid');
-            $em->persist($lvl4);
-
-            $class1 = new SchoolClass();
-            $class1->setName('Classe Éveil 1');
-            $class1->setRoomNumber('Salle Maryam 1');
-            $class1->setMaxCapacity(12);
-            $class1->setSchedule('Samedi 09:00 - 12:00 (Matin)');
-            $class1->setCategory($cat1);
-            $class1->setLevel($lvl1);
-            $em->persist($class1);
-
-            $class2 = new SchoolClass();
-            $class2->setName('Classe Débutant 2A');
-            $class2->setRoomNumber('Salle Maryam 2');
-            $class2->setMaxCapacity(15);
-            $class2->setSchedule('Samedi 09:00 - 12:00 (Matin)');
-            $class2->setCategory($cat2);
-            $class2->setLevel($lvl2);
-            $em->persist($class2);
-
-            $em->flush();
-
-            $classData = [
-                [
-                    'id' => $class1->getId(),
-                    'name' => $class1->getName(),
-                    'roomNumber' => $class1->getRoomNumber(),
-                    'maxCapacity' => $class1->getMaxCapacity(),
-                    'currentEnrolled' => 2,
-                    'schedule' => $class1->getSchedule(),
-                    'category' => 'Langue Arabe',
-                    'level' => '4-5 ans (Éveil)',
-                    'teacher' => 'Cheikh Mahmoud'
-                ],
-                [
-                    'id' => $class2->getId(),
-                    'name' => $class2->getName(),
-                    'roomNumber' => $class2->getRoomNumber(),
-                    'maxCapacity' => $class2->getMaxCapacity(),
-                    'currentEnrolled' => 2,
-                    'schedule' => $class2->getSchedule(),
-                    'category' => 'Coran & Tajwid',
-                    'level' => '6-8 ans (Débutant)',
-                    'teacher' => 'Cheikh Mahmoud'
-                ]
-            ];
-        }
 
         // 2. Récupérer les catégories depuis MySQL
         $categories = $em->getRepository(CourseCategory::class)->findAll();
@@ -176,12 +80,15 @@ class AdminClassController extends AbstractController
         $levels = $em->getRepository(CourseLevel::class)->findAll();
         $levelData = [];
         foreach ($levels as $l) {
+            $ageMin = $l->getTargetAgeMin();
+            $ageMax = $l->getTargetAgeMax();
+            $ageGroupStr = ($ageMin && $ageMax) ? ($ageMin . '-' . $ageMax . ' ans') : ($l->getName());
             $levelData[] = [
                 'id' => $l->getId(),
                 'name' => $l->getName(),
-                'minAge' => $l->getTargetAgeMin(),
-                'maxAge' => $l->getTargetAgeMax(),
-                'ageGroup' => $l->getTargetAgeMin() . '-' . $l->getTargetAgeMax() . ' ans',
+                'minAge' => $ageMin,
+                'maxAge' => $ageMax,
+                'ageGroup' => $ageGroupStr,
                 'description' => $l->getDescription() ?? 'Objectifs pédagogiques et programme annuel'
             ];
         }
@@ -208,17 +115,9 @@ class AdminClassController extends AbstractController
             $teacherData[] = [
                 'id' => $t->getId(),
                 'name' => $t->getFullName(),
-                'speciality' => !empty($specs) ? implode(', ', $specs) : 'Langue Arabe & Tajwid',
+                'speciality' => !empty($specs) ? implode(', ', $specs) : 'Enseignant',
                 'email' => $t->getUser() ? $t->getUser()->getEmail() : '',
-                'phone' => $t->getPhone() ?? '+352 691 888 999'
-            ];
-        }
-
-        if (empty($teacherData)) {
-            $teacherData = [
-                ['id' => 1, 'name' => 'Cheikh Mahmoud', 'speciality' => 'Langue Arabe & Tajwid'],
-                ['id' => 2, 'name' => 'Oustaz Hassan', 'speciality' => 'Coran & Mémorisation'],
-                ['id' => 3, 'name' => 'Mme Souad', 'speciality' => 'Éducation Éthique & Arabe']
+                'phone' => $t->getPhone() ?? ''
             ];
         }
 
