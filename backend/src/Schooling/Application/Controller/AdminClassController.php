@@ -755,8 +755,8 @@ class AdminClassController extends AbstractController
                             if (
                                 (!empty($cName) && (str_contains($group, $cName) || str_contains($cName, $group))) ||
                                 (!empty($lName) && (str_contains($group, $lName) || str_contains($lName, $group))) ||
-                                (str_contains($cName, 'éveil') && str_contains($group, 'éveil')) ||
-                                (str_contains($cName, 'débutant') && str_contains($group, 'débutant'))
+                                (str_contains($cName, 'prep1') && (str_contains($group, 'éveil') || str_contains($group, '4-5') || str_contains($group, 'préparatoire 1'))) ||
+                                (str_contains($cName, 'prep2') && (str_contains($group, 'débutant') || str_contains($group, '6-8') || str_contains($group, 'préparatoire 2')))
                             ) {
                                 $isEnrolled = true;
                                 $st->addSchoolClass($cls);
