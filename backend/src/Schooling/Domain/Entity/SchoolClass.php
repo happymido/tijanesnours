@@ -123,4 +123,15 @@ class SchoolClass
         $this->teacher = $teacher;
         return $this;
     }
+
+    public function getScheduleSlot(): ?ScheduleSlot
+    {
+        return $this->scheduleSlot;
+    }
+
+    public function setScheduleSlot(?ScheduleSlot $scheduleSlot): self
+    {
+        $this->scheduleSlot = $scheduleSlot;
+        return $this;
+    }
 }
