@@ -739,7 +739,41 @@ class AdminClassController extends AbstractController
             $cls = $a->getSchoolClass();
             $dayIndex = (int)$a->getSessionDate()->format('N');
             $present = $a->getPresentStudentsCount();
-            $total = $a->getTotalStudentsCount() > 0 ? $a->getTotalStudentsCount() : ($cls ? $cls->getMaxCapacity() : 15);
+
+            $clsStudents = [];
+            if ($cls) {
+                $cName = strtolower(trim(preg_replace('/\([^)]*\)/', '', $cls->getName())));
+                foreach ($allStudents as $st) {
+                    $isEnrolled = false;
+                    if ($st->getSchoolClasses()->contains($cls)) {
+                        $isEnrolled = true;
+                    } else {
+                        $group = strtolower(trim($st->getAssignedGroup() ?? ''));
+                        if (!empty($group)) {
+                            $assignedList = array_map('trim', explode(',', $group));
+                            foreach ($assignedList as $assignedItem) {
+                                $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
+                                if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $cName) || str_contains($cName, $cleanAssigned))) {
+                                    $isEnrolled = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if ($isEnrolled) {
+                        $clsStudents[] = [
+                            'id' => 'student_' . $st->getId(),
+                            'dbId' => $st->getId(),
+                            'name' => trim($st->getFirstName() . ' ' . $st->getLastName()),
+                            'dateOfBirth' => $st->getDateOfBirth() ? $st->getDateOfBirth()->format('d/m/Y') : '12/05/2018',
+                            'present' => true
+                        ];
+                    }
+                }
+            }
+
+            $total = count($clsStudents) > 0 ? count($clsStudents) : ($cls ? $cls->getMaxCapacity() : 15);
             $pct = $total > 0 ? round(($present / $total) * 100) : 100;
 
             $result[] = [
@@ -753,6 +787,7 @@ class AdminClassController extends AbstractController
                 'presentStudents' => $present,
                 'totalStudents' => $total,
                 'studentCount' => sprintf('%d / %d élèves (%d%%)', $present, $total, $pct),
+                'enrolledStudents' => $clsStudents,
                 'notes' => $a->getNotes()
             ];
         }
