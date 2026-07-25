@@ -186,22 +186,16 @@ class AdminClassController extends AbstractController
 
         $classEntity = new SchoolClass();
         $classEntity->setName($name);
-        $classEntity->setRoomNumber($room);
         $classEntity->setMaxCapacity($capacity);
-        $classEntity->setSchedule($schedule);
 
         if (!empty($payload['scheduleSlotId'])) {
             $slot = $em->getRepository(ScheduleSlot::class)->find((int)$payload['scheduleSlotId']);
-            if ($slot) {
-                $classEntity->setScheduleSlot($slot);
-                $classEntity->setSchedule($slot->getName());
-            }
+            if ($slot) $classEntity->setScheduleSlot($slot);
         } elseif (!empty($schedule)) {
             $allSlots = $em->getRepository(ScheduleSlot::class)->findAll();
             foreach ($allSlots as $sl) {
                 if ($sl->getName() === $schedule || str_contains($sl->getName(), $schedule) || str_contains($schedule, $sl->getName())) {
                     $classEntity->setScheduleSlot($sl);
-                    $classEntity->setSchedule($sl->getName());
                     break;
                 }
             }
@@ -209,10 +203,7 @@ class AdminClassController extends AbstractController
 
         if (!empty($payload['classroomId'])) {
             $rm = $em->getRepository(Classroom::class)->find((int)$payload['classroomId']);
-            if ($rm) {
-                $classEntity->setClassroom($rm);
-                $classEntity->setRoomNumber($rm->getName());
-            }
+            if ($rm) $classEntity->setClassroom($rm);
         } elseif (!empty($room)) {
             $rm = $em->getRepository(Classroom::class)->findOneBy(['name' => $room]);
             if ($rm) $classEntity->setClassroom($rm);
@@ -245,18 +236,16 @@ class AdminClassController extends AbstractController
         $em->persist($classEntity);
         $em->flush();
 
-        $roomName = $classEntity->getClassroom() ? $classEntity->getClassroom()->getName() : $classEntity->getRoomNumber();
-
         return $this->json([
             'message' => 'Classe créée avec succès dans MySQL',
             'class' => [
                 'id' => $classEntity->getId(),
                 'name' => $classEntity->getName(),
-                'roomNumber' => $roomName,
+                'roomNumber' => $classEntity->getRoomNumber(),
                 'classroomId' => $classEntity->getClassroom() ? $classEntity->getClassroom()->getId() : null,
                 'maxCapacity' => $classEntity->getMaxCapacity(),
                 'currentEnrolled' => 0,
-                'schedule' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getName() : $classEntity->getSchedule(),
+                'schedule' => $classEntity->getSchedule(),
                 'scheduleSlotId' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getId() : null,
                 'category' => $classEntity->getCategory() ? $classEntity->getCategory()->getName() : 'Non catégorisé',
                 'categoryId' => $classEntity->getCategory() ? $classEntity->getCategory()->getId() : null,
@@ -278,16 +267,12 @@ class AdminClassController extends AbstractController
 
         $payload = json_decode($request->getContent(), true);
         if (isset($payload['name'])) $classEntity->setName($payload['name']);
-        if (isset($payload['roomNumber'])) $classEntity->setRoomNumber($payload['roomNumber']);
         if (isset($payload['maxCapacity'])) $classEntity->setMaxCapacity((int)$payload['maxCapacity']);
 
         if (array_key_exists('classroomId', $payload)) {
             if ($payload['classroomId']) {
                 $rm = $em->getRepository(Classroom::class)->find((int)$payload['classroomId']);
-                if ($rm) {
-                    $classEntity->setClassroom($rm);
-                    $classEntity->setRoomNumber($rm->getName());
-                }
+                if ($rm) $classEntity->setClassroom($rm);
             } else {
                 $classEntity->setClassroom(null);
             }
@@ -298,13 +283,9 @@ class AdminClassController extends AbstractController
         
         if (isset($payload['scheduleSlotId'])) {
             $slot = $em->getRepository(ScheduleSlot::class)->find((int)$payload['scheduleSlotId']);
-            if ($slot) {
-                $classEntity->setScheduleSlot($slot);
-                $classEntity->setSchedule($slot->getName());
-            }
+            if ($slot) $classEntity->setScheduleSlot($slot);
         } elseif (isset($payload['schedule'])) {
             $schStr = trim($payload['schedule']);
-            $classEntity->setSchedule($schStr);
             $allSlots = $em->getRepository(ScheduleSlot::class)->findAll();
             foreach ($allSlots as $sl) {
                 if ($sl->getName() === $schStr || str_contains($sl->getName(), $schStr) || str_contains($schStr, $sl->getName())) {

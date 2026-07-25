@@ -17,14 +17,8 @@ class SchoolClass
     #[ORM\Column(type: 'string', length: 150)]
     private string $name;
 
-    #[ORM\Column(type: 'string', length: 100, nullable: true)]
-    private ?string $roomNumber = 'Salle Maryam 1';
-
     #[ORM\Column(type: 'integer')]
     private int $maxCapacity = 15;
-
-    #[ORM\Column(type: 'string', length: 150, nullable: true)]
-    private ?string $schedule = 'Samedi 09:00 - 12:00';
 
     #[ORM\ManyToOne(targetEntity: CourseCategory::class)]
     #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
@@ -64,13 +58,7 @@ class SchoolClass
 
     public function getRoomNumber(): ?string
     {
-        return $this->roomNumber;
-    }
-
-    public function setRoomNumber(?string $roomNumber): self
-    {
-        $this->roomNumber = $roomNumber;
-        return $this;
+        return $this->classroom ? $this->classroom->getName() : 'Salle Principale';
     }
 
     public function getMaxCapacity(): int
@@ -86,13 +74,7 @@ class SchoolClass
 
     public function getSchedule(): ?string
     {
-        return $this->schedule;
-    }
-
-    public function setSchedule(?string $schedule): self
-    {
-        $this->schedule = $schedule;
-        return $this;
+        return $this->scheduleSlot ? $this->scheduleSlot->getName() : 'Non défini';
     }
 
     public function getCategory(): ?CourseCategory
