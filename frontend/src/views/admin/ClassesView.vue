@@ -770,6 +770,12 @@ import { showSuccessAlert, showErrorAlert, showDeleteConfirmDialog } from '../..
 
 const currentSubTab = ref('TABLE')
 const loading = ref(false)
+const submitting = ref(false)
+const classSearch = ref('')
+
+const showAssignModal = ref(false)
+const selectedAssignTeacher = ref(null)
+const assignForm = ref({ assignedClassIds: [] })
 const categories = ref([])
 const levels = ref([])
 const teachersList = ref([])
@@ -1173,11 +1179,7 @@ async function saveClass() {
   }
 }
 
-const showAssignModal = ref(false)
-const selectedAssignTeacher = ref(null)
-const assignForm = ref({
-  assignedClassIds: []
-})
+
 
 function openAssignModal(teacher) {
   selectedAssignTeacher.value = teacher
