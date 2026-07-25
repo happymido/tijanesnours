@@ -240,7 +240,7 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700 font-semibold">
-                  <tr v-for="log in teacherAttendanceLogs" :key="log.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+                  <tr v-for="log in paginatedAttendanceLogs" :key="log.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
                     <td class="py-2.5 px-3">
                       <div class="font-bold text-gray-900 dark:text-white">{{ log.dayName }} {{ log.date }}</div>
                       <div class="text-[10px] text-gray-400">⏰ {{ log.schedule }}</div>
@@ -260,6 +260,32 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- Pagination des Séances -->
+            <div v-if="teacherAttendanceLogs.length > attendancePerPage" class="flex items-center justify-between pt-2 px-1 text-xs">
+              <span class="text-gray-500 font-medium">
+                Affichage <strong>{{ (attendanceCurrentPage - 1) * attendancePerPage + 1 }}</strong> à <strong>{{ Math.min(attendanceCurrentPage * attendancePerPage, teacherAttendanceLogs.length) }}</strong> sur <strong>{{ teacherAttendanceLogs.length }}</strong> séances
+              </span>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="attendanceCurrentPage--"
+                  :disabled="attendanceCurrentPage === 1"
+                  class="px-3 py-1 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  ◀ Précédent
+                </button>
+                <span class="font-extrabold text-brand-700 dark:text-gold-300">
+                  Page {{ attendanceCurrentPage }} / {{ totalAttendancePages }}
+                </span>
+                <button
+                  @click="attendanceCurrentPage++"
+                  :disabled="attendanceCurrentPage >= totalAttendancePages"
+                  class="px-3 py-1 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  Suivant ▶
+                </button>
+              </div>
             </div>
           </div>
 
@@ -482,7 +508,20 @@ const teacherAttendanceLogs = computed(() => {
   return []
 })
 
+const attendanceCurrentPage = ref(1)
+const attendancePerPage = ref(3)
+
+const totalAttendancePages = computed(() => {
+  return Math.ceil(teacherAttendanceLogs.value.length / attendancePerPage.value) || 1
+})
+
+const paginatedAttendanceLogs = computed(() => {
+  const start = (attendanceCurrentPage.value - 1) * attendancePerPage.value
+  return teacherAttendanceLogs.value.slice(start, start + attendancePerPage.value)
+})
+
 watch(selectedAttendanceMonth, () => {
+  attendanceCurrentPage.value = 1
   fetchTeacherAttendance()
 })
 
