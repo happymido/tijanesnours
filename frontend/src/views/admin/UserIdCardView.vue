@@ -450,23 +450,40 @@ const attendanceMonths = ref([
   { value: '2026-04', label: 'Avril 2026' }
 ])
 
+const dbAttendanceLogs = ref([])
+
+async function fetchTeacherAttendance() {
+  if (user.value.role !== 'ROLE_TEACHER') return
+  try {
+    const teacherId = route.params.id || user.value.id
+    const res = await apiClient.get('/admin/classes/attendance', {
+      params: {
+        teacherId,
+        month: selectedAttendanceMonth.value
+      }
+    })
+    if (res.data && Array.isArray(res.data.attendances)) {
+      dbAttendanceLogs.value = res.data.attendances
+    }
+  } catch (err) {
+    console.error('Erreur chargement des présences BBD:', err)
+  }
+}
+
 const teacherAttendanceLogs = computed(() => {
+  if (dbAttendanceLogs.value.length > 0) return dbAttendanceLogs.value
+
   if (selectedAttendanceMonth.value === '2026-07') {
     return [
       { id: 1, date: '25/07/2026', dayName: 'Samedi', className: 'Classe Éveil 1', room: 'Salle Khadija 2', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '1/1 élève présent (100%)' },
-      { id: 2, date: '25/07/2026', dayName: 'Samedi', className: 'Classe Débutant 2A', room: 'Salle Maryam 1', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '2/2 élèves présents (100%)' },
-      { id: 3, date: '18/07/2026', dayName: 'Samedi', className: 'Classe Éveil 1', room: 'Salle Khadija 2', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '1/1 élève présent (100%)' },
-      { id: 4, date: '18/07/2026', dayName: 'Samedi', className: 'Classe Débutant 2A', room: 'Salle Maryam 1', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '2/2 élèves présents (100%)' }
-    ]
-  } else if (selectedAttendanceMonth.value === '2026-06') {
-    return [
-      { id: 5, date: '27/06/2026', dayName: 'Samedi', className: 'Classe Éveil 1', room: 'Salle Khadija 2', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '1/1 élève présent (100%)' },
-      { id: 6, date: '20/06/2026', dayName: 'Samedi', className: 'Classe Débutant 2A', room: 'Salle Maryam 1', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '2/2 élèves présents (100%)' }
+      { id: 2, date: '25/07/2026', dayName: 'Samedi', className: 'Classe Débutant 2A', room: 'Salle Maryam 1', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '2/2 élèves présents (100%)' }
     ]
   }
-  return [
-    { id: 7, date: '30/05/2026', dayName: 'Samedi', className: 'Classe Éveil 1', room: 'Salle Khadija 2', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '1/1 élève présent (100%)' }
-  ]
+  return []
+})
+
+watch(selectedAttendanceMonth, () => {
+  fetchTeacherAttendance()
 })
 
 const assignedTeacherClasses = computed(() => {
@@ -578,6 +595,7 @@ async function loadUserProfile() {
     console.error('Erreur chargement fiche utilisateur:', err)
   } finally {
     fillEditForm()
+    fetchTeacherAttendance()
   }
 }
 
