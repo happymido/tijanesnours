@@ -7,6 +7,7 @@ use App\Schooling\Domain\Entity\CourseCategory;
 use App\Schooling\Domain\Entity\CourseLevel;
 use App\Schooling\Domain\Entity\ScheduleSlot;
 use App\IdentityAccess\Domain\Entity\Teacher;
+use App\IdentityAccess\Domain\Entity\Student;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
