@@ -685,6 +685,8 @@ class AdminClassController extends AbstractController
                 $teacherClasses = $em->getRepository(SchoolClass::class)->findAll();
             }
 
+            $allStudents = $em->getRepository(Student::class)->findAll();
+
             $saturdays = [];
             $cur = clone $startDate;
             while ($cur <= $endDate) {
@@ -696,24 +698,34 @@ class AdminClassController extends AbstractController
 
             foreach ($saturdays as $sat) {
                 foreach ($teacherClasses as $cls) {
-                    $enrolled = $em->createQueryBuilder()
-                        ->select('COUNT(s.id)')
-                        ->from(Student::class, 's')
-                        ->where('s.assignedGroup LIKE :name')
-                        ->setParameter('name', '%' . $cls->getName() . '%')
-                        ->getQuery()
-                        ->getSingleScalarResult();
-                    $enrolled = (int)$enrolled;
-                    if ($enrolled === 0) $enrolled = 1;
+                    $cName = strtolower(trim(preg_replace('/\([^)]*\)/', '', $cls->getName())));
+                    $realEnrolled = 0;
+                    foreach ($allStudents as $st) {
+                        if ($st->getSchoolClasses()->contains($cls)) {
+                            $realEnrolled++;
+                        } else {
+                            $group = strtolower(trim($st->getAssignedGroup() ?? ''));
+                            if (!empty($group)) {
+                                $assignedList = array_map('trim', explode(',', $group));
+                                foreach ($assignedList as $assignedItem) {
+                                    $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
+                                    if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $cName) || str_contains($cName, $cleanAssigned))) {
+                                        $realEnrolled++;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     $att = new TeacherAttendance();
                     $att->setTeacher($teacher);
                     $att->setSchoolClass($cls);
                     $att->setSessionDate($sat);
                     $att->setStatus('PRESENT');
-                    $att->setPresentStudentsCount($enrolled);
+                    $att->setPresentStudentsCount($realEnrolled);
                     $att->setTotalStudentsCount($cls->getMaxCapacity());
-                    $att->setNotes('Cours régulièrement dispensé et émargé dans MySQL.');
+                    $att->setNotes('Émargement enregistré depuis les données MySQL.');
                     $em->persist($att);
                     $attendances[] = $att;
                 }
@@ -726,6 +738,10 @@ class AdminClassController extends AbstractController
         foreach ($attendances as $a) {
             $cls = $a->getSchoolClass();
             $dayIndex = (int)$a->getSessionDate()->format('N');
+            $present = $a->getPresentStudentsCount();
+            $total = $a->getTotalStudentsCount() > 0 ? $a->getTotalStudentsCount() : ($cls ? $cls->getMaxCapacity() : 15);
+            $pct = $total > 0 ? round(($present / $total) * 100) : 100;
+
             $result[] = [
                 'id' => $a->getId(),
                 'date' => $a->getSessionDate()->format('d/m/Y'),
@@ -734,9 +750,9 @@ class AdminClassController extends AbstractController
                 'room' => $cls ? $cls->getRoomNumber() : 'Salle Principale',
                 'schedule' => $cls ? $cls->getSchedule() : '09:30 - 13:30 (Matin)',
                 'status' => $a->getStatus(),
-                'presentStudents' => $a->getPresentStudentsCount(),
-                'totalStudents' => $a->getTotalStudentsCount(),
-                'studentCount' => sprintf('%d/%d élève%s présent%s (100%%)', $a->getPresentStudentsCount(), $a->getPresentStudentsCount(), $a->getPresentStudentsCount() > 1 ? 's' : '', $a->getPresentStudentsCount() > 1 ? 's' : ''),
+                'presentStudents' => $present,
+                'totalStudents' => $total,
+                'studentCount' => sprintf('%d / %d élèves (%d%%)', $present, $total, $pct),
                 'notes' => $a->getNotes()
             ];
         }
@@ -746,6 +762,42 @@ class AdminClassController extends AbstractController
             'teacherName' => $teacher->getFullName(),
             'month' => $monthStr,
             'attendances' => $result
+        ]);
+    }
+
+    #[Route('/attendance/{id}', name: 'attendance_update', methods: ['PUT', 'PATCH'])]
+    public function updateAttendance(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $att = $em->getRepository(TeacherAttendance::class)->find($id);
+        if (!$att) {
+            return $this->json(['error' => 'Émargement non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $payload = json_decode($request->getContent(), true);
+        if (isset($payload['presentStudents'])) {
+            $att->setPresentStudentsCount((int)$payload['presentStudents']);
+        }
+        if (isset($payload['totalStudents'])) {
+            $att->setTotalStudentsCount((int)$payload['totalStudents']);
+        }
+        if (isset($payload['status'])) {
+            $att->setStatus(trim($payload['status']));
+        }
+        if (isset($payload['notes'])) {
+            $att->setNotes(trim($payload['notes']));
+        }
+
+        $em->flush();
+
+        return $this->json([
+            'message' => 'Émargement mis à jour dans MySQL avec succès',
+            'attendance' => [
+                'id' => $att->getId(),
+                'presentStudents' => $att->getPresentStudentsCount(),
+                'totalStudents' => $att->getTotalStudentsCount(),
+                'status' => $att->getStatus(),
+                'notes' => $att->getNotes()
+            ]
         ]);
     }
 }
