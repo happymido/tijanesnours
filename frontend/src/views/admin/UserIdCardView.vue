@@ -125,14 +125,14 @@
             <h4 class="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
               <span>📚</span> {{ cls.name }}
             </h4>
-            <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold rounded-full">
-              {{ cls.enrolled || 12 }} / {{ cls.capacity || 20 }} Élèves
+            <span class="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 text-xs font-extrabold rounded-full shadow-sm">
+              {{ cls.currentEnrolled ?? cls.enrolled ?? 0 }} / {{ cls.maxCapacity || cls.capacity || 20 }} Élèves
             </span>
           </div>
 
           <div class="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-            <p>🚪 <strong>Salle :</strong> {{ cls.room || 'Salle Maryam 1' }}</p>
-            <p>⏰ <strong>Horaire :</strong> {{ cls.schedule || 'Samedi 09:00 - 12:00' }}</p>
+            <p>🚪 <strong>Salle :</strong> {{ cls.roomNumber || cls.room || 'Salle Principale' }}</p>
+            <p>⏰ <strong>Horaire & Créneau :</strong> {{ cls.schedule || 'Samedi 09:30 - 13:30 (Matin)' }}</p>
           </div>
         </div>
       </div>
@@ -406,7 +406,19 @@ const childrenList = computed(() => {
   return []
 })
 
+const allClassesList = ref([])
+
 const assignedTeacherClasses = computed(() => {
+  if (user.value.role !== 'ROLE_TEACHER') return []
+  const teacherName = user.value.name ? user.value.name.toLowerCase() : ''
+  if (!teacherName) return []
+
+  const matching = allClassesList.value.filter(c => 
+    c.teacher && (c.teacher.toLowerCase().includes(teacherName) || teacherName.includes(c.teacher.toLowerCase()))
+  )
+
+  if (matching.length > 0) return matching
+
   if (user.value.details && Array.isArray(user.value.details.assignedClasses)) {
     return user.value.details.assignedClasses
   }
@@ -520,6 +532,7 @@ async function fetchClassesList() {
       }
     }
     if (rawClasses.length > 0) {
+      allClassesList.value = rawClasses
       const dbOptions = rawClasses.map(c => {
         const levelStr = c.level ? ` (${c.level})` : ''
         const labelStr = `${c.name}${levelStr}`
