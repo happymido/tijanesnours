@@ -210,19 +210,19 @@
         <div class="space-y-3 text-xs">
           <!-- CAS ENSEIGNANT : Système de Présence & Émargement Mensuel -->
           <div v-if="user.role === 'ROLE_TEACHER'" class="space-y-4">
-            <!-- Statistiques Mensuelles -->
+            <!-- Statistiques Mensuelles Dynamiques BBD -->
             <div class="grid grid-cols-3 gap-3">
               <div class="p-3 bg-emerald-50/60 dark:bg-emerald-900/30 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-center">
-                <span class="text-[10px] uppercase font-extrabold text-emerald-600 block">Taux Présence Assurée</span>
-                <span class="text-lg font-extrabold text-emerald-700 dark:text-emerald-300">100 %</span>
+                <span class="text-[10px] uppercase font-extrabold text-emerald-600 block">Taux Présence Enseignant</span>
+                <span class="text-lg font-extrabold text-emerald-700 dark:text-emerald-300">{{ monthlyTeacherPresenceRate }}</span>
               </div>
               <div class="p-3 bg-blue-50/60 dark:bg-blue-900/30 rounded-2xl border border-blue-100 dark:border-blue-800 text-center">
-                <span class="text-[10px] uppercase font-extrabold text-blue-600 block">Séances Effectuées</span>
+                <span class="text-[10px] uppercase font-extrabold text-blue-600 block">Séances Du Mois</span>
                 <span class="text-lg font-extrabold text-blue-700 dark:text-blue-300">{{ teacherAttendanceLogs.length }} cours</span>
               </div>
               <div class="p-3 bg-purple-50/60 dark:bg-purple-900/30 rounded-2xl border border-purple-100 dark:border-purple-800 text-center">
-                <span class="text-[10px] uppercase font-extrabold text-purple-600 block">Émargement Élèves</span>
-                <span class="text-lg font-extrabold text-purple-700 dark:text-purple-300">Conforme</span>
+                <span class="text-[10px] uppercase font-extrabold text-purple-600 block">Taux Présence Élèves</span>
+                <span class="text-lg font-extrabold text-purple-700 dark:text-purple-300">{{ monthlyStudentAttendancePct }}</span>
               </div>
             </div>
 
@@ -257,7 +257,7 @@
                       </span>
                     </td>
                     <td class="py-2.5 px-3 font-bold text-gray-700 dark:text-gray-300">
-                      👥 {{ log.studentCount }}
+                      👥 {{ log.presentStudents }} / {{ log.totalStudents }} élèves ({{ log.totalStudents > 0 ? Math.round((log.presentStudents / log.totalStudents) * 100) : 100 }}%)
                     </td>
                     <td class="py-2.5 px-3 text-right">
                       <button
@@ -681,15 +681,25 @@ async function fetchTeacherAttendance() {
 }
 
 const teacherAttendanceLogs = computed(() => {
-  if (dbAttendanceLogs.value.length > 0) return dbAttendanceLogs.value
+  return dbAttendanceLogs.value
+})
 
-  if (selectedAttendanceMonth.value === '2026-07') {
-    return [
-      { id: 1, date: '25/07/2026', dayName: 'Samedi', className: 'Classe Éveil 1', room: 'Salle Khadija 2', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '1/1 élève présent (100%)' },
-      { id: 2, date: '25/07/2026', dayName: 'Samedi', className: 'Classe Débutant 2A', room: 'Salle Maryam 1', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '2/2 élèves présents (100%)' }
-    ]
-  }
-  return []
+const monthlyTeacherPresenceRate = computed(() => {
+  if (teacherAttendanceLogs.value.length === 0) return '100 %'
+  const presentCount = teacherAttendanceLogs.value.filter(l => l.status === 'PRESENT').length
+  return Math.round((presentCount / teacherAttendanceLogs.value.length) * 100) + ' %'
+})
+
+const monthlyStudentAttendancePct = computed(() => {
+  if (teacherAttendanceLogs.value.length === 0) return '100 %'
+  let presentSum = 0
+  let totalSum = 0
+  teacherAttendanceLogs.value.forEach(l => {
+    presentSum += (l.presentStudents ?? 0)
+    totalSum += (l.totalStudents ?? 0)
+  })
+  if (totalSum === 0) return '100 %'
+  return Math.round((presentSum / totalSum) * 100) + ' %'
 })
 
 const attendanceCurrentPage = ref(1)
