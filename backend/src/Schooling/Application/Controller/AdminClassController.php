@@ -264,8 +264,27 @@ class AdminClassController extends AbstractController
             }
         }
 
+        if (!empty($payload['categoryId'])) {
+            $category = $em->getRepository(CourseCategory::class)->find((int)$payload['categoryId']);
+            if ($category) $classEntity->setCategory($category);
+        } elseif (!empty($payload['category'])) {
+            $category = $em->getRepository(CourseCategory::class)->findOneBy(['name' => trim($payload['category'])]);
+            if ($category) $classEntity->setCategory($category);
+        }
+
+        if (!empty($payload['levelId'])) {
+            $level = $em->getRepository(CourseLevel::class)->find((int)$payload['levelId']);
+            if ($level) $classEntity->setLevel($level);
+        } elseif (!empty($payload['level'])) {
+            $level = $em->getRepository(CourseLevel::class)->findOneBy(['name' => trim($payload['level'])]);
+            if ($level) $classEntity->setLevel($level);
+        }
+
         if (!empty($payload['teacherId'])) {
             $teacher = $em->getRepository(Teacher::class)->find((int) $payload['teacherId']);
+            if ($teacher) $classEntity->setTeacher($teacher);
+        } elseif (!empty($payload['teacher'])) {
+            $teacher = $em->getRepository(Teacher::class)->findOneBy(['fullName' => trim($payload['teacher'])]);
             if ($teacher) $classEntity->setTeacher($teacher);
         }
 
@@ -282,8 +301,8 @@ class AdminClassController extends AbstractController
                 'currentEnrolled' => 0,
                 'schedule' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getName() : $classEntity->getSchedule(),
                 'scheduleSlotId' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getId() : null,
-                'category' => 'Langue Arabe',
-                'level' => '6-8 ans (Débutant)',
+                'category' => $classEntity->getCategory() ? $classEntity->getCategory()->getName() : 'Langue Arabe',
+                'level' => $classEntity->getLevel() ? $classEntity->getLevel()->getName() : '6-8 ans (Débutant)',
                 'teacher' => $classEntity->getTeacher() ? $classEntity->getTeacher()->getFullName() : 'Non affecté'
             ]
         ], Response::HTTP_CREATED);
@@ -320,6 +339,30 @@ class AdminClassController extends AbstractController
             }
         }
 
+        if (array_key_exists('categoryId', $payload)) {
+            if ($payload['categoryId']) {
+                $category = $em->getRepository(CourseCategory::class)->find((int)$payload['categoryId']);
+                if ($category) $classEntity->setCategory($category);
+            } else {
+                $classEntity->setCategory(null);
+            }
+        } elseif (isset($payload['category'])) {
+            $category = $em->getRepository(CourseCategory::class)->findOneBy(['name' => trim($payload['category'])]);
+            if ($category) $classEntity->setCategory($category);
+        }
+
+        if (array_key_exists('levelId', $payload)) {
+            if ($payload['levelId']) {
+                $level = $em->getRepository(CourseLevel::class)->find((int)$payload['levelId']);
+                if ($level) $classEntity->setLevel($level);
+            } else {
+                $classEntity->setLevel(null);
+            }
+        } elseif (isset($payload['level'])) {
+            $level = $em->getRepository(CourseLevel::class)->findOneBy(['name' => trim($payload['level'])]);
+            if ($level) $classEntity->setLevel($level);
+        }
+
         if (array_key_exists('teacherId', $payload)) {
             if ($payload['teacherId'] !== null && (int)$payload['teacherId'] > 0) {
                 $teacher = $em->getRepository(Teacher::class)->find((int)$payload['teacherId']);
@@ -338,7 +381,20 @@ class AdminClassController extends AbstractController
 
         $em->flush();
 
-        return $this->json(['message' => 'Classe mise à jour avec succès dans MySQL']);
+        return $this->json([
+            'message' => 'Classe mise à jour avec succès dans MySQL',
+            'class' => [
+                'id' => $classEntity->getId(),
+                'name' => $classEntity->getName(),
+                'roomNumber' => $classEntity->getRoomNumber(),
+                'maxCapacity' => $classEntity->getMaxCapacity(),
+                'schedule' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getName() : $classEntity->getSchedule(),
+                'scheduleSlotId' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getId() : null,
+                'category' => $classEntity->getCategory() ? $classEntity->getCategory()->getName() : 'Langue Arabe',
+                'level' => $classEntity->getLevel() ? $classEntity->getLevel()->getName() : '6-8 ans (Débutant)',
+                'teacher' => $classEntity->getTeacher() ? $classEntity->getTeacher()->getFullName() : 'Non affecté'
+            ]
+        ]);
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]

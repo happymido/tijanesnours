@@ -322,7 +322,9 @@
     <div v-if="showClassModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
         <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white">Créer/Éditer une Classe dans MySQL</h3>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            {{ classEditingId ? '✏️ Éditer la Classe' : '➕ Nouvelle Classe' }}
+          </h3>
           <button @click="showClassModal = false" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
         </div>
 
@@ -334,22 +336,30 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
+              <label class="block font-semibold mb-1">Catégorie de cours</label>
+              <select v-model="classForm.category" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold">
+                <option v-for="c in categories" :key="c.id" :value="c.name">{{ c.name }}</option>
+              </select>
+            </div>
+            <div>
               <label class="block font-semibold mb-1">Tranche d'âge / Niveau</label>
               <select v-model="classForm.level" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold">
                 <option v-for="l in levels" :key="l.id" :value="l.name">{{ l.name }}</option>
               </select>
             </div>
-            <div>
-              <label class="block font-semibold mb-1">Capacité Maximale</label>
-              <input v-model="classForm.capacity" type="number" min="5" max="30" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700" />
-            </div>
           </div>
 
-          <div>
-            <label class="block font-semibold mb-1">Enseignant Référent Affecté</label>
-            <select v-model="classForm.teacher" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold text-emerald-600">
-              <option v-for="t in teachersList" :key="t.id" :value="t.name">{{ t.name }} ({{ t.speciality }})</option>
-            </select>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1">Capacité Maximale</label>
+              <input v-model="classForm.capacity" type="number" min="5" max="30" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold" />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Enseignant Référent</label>
+              <select v-model="classForm.teacher" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold text-emerald-600">
+                <option v-for="t in teachersList" :key="t.id" :value="t.name">{{ t.name }}</option>
+              </select>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -664,6 +674,7 @@ const showScheduleModal = ref(false)
 const showCategoryModal = ref(false)
 const showLevelModal = ref(false)
 
+const classEditingId = ref(null)
 const scheduleEditingId = ref(null)
 const categoryEditingId = ref(null)
 const levelEditingId = ref(null)
@@ -708,7 +719,9 @@ const filteredClassrooms = computed(() => {
 })
 
 const classForm = ref({
+  id: null,
   name: '',
+  category: 'Langue Arabe',
   level: '6-8 ans (Débutant)',
   teacher: 'Cheikh Mahmoud',
   schedule: 'Samedi 09:00 - 12:00 (Matin)',
@@ -779,9 +792,29 @@ async function fetchClassesData() {
 
 function openClassModal(cls = null) {
   if (cls) {
-    classForm.value = { ...cls, room: cls.roomNumber || cls.room, capacity: cls.maxCapacity || cls.capacity }
+    classEditingId.value = cls.id
+    classForm.value = {
+      id: cls.id,
+      name: cls.name || '',
+      category: cls.category || (categories.value[0]?.name || 'Langue Arabe'),
+      level: cls.level || (levels.value[0]?.name || '6-8 ans (Débutant)'),
+      teacher: cls.teacher || (teachersList.value[0]?.name || 'Cheikh Mahmoud'),
+      schedule: cls.schedule || (schedules.value[0]?.name || 'Samedi 09:00 - 12:00 (Matin)'),
+      room: cls.roomNumber || cls.room || 'Salle Maryam 1',
+      capacity: cls.maxCapacity || cls.capacity || 20
+    }
   } else {
-    classForm.value = { name: '', level: levels.value[0]?.name || '6-8 ans (Débutant)', teacher: 'Cheikh Mahmoud', schedule: schedules.value[0]?.name || 'Samedi 09:00 - 12:00 (Matin)', room: 'Salle Maryam 1', capacity: 20 }
+    classEditingId.value = null
+    classForm.value = {
+      id: null,
+      name: '',
+      category: categories.value[0]?.name || 'Langue Arabe',
+      level: levels.value[0]?.name || '6-8 ans (Débutant)',
+      teacher: teachersList.value[0]?.name || 'Cheikh Mahmoud',
+      schedule: schedules.value[0]?.name || 'Samedi 09:00 - 12:00 (Matin)',
+      room: 'Salle Maryam 1',
+      capacity: 20
+    }
   }
   showClassModal.value = true
 }
@@ -951,32 +984,47 @@ async function deleteLevel(lvl) {
 async function saveClass() {
   submitting.value = true
   try {
+    const selectedTeacherObj = teachersList.value.find(t => t.name === classForm.value.teacher)
+    const selectedCategoryObj = categories.value.find(c => c.name === classForm.value.category)
+    const selectedLevelObj = levels.value.find(l => l.name === classForm.value.level)
+    const selectedScheduleObj = schedules.value.find(s => s.name === classForm.value.schedule)
+
     const payload = {
       name: classForm.value.name,
       roomNumber: classForm.value.room,
       maxCapacity: classForm.value.capacity,
       schedule: classForm.value.schedule,
-      teacherId: 1
+      scheduleSlotId: selectedScheduleObj?.id,
+      teacher: classForm.value.teacher,
+      teacherId: selectedTeacherObj?.id,
+      category: classForm.value.category,
+      categoryId: selectedCategoryObj?.id,
+      level: classForm.value.level,
+      levelId: selectedLevelObj?.id
     }
 
-    const res = await apiClient.post('/admin/classes', payload)
-    if (res.data && res.data.class) {
-      classrooms.value.unshift(res.data.class)
+    const targetId = classEditingId.value || classForm.value.id
+    if (targetId) {
+      const res = await apiClient.put(`/admin/classes/${targetId}`, payload)
+      if (res.data && res.data.class) {
+        const index = classrooms.value.findIndex(c => c.id === targetId)
+        if (index !== -1) {
+          classrooms.value[index] = { ...classrooms.value[index], ...res.data.class }
+        }
+      } else {
+        await fetchClassesData()
+      }
+      showSuccessAlert('Classe Modifiée ! ✏️', `La classe <strong>${classForm.value.name}</strong> a été mise à jour dans MySQL.`)
     } else {
-      classrooms.value.unshift({
-        id: Date.now(),
-        name: classForm.value.name,
-        level: classForm.value.level,
-        category: 'Langue Arabe',
-        teacher: classForm.value.teacher,
-        schedule: classForm.value.schedule,
-        roomNumber: classForm.value.room,
-        maxCapacity: classForm.value.capacity,
-        currentEnrolled: 0
-      })
+      const res = await apiClient.post('/admin/classes', payload)
+      if (res.data && res.data.class) {
+        classrooms.value.unshift(res.data.class)
+      } else {
+        await fetchClassesData()
+      }
+      showSuccessAlert('Classe Enregistrée ! 🎉', `La classe <strong>${classForm.value.name}</strong> a été créée avec succès dans MySQL.`)
     }
     showClassModal.value = false
-    showSuccessAlert('Classe Enregistrée ! 🎉', `La classe <strong>${classForm.value.name}</strong> a été enregistrée avec succès.`)
   } catch (err) {
     console.error('Erreur enregistrement classe:', err)
     showErrorAlert('Erreur', 'Erreur lors de l\'enregistrement de la classe.')
