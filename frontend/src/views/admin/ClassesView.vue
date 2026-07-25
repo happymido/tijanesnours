@@ -6,20 +6,6 @@
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Gestion & Configuration Scolaire (Base MySQL)</h1>
         <p class="text-xs text-gray-500">Classes, créneaux horaires, catégories et niveaux configurables en temps réel</p>
       </div>
-      <div class="flex flex-wrap gap-2">
-        <button @click="openClassModal()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
-          <span>+</span> Nouvelle Classe
-        </button>
-        <button @click="openScheduleConfigModal()" class="px-4 py-2.5 bg-gold-600 hover:bg-gold-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
-          <span>⏰</span> Nouveau Créneau
-        </button>
-        <button @click="openCategoryModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
-          <span>📚</span> Nouvelle Catégorie
-        </button>
-        <button @click="openLevelModal()" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
-          <span>📊</span> Nouveau Niveau
-        </button>
-      </div>
     </div>
 
     <!-- Navigation Tabs -->
@@ -43,14 +29,22 @@
 
     <!-- TAB 1: Tableau Général des Classes (Datatable) -->
     <div v-if="currentSubTab === 'TABLE'" class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 class="font-bold text-base text-gray-900 dark:text-white">Liste Détaillée des Classes (Base MySQL)</h3>
-        <input
-          v-model="classSearch"
-          type="text"
-          placeholder="Filtrer par nom, enseignant, salle..."
-          class="px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-700 border text-xs w-64"
-        />
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-3 dark:border-gray-700">
+        <div>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Liste Détaillée des Classes (Base MySQL)</h3>
+          <p class="text-xs text-gray-500">Gestion et configuration des classes</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <input
+            v-model="classSearch"
+            type="text"
+            placeholder="🔍 Filtrer par nom, enseignant, salle..."
+            class="px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-700 border text-xs w-64"
+          />
+          <button @click="openClassModal()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
+            <span>+</span> Nouvelle Classe
+          </button>
+        </div>
       </div>
 
       <div v-if="loading" class="py-8 text-center text-xs font-bold text-gray-500">
@@ -641,7 +635,7 @@
                   <td class="py-3 px-4 text-gray-500">{{ st.dateOfBirth }}</td>
                   <td class="py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                     <router-link :to="`/admin/users/${st.parentId || 'parent_1'}/id-card`" class="text-brand-600 hover:underline">
-                      👨‍gsub {{ st.parentName }}
+                      👨‍👩‍👦 {{ st.parentName }}
                     </router-link>
                   </td>
                   <td class="py-3 px-4 text-gray-500 font-mono text-[11px]">{{ st.contact }}</td>

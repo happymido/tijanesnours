@@ -238,7 +238,7 @@
           <!-- Section Choix & Sélection du Parent avec Select2 -->
           <div v-if="modalType === 'STUDENT'" class="space-y-3 pt-2">
             <h4 class="font-bold text-brand-600 dark:text-gold-400 border-b pb-1 flex items-center justify-between">
-              <span>👨‍gsub 2. Responsable Légal / Parent</span>
+              <span>👨‍👩‍👦 2. Responsable Légal / Parent</span>
             </h4>
 
             <!-- Select2 Recherchable des Parents Existants -->
@@ -336,7 +336,7 @@ const parentOptions = computed(() => {
   parents.value.forEach(p => {
     list.push({
       value: p.id,
-      label: `👨‍gsub ${p.name} (${p.email})`
+      label: `👨‍👩‍👦 ${p.name} (${p.email})`
     })
   })
   return list
