@@ -253,7 +253,7 @@
                         :class="log.status === 'PRESENT' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'"
                         class="px-2 py-0.5 rounded-full text-[10px] font-extrabold"
                       >
-                        {{ log.status === 'PRESENT' ? '✅ PRÉSENT (Cours assuré)' : '❌ ABSENT / SUSPENDU' }}
+                        {{ log.status === 'PRESENT' ? '✅ PRÉSENT' : '❌ ABSENT' }}
                       </span>
                     </td>
                     <td class="py-2.5 px-3 font-bold text-gray-700 dark:text-gray-300">
@@ -326,8 +326,8 @@
         </div>
       </div>
 
-      <!-- 3. Responsable Légal & Règlements (SÉLECTEUR DES PARENTS PRÉSÉLECTIONNÉ PAR DÉFAUT POUR L'ÉLÈVE) -->
-      <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
+      <!-- 3. Responsable Légal & Règlements (md:col-span-6 = 50% comme avant) -->
+      <div class="md:col-span-6 bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
           <span class="w-8 h-8 rounded-xl bg-gold-50 text-gold-700 flex items-center justify-center text-sm font-bold">👨‍👩‍👧</span>
           <h3 class="font-bold text-base text-gray-900 dark:text-white">Rattachement Légal & Responsables</h3>
@@ -362,8 +362,8 @@
         </div>
       </div>
 
-      <!-- 4. Santé & Autorisations Légales -->
-      <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
+      <!-- 4. Santé & Autorisations Légales (md:col-span-6 = 50% comme avant) -->
+      <div class="md:col-span-6 bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
           <span class="w-8 h-8 rounded-xl bg-red-50 text-red-700 flex items-center justify-center text-sm font-bold">📄</span>
           <h3 class="font-bold text-base text-gray-900 dark:text-white">Santé & Conformité Légale</h3>
@@ -410,7 +410,7 @@
                 :class="attendanceForm.teacherStatus === 'PRESENT' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200'"
                 class="py-2 px-3 rounded-xl border font-bold text-center transition-all flex items-center justify-center gap-1.5 shadow-sm"
               >
-                <span>✅</span> PRÉSENT (Cours assuré)
+                <span>✅</span> PRÉSENT
               </button>
               <button
                 type="button"
@@ -418,7 +418,7 @@
                 :class="attendanceForm.teacherStatus === 'ABSENT' ? 'bg-red-600 text-white border-red-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200'"
                 class="py-2 px-3 rounded-xl border font-bold text-center transition-all flex items-center justify-center gap-1.5 shadow-sm"
               >
-                <span>❌</span> ABSENT / SUSPENDU
+                <span>❌</span> ABSENT
               </button>
             </div>
           </div>
