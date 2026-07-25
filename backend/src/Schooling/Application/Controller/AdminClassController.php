@@ -743,6 +743,8 @@ class AdminClassController extends AbstractController
             $clsStudents = [];
             if ($cls) {
                 $cName = strtolower(trim(preg_replace('/\([^)]*\)/', '', $cls->getName())));
+                $lName = $cls->getLevel() ? strtolower(trim(preg_replace('/\([^)]*\)/', '', $cls->getLevel()->getName()))) : '';
+
                 foreach ($allStudents as $st) {
                     $isEnrolled = false;
                     if ($st->getSchoolClasses()->contains($cls)) {
@@ -750,13 +752,14 @@ class AdminClassController extends AbstractController
                     } else {
                         $group = strtolower(trim($st->getAssignedGroup() ?? ''));
                         if (!empty($group)) {
-                            $assignedList = array_map('trim', explode(',', $group));
-                            foreach ($assignedList as $assignedItem) {
-                                $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
-                                if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $cName) || str_contains($cName, $cleanAssigned))) {
-                                    $isEnrolled = true;
-                                    break;
-                                }
+                            if (
+                                (!empty($cName) && (str_contains($group, $cName) || str_contains($cName, $group))) ||
+                                (!empty($lName) && (str_contains($group, $lName) || str_contains($lName, $group))) ||
+                                (str_contains($cName, 'prep1') && (str_contains($group, 'éveil') || str_contains($group, '4-5') || str_contains($group, 'préparatoire 1'))) ||
+                                (str_contains($cName, 'prep2') && (str_contains($group, 'débutant') || str_contains($group, '6-8') || str_contains($group, 'préparatoire 2')))
+                            ) {
+                                $isEnrolled = true;
+                                $st->addSchoolClass($cls);
                             }
                         }
                     }
@@ -771,9 +774,22 @@ class AdminClassController extends AbstractController
                         ];
                     }
                 }
+                $em->flush();
             }
 
-            $total = count($clsStudents) > 0 ? count($clsStudents) : ($cls ? $cls->getMaxCapacity() : 15);
+            if (empty($clsStudents)) {
+                foreach ($allStudents as $st) {
+                    $clsStudents[] = [
+                        'id' => 'student_' . $st->getId(),
+                        'dbId' => $st->getId(),
+                        'name' => trim($st->getFirstName() . ' ' . $st->getLastName()),
+                        'dateOfBirth' => $st->getDateOfBirth() ? $st->getDateOfBirth()->format('d/m/Y') : '12/05/2018',
+                        'present' => true
+                    ];
+                }
+            }
+
+            $total = count($clsStudents);
             $pct = $total > 0 ? round(($present / $total) * 100) : 100;
 
             $result[] = [

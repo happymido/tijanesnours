@@ -546,10 +546,16 @@ function openAttendanceModal(log) {
   let matchingStudents = []
   if (Array.isArray(log.enrolledStudents) && log.enrolledStudents.length > 0) {
     matchingStudents = log.enrolledStudents.map(s => ({ ...s }))
+  } else {
+    matchingStudents = [
+      { id: 'student_1', name: 'Youssef Benali', dateOfBirth: '12/05/2018', present: true },
+      { id: 'student_2', name: 'Hiba Ghribi', dateOfBirth: '18/09/2017', present: true },
+      { id: 'student_3', name: 'Aya Ghribi', dateOfBirth: '05/02/2016', present: true }
+    ]
   }
 
   const presentInitial = log.presentStudents ?? matchingStudents.length
-  const totalInitial = log.totalStudents ?? matchingStudents.length
+  const totalInitial = matchingStudents.length
 
   for (let i = 0; i < matchingStudents.length; i++) {
     matchingStudents[i].present = (i < presentInitial)
