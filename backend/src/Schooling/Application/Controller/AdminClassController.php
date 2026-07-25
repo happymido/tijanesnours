@@ -755,8 +755,8 @@ class AdminClassController extends AbstractController
                             if (
                                 (!empty($cName) && (str_contains($group, $cName) || str_contains($cName, $group))) ||
                                 (!empty($lName) && (str_contains($group, $lName) || str_contains($lName, $group))) ||
-                                (str_contains($cName, 'prep1') && (str_contains($group, 'éveil') || str_contains($group, '4-5') || str_contains($group, 'préparatoire 1'))) ||
-                                (str_contains($cName, 'prep2') && (str_contains($group, 'débutant') || str_contains($group, '6-8') || str_contains($group, 'préparatoire 2')))
+                                (str_contains($cName, 'éveil') && str_contains($group, 'éveil')) ||
+                                (str_contains($cName, 'débutant') && str_contains($group, 'débutant'))
                             ) {
                                 $isEnrolled = true;
                                 $st->addSchoolClass($cls);
@@ -775,18 +775,6 @@ class AdminClassController extends AbstractController
                     }
                 }
                 $em->flush();
-            }
-
-            if (empty($clsStudents)) {
-                foreach ($allStudents as $st) {
-                    $clsStudents[] = [
-                        'id' => 'student_' . $st->getId(),
-                        'dbId' => $st->getId(),
-                        'name' => trim($st->getFirstName() . ' ' . $st->getLastName()),
-                        'dateOfBirth' => $st->getDateOfBirth() ? $st->getDateOfBirth()->format('d/m/Y') : '12/05/2018',
-                        'present' => true
-                    ];
-                }
             }
 
             $total = count($clsStudents);
