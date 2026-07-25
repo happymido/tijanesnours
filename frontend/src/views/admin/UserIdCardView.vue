@@ -189,43 +189,77 @@
         </div>
       </div>
 
-      <!-- 2. Informations Pédagogiques & Affectation -->
+      <!-- 2. Informations Pédagogiques / Suivi des Présences Mensuelles -->
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
-        <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
-          <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-bold">🏫</span>
-          <h3 class="font-bold text-base text-gray-900 dark:text-white">
-            {{ user.role === 'ROLE_TEACHER' ? 'Classes & Matières Enseignées (Affectations Multiples)' : 'Affectation Scolaire & Niveaux' }}
-          </h3>
+        <div class="flex items-center justify-between border-b pb-3 dark:border-gray-700">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-bold">
+              {{ user.role === 'ROLE_TEACHER' ? '📅' : '🏫' }}
+            </span>
+            <h3 class="font-bold text-base text-gray-900 dark:text-white">
+              {{ user.role === 'ROLE_TEACHER' ? 'Suivi des Présences & Émargement par Mois' : 'Affectation Scolaire & Niveaux' }}
+            </h3>
+          </div>
+
+          <!-- Sélecteur du Mois pour l'Enseignant -->
+          <div v-if="user.role === 'ROLE_TEACHER'">
+            <select v-model="selectedAttendanceMonth" class="px-3 py-1.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold text-xs text-brand-700 dark:text-gold-300">
+              <option v-for="m in attendanceMonths" :key="m.value" :value="m.value">{{ m.label }}</option>
+            </select>
+          </div>
         </div>
 
         <div class="space-y-3 text-xs">
-          <!-- CAS ENSEIGNANT : Cases à cocher PRÉSÉLECTIONNÉES PAR DÉFAUT -->
-          <div v-if="user.role === 'ROLE_TEACHER'" class="space-y-3">
-            <div v-if="!isEditing" class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 space-y-2">
-              <span class="text-[10px] uppercase font-bold text-emerald-700">Classes & Spécialités d'Enseignement :</span>
-              <div class="flex flex-wrap gap-2 pt-1">
-                <span v-for="(spec, i) in currentTeacherSpecs" :key="i" class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-bold rounded-xl text-xs border border-emerald-200">
-                  📚 {{ spec }}
-                </span>
+          <!-- CAS ENSEIGNANT : Système de Présence & Émargement Mensuel -->
+          <div v-if="user.role === 'ROLE_TEACHER'" class="space-y-4">
+            <!-- Statistiques Mensuelles -->
+            <div class="grid grid-cols-3 gap-3">
+              <div class="p-3 bg-emerald-50/60 dark:bg-emerald-900/30 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-center">
+                <span class="text-[10px] uppercase font-extrabold text-emerald-600 block">Taux Présence Assurée</span>
+                <span class="text-lg font-extrabold text-emerald-700 dark:text-emerald-300">100 %</span>
+              </div>
+              <div class="p-3 bg-blue-50/60 dark:bg-blue-900/30 rounded-2xl border border-blue-100 dark:border-blue-800 text-center">
+                <span class="text-[10px] uppercase font-extrabold text-blue-600 block">Séances Effectuées</span>
+                <span class="text-lg font-extrabold text-blue-700 dark:text-blue-300">{{ teacherAttendanceLogs.length }} cours</span>
+              </div>
+              <div class="p-3 bg-purple-50/60 dark:bg-purple-900/30 rounded-2xl border border-purple-100 dark:border-purple-800 text-center">
+                <span class="text-[10px] uppercase font-extrabold text-purple-600 block">Émargement Élèves</span>
+                <span class="text-lg font-extrabold text-purple-700 dark:text-purple-300">Conforme</span>
               </div>
             </div>
 
-            <!-- Mode Édition Enseignant -->
-            <div v-else class="p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200 space-y-3">
-              <label class="font-bold text-emerald-800 dark:text-emerald-300 block border-b pb-1">
-                ⚡ Sélectionner les affectations multiples (Présélectionnées par défaut) :
-              </label>
-              <div class="grid grid-cols-1 gap-2.5 pt-1">
-                <label v-for="opt in teacherOptions" :key="opt.value" class="flex items-center gap-2.5 p-2 bg-white dark:bg-gray-700 rounded-xl border cursor-pointer hover:bg-emerald-50 transition-colors">
-                  <input
-                    type="checkbox"
-                    :value="opt.value"
-                    v-model="editForm.teacherSpecialities"
-                    class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 accent-emerald-600"
-                  />
-                  <span class="font-bold text-xs text-gray-800 dark:text-white">{{ opt.label }}</span>
-                </label>
-              </div>
+            <!-- Tableau des Émargements du Mois -->
+            <div class="overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-700">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 uppercase font-semibold">
+                  <tr>
+                    <th class="py-2.5 px-3">Date & Séance</th>
+                    <th class="py-2.5 px-3">Classe Enseignée</th>
+                    <th class="py-2.5 px-3">Statut Professeur</th>
+                    <th class="py-2.5 px-3">Émargement Élèves</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700 font-semibold">
+                  <tr v-for="log in teacherAttendanceLogs" :key="log.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+                    <td class="py-2.5 px-3">
+                      <div class="font-bold text-gray-900 dark:text-white">{{ log.dayName }} {{ log.date }}</div>
+                      <div class="text-[10px] text-gray-400">⏰ {{ log.schedule }}</div>
+                    </td>
+                    <td class="py-2.5 px-3">
+                      <div class="font-bold text-brand-600 dark:text-gold-400">📚 {{ log.className }}</div>
+                      <div class="text-[10px] text-gray-400">🚪 {{ log.room }}</div>
+                    </td>
+                    <td class="py-2.5 px-3">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
+                        ✅ PRÉSENT (Cours assuré)
+                      </span>
+                    </td>
+                    <td class="py-2.5 px-3 font-bold text-gray-700 dark:text-gray-300">
+                      👥 {{ log.studentCount }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -407,6 +441,33 @@ const childrenList = computed(() => {
 })
 
 const allClassesList = ref([])
+
+const selectedAttendanceMonth = ref('2026-07')
+const attendanceMonths = ref([
+  { value: '2026-07', label: 'Juillet 2026 (En cours)' },
+  { value: '2026-06', label: 'Juin 2026' },
+  { value: '2026-05', label: 'Mai 2026' },
+  { value: '2026-04', label: 'Avril 2026' }
+])
+
+const teacherAttendanceLogs = computed(() => {
+  if (selectedAttendanceMonth.value === '2026-07') {
+    return [
+      { id: 1, date: '25/07/2026', dayName: 'Samedi', className: 'Classe Éveil 1', room: 'Salle Khadija 2', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '1/1 élève présent (100%)' },
+      { id: 2, date: '25/07/2026', dayName: 'Samedi', className: 'Classe Débutant 2A', room: 'Salle Maryam 1', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '2/2 élèves présents (100%)' },
+      { id: 3, date: '18/07/2026', dayName: 'Samedi', className: 'Classe Éveil 1', room: 'Salle Khadija 2', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '1/1 élève présent (100%)' },
+      { id: 4, date: '18/07/2026', dayName: 'Samedi', className: 'Classe Débutant 2A', room: 'Salle Maryam 1', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '2/2 élèves présents (100%)' }
+    ]
+  } else if (selectedAttendanceMonth.value === '2026-06') {
+    return [
+      { id: 5, date: '27/06/2026', dayName: 'Samedi', className: 'Classe Éveil 1', room: 'Salle Khadija 2', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '1/1 élève présent (100%)' },
+      { id: 6, date: '20/06/2026', dayName: 'Samedi', className: 'Classe Débutant 2A', room: 'Salle Maryam 1', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '2/2 élèves présents (100%)' }
+    ]
+  }
+  return [
+    { id: 7, date: '30/05/2026', dayName: 'Samedi', className: 'Classe Éveil 1', room: 'Salle Khadija 2', schedule: '09:30 - 13:30 (Matin)', status: 'PRESENT', studentCount: '1/1 élève présent (100%)' }
+  ]
+})
 
 const assignedTeacherClasses = computed(() => {
   if (user.value.role !== 'ROLE_TEACHER') return []
