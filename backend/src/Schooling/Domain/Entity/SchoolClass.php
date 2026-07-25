@@ -26,6 +26,9 @@ class SchoolClass
     #[ORM\Column(type: 'string', length: 150, nullable: true)]
     private ?string $schedule = 'Samedi 09:00 - 12:00';
 
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $code = null;
+
     #[ORM\ManyToOne(targetEntity: CourseCategory::class)]
     #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?CourseCategory $category = null;
@@ -41,6 +44,10 @@ class SchoolClass
     #[ORM\ManyToOne(targetEntity: ScheduleSlot::class)]
     #[ORM\JoinColumn(name: 'schedule_slot_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?ScheduleSlot $scheduleSlot = null;
+
+    #[ORM\ManyToOne(targetEntity: Classroom::class)]
+    #[ORM\JoinColumn(name: 'classroom_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Classroom $classroom = null;
 
     public function getId(): ?int
     {
@@ -132,6 +139,28 @@ class SchoolClass
     public function setScheduleSlot(?ScheduleSlot $scheduleSlot): self
     {
         $this->scheduleSlot = $scheduleSlot;
+        return $this;
+    }
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(?string $code): self
+    {
+        $this->code = $code;
+        return $this;
+    }
+
+    public function getClassroom(): ?Classroom
+    {
+        return $this->classroom;
+    }
+
+    public function setClassroom(?Classroom $classroom): self
+    {
+        $this->classroom = $classroom;
         return $this;
     }
 }

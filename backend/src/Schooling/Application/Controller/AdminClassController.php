@@ -6,6 +6,7 @@ use App\Schooling\Domain\Entity\SchoolClass;
 use App\Schooling\Domain\Entity\CourseCategory;
 use App\Schooling\Domain\Entity\CourseLevel;
 use App\Schooling\Domain\Entity\ScheduleSlot;
+use App\Schooling\Domain\Entity\Classroom;
 use App\IdentityAccess\Domain\Entity\Teacher;
 use App\IdentityAccess\Domain\Entity\Student;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +22,38 @@ class AdminClassController extends AbstractController
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(EntityManagerInterface $em): JsonResponse
     {
+        // 0. Récupérer et initialiser la liste des Salles depuis MySQL
+        $classrooms = $em->getRepository(Classroom::class)->findAll();
+        if (empty($classrooms)) {
+            $defaults = [
+                ['name' => 'Salle Maryam 1', 'code' => 'M1', 'capacity' => 20],
+                ['name' => 'Salle Maryam 2', 'code' => 'M2', 'capacity' => 20],
+                ['name' => 'Salle Khadija 1', 'code' => 'K1', 'capacity' => 15],
+                ['name' => 'Salle Khadija 2', 'code' => 'K2', 'capacity' => 15],
+                ['name' => 'Grand Amphi A', 'code' => 'AMPHI-A', 'capacity' => 50]
+            ];
+            foreach ($defaults as $def) {
+                $rm = new Classroom();
+                $rm->setName($def['name']);
+                $rm->setCode($def['code']);
+                $rm->setCapacity($def['capacity']);
+                $em->persist($rm);
+            }
+            $em->flush();
+            $classrooms = $em->getRepository(Classroom::class)->findAll();
+        }
+
+        $roomData = [];
+        foreach ($classrooms as $rm) {
+            $roomData[] = [
+                'id' => $rm->getId(),
+                'name' => $rm->getName(),
+                'code' => $rm->getCode(),
+                'capacity' => $rm->getCapacity(),
+                'description' => $rm->getDescription()
+            ];
+        }
+
         // 1. Récupérer les classes depuis MySQL
         $classes = $em->getRepository(SchoolClass::class)->findAll();
         $classData = [];
@@ -50,16 +83,40 @@ class AdminClassController extends AbstractController
                 }
             }
 
+            $roomName = $c->getClassroom() ? $c->getClassroom()->getName() : ($c->getRoomNumber() ?? 'Salle Principale');
+            $roomId = $c->getClassroom() ? $c->getClassroom()->getId() : null;
+            $scheduleName = $c->getScheduleSlot() ? $c->getScheduleSlot()->getName() : ($c->getSchedule() ?? 'Non défini');
+
+            $code = $c->getCode();
+            if (empty($code)) {
+                $dayPart = '';
+                if ($c->getScheduleSlot()) {
+                    $dayPart = strtoupper(substr($c->getScheduleSlot()->getDay(), 0, 3));
+                    if (str_contains(strtolower($c->getScheduleSlot()->getLabel()), 'matin')) {
+                        $dayPart .= '-M';
+                    } elseif (str_contains(strtolower($c->getScheduleSlot()->getLabel()), 'après')) {
+                        $dayPart .= '-AM';
+                    }
+                }
+                $code = !empty($dayPart) ? ($c->getName() . ' [' . $dayPart . ']') : $c->getName();
+            }
+
             $classData[] = [
                 'id' => $c->getId(),
                 'name' => $c->getName(),
-                'roomNumber' => $c->getRoomNumber() ?? 'Salle Principale',
+                'code' => $code,
+                'roomNumber' => $roomName,
+                'classroomId' => $roomId,
                 'maxCapacity' => $c->getMaxCapacity(),
                 'currentEnrolled' => $enrolledCount,
-                'schedule' => $c->getScheduleSlot() ? $c->getScheduleSlot()->getName() : ($c->getSchedule() ?? 'Non défini'),
+                'schedule' => $scheduleName,
+                'scheduleSlotId' => $c->getScheduleSlot() ? $c->getScheduleSlot()->getId() : null,
                 'category' => $c->getCategory() ? $c->getCategory()->getName() : 'Non catégorisé',
+                'categoryId' => $c->getCategory() ? $c->getCategory()->getId() : null,
                 'level' => $c->getLevel() ? $c->getLevel()->getName() : 'Non spécifié',
-                'teacher' => $c->getTeacher() ? $c->getTeacher()->getFullName() : 'Non affecté'
+                'levelId' => $c->getLevel() ? $c->getLevel()->getId() : null,
+                'teacher' => $c->getTeacher() ? $c->getTeacher()->getFullName() : 'Non affecté',
+                'teacherId' => $c->getTeacher() ? $c->getTeacher()->getId() : null
             ];
         }
         $em->flush();
@@ -127,6 +184,7 @@ class AdminClassController extends AbstractController
             'categories' => $catData,
             'levels' => $levelData,
             'schedules' => $schedulesList,
+            'rooms' => $roomData,
             'teachers' => $teacherData
         ]);
     }
@@ -147,6 +205,10 @@ class AdminClassController extends AbstractController
         $classEntity->setMaxCapacity($capacity);
         $classEntity->setSchedule($schedule);
 
+        if (!empty($payload['code'])) {
+            $classEntity->setCode(trim($payload['code']));
+        }
+
         if (!empty($payload['scheduleSlotId'])) {
             $slot = $em->getRepository(ScheduleSlot::class)->find((int)$payload['scheduleSlotId']);
             if ($slot) {
@@ -162,6 +224,17 @@ class AdminClassController extends AbstractController
                     break;
                 }
             }
+        }
+
+        if (!empty($payload['classroomId'])) {
+            $rm = $em->getRepository(Classroom::class)->find((int)$payload['classroomId']);
+            if ($rm) {
+                $classEntity->setClassroom($rm);
+                $classEntity->setRoomNumber($rm->getName());
+            }
+        } elseif (!empty($room)) {
+            $rm = $em->getRepository(Classroom::class)->findOneBy(['name' => $room]);
+            if ($rm) $classEntity->setClassroom($rm);
         }
 
         if (!empty($payload['categoryId'])) {
@@ -191,19 +264,27 @@ class AdminClassController extends AbstractController
         $em->persist($classEntity);
         $em->flush();
 
+        $roomName = $classEntity->getClassroom() ? $classEntity->getClassroom()->getName() : $classEntity->getRoomNumber();
+        $code = $classEntity->getCode() ?? ($classEntity->getName() . ($classEntity->getScheduleSlot() ? ' [' . strtoupper(substr($classEntity->getScheduleSlot()->getDay(), 0, 3)) . ']' : ''));
+
         return $this->json([
             'message' => 'Classe créée avec succès dans MySQL',
             'class' => [
                 'id' => $classEntity->getId(),
                 'name' => $classEntity->getName(),
-                'roomNumber' => $classEntity->getRoomNumber(),
+                'code' => $code,
+                'roomNumber' => $roomName,
+                'classroomId' => $classEntity->getClassroom() ? $classEntity->getClassroom()->getId() : null,
                 'maxCapacity' => $classEntity->getMaxCapacity(),
                 'currentEnrolled' => 0,
                 'schedule' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getName() : $classEntity->getSchedule(),
                 'scheduleSlotId' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getId() : null,
-                'category' => $classEntity->getCategory() ? $classEntity->getCategory()->getName() : 'Langue Arabe',
-                'level' => $classEntity->getLevel() ? $classEntity->getLevel()->getName() : '6-8 ans (Débutant)',
-                'teacher' => $classEntity->getTeacher() ? $classEntity->getTeacher()->getFullName() : 'Non affecté'
+                'category' => $classEntity->getCategory() ? $classEntity->getCategory()->getName() : 'Non catégorisé',
+                'categoryId' => $classEntity->getCategory() ? $classEntity->getCategory()->getId() : null,
+                'level' => $classEntity->getLevel() ? $classEntity->getLevel()->getName() : 'Non spécifié',
+                'levelId' => $classEntity->getLevel() ? $classEntity->getLevel()->getId() : null,
+                'teacher' => $classEntity->getTeacher() ? $classEntity->getTeacher()->getFullName() : 'Non affecté',
+                'teacherId' => $classEntity->getTeacher() ? $classEntity->getTeacher()->getId() : null
             ]
         ], Response::HTTP_CREATED);
     }
@@ -218,8 +299,24 @@ class AdminClassController extends AbstractController
 
         $payload = json_decode($request->getContent(), true);
         if (isset($payload['name'])) $classEntity->setName($payload['name']);
+        if (isset($payload['code'])) $classEntity->setCode($payload['code']);
         if (isset($payload['roomNumber'])) $classEntity->setRoomNumber($payload['roomNumber']);
         if (isset($payload['maxCapacity'])) $classEntity->setMaxCapacity((int)$payload['maxCapacity']);
+
+        if (array_key_exists('classroomId', $payload)) {
+            if ($payload['classroomId']) {
+                $rm = $em->getRepository(Classroom::class)->find((int)$payload['classroomId']);
+                if ($rm) {
+                    $classEntity->setClassroom($rm);
+                    $classEntity->setRoomNumber($rm->getName());
+                }
+            } else {
+                $classEntity->setClassroom(null);
+            }
+        } elseif (isset($payload['roomNumber'])) {
+            $rm = $em->getRepository(Classroom::class)->findOneBy(['name' => trim($payload['roomNumber'])]);
+            if ($rm) $classEntity->setClassroom($rm);
+        }
         
         if (isset($payload['scheduleSlotId'])) {
             $slot = $em->getRepository(ScheduleSlot::class)->find((int)$payload['scheduleSlotId']);
@@ -281,18 +378,26 @@ class AdminClassController extends AbstractController
 
         $em->flush();
 
+        $roomName = $classEntity->getClassroom() ? $classEntity->getClassroom()->getName() : ($classEntity->getRoomNumber() ?? 'Salle Principale');
+        $code = $classEntity->getCode() ?? ($classEntity->getName() . ($classEntity->getScheduleSlot() ? ' [' . strtoupper(substr($classEntity->getScheduleSlot()->getDay(), 0, 3)) . ']' : ''));
+
         return $this->json([
             'message' => 'Classe mise à jour avec succès dans MySQL',
             'class' => [
                 'id' => $classEntity->getId(),
                 'name' => $classEntity->getName(),
-                'roomNumber' => $classEntity->getRoomNumber(),
+                'code' => $code,
+                'roomNumber' => $roomName,
+                'classroomId' => $classEntity->getClassroom() ? $classEntity->getClassroom()->getId() : null,
                 'maxCapacity' => $classEntity->getMaxCapacity(),
                 'schedule' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getName() : $classEntity->getSchedule(),
                 'scheduleSlotId' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getId() : null,
-                'category' => $classEntity->getCategory() ? $classEntity->getCategory()->getName() : 'Langue Arabe',
-                'level' => $classEntity->getLevel() ? $classEntity->getLevel()->getName() : '6-8 ans (Débutant)',
-                'teacher' => $classEntity->getTeacher() ? $classEntity->getTeacher()->getFullName() : 'Non affecté'
+                'category' => $classEntity->getCategory() ? $classEntity->getCategory()->getName() : 'Non catégorisé',
+                'categoryId' => $classEntity->getCategory() ? $classEntity->getCategory()->getId() : null,
+                'level' => $classEntity->getLevel() ? $classEntity->getLevel()->getName() : 'Non spécifié',
+                'levelId' => $classEntity->getLevel() ? $classEntity->getLevel()->getId() : null,
+                'teacher' => $classEntity->getTeacher() ? $classEntity->getTeacher()->getFullName() : 'Non affecté',
+                'teacherId' => $classEntity->getTeacher() ? $classEntity->getTeacher()->getId() : null
             ]
         ]);
     }
@@ -363,14 +468,14 @@ class AdminClassController extends AbstractController
                 'id' => $classEntity->getId(),
                 'name' => $classEntity->getName(),
                 'schedule' => $classEntity->getScheduleSlot() ? $classEntity->getScheduleSlot()->getName() : ($classEntity->getSchedule() ?? 'Samedi 09:00 - 12:00 (Matin)'),
-                'room' => $classEntity->getRoomNumber() ?? 'Salle Maryam 1'
+                'room' => $classEntity->getClassroom() ? $classEntity->getClassroom()->getName() : ($classEntity->getRoomNumber() ?? 'Salle Maryam 1')
             ],
             'totalEnrolled' => count($roster),
             'students' => $roster
         ]);
     }
 
-    // CRUD CATÉGORIES EN BBD MYSQL
+    // CRUD CATÉGORIES DE COURS
     #[Route('/categories', name: 'category_create', methods: ['POST'])]
     public function createCategory(Request $request, EntityManagerInterface $em): JsonResponse
     {
@@ -378,7 +483,7 @@ class AdminClassController extends AbstractController
         $cat = new CourseCategory();
         $cat->setName(trim($payload['name'] ?? 'Nouvelle Catégorie'));
         $cat->setDescription(trim($payload['description'] ?? ''));
-        $cat->setColor($payload['color'] ?? '#047857');
+        $cat->setColor(trim($payload['color'] ?? '#047857'));
         $em->persist($cat);
         $em->flush();
 
@@ -389,7 +494,7 @@ class AdminClassController extends AbstractController
                 'name' => $cat->getName(),
                 'description' => $cat->getDescription(),
                 'color' => $cat->getColor(),
-                'icon' => '📚'
+                'icon' => '📖'
             ]
         ], Response::HTTP_CREATED);
     }
@@ -419,7 +524,7 @@ class AdminClassController extends AbstractController
         return $this->json(['message' => 'Catégorie supprimée de MySQL']);
     }
 
-    // CRUD NIVEAUX EN BBD MYSQL
+    // CRUD NIVEAUX DE COURS
     #[Route('/levels', name: 'level_create', methods: ['POST'])]
     public function createLevel(Request $request, EntityManagerInterface $em): JsonResponse
     {
@@ -521,5 +626,56 @@ class AdminClassController extends AbstractController
             $em->flush();
         }
         return $this->json(['message' => 'Créneau supprimé de MySQL']);
+    }
+
+    // CRUD SALLES DE COURS (CLASSROOMS) EN BBD MYSQL
+    #[Route('/rooms', name: 'room_create', methods: ['POST'])]
+    public function createRoom(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+        $rm = new Classroom();
+        $rm->setName(trim($payload['name'] ?? 'Nouvelle Salle'));
+        $rm->setCode(trim($payload['code'] ?? 'S1'));
+        $rm->setCapacity((int)($payload['capacity'] ?? 20));
+        $rm->setDescription(trim($payload['description'] ?? ''));
+        $em->persist($rm);
+        $em->flush();
+
+        return $this->json([
+            'message' => 'Salle créée avec succès dans MySQL',
+            'room' => [
+                'id' => $rm->getId(),
+                'name' => $rm->getName(),
+                'code' => $rm->getCode(),
+                'capacity' => $rm->getCapacity(),
+                'description' => $rm->getDescription()
+            ]
+        ], Response::HTTP_CREATED);
+    }
+
+    #[Route('/rooms/{id}', name: 'room_update', methods: ['PUT', 'PATCH'])]
+    public function updateRoom(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $rm = $em->getRepository(Classroom::class)->find($id);
+        if ($rm) {
+            $payload = json_decode($request->getContent(), true);
+            if (isset($payload['name'])) $rm->setName($payload['name']);
+            if (isset($payload['code'])) $rm->setCode($payload['code']);
+            if (isset($payload['capacity'])) $rm->setCapacity((int)$payload['capacity']);
+            if (isset($payload['description'])) $rm->setDescription($payload['description']);
+            $em->flush();
+        }
+        return $this->json(['message' => 'Salle mise à jour avec succès dans MySQL']);
+    }
+
+    #[Route('/rooms/{id}', name: 'room_delete', methods: ['DELETE'])]
+    public function deleteRoom(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $rm = $em->getRepository(Classroom::class)->find($id);
+        if ($rm) {
+            $em->remove($rm);
+            $em->flush();
+        }
+        return $this->json(['message' => 'Salle supprimée de MySQL']);
     }
 }

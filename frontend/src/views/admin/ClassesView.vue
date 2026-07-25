@@ -16,6 +16,9 @@
       <button @click="currentSubTab = 'SCHEDULES'" :class="currentSubTab === 'SCHEDULES' ? 'border-b-2 border-gold-600 text-gold-600 pb-3' : 'text-gray-500 pb-3'">
         ⏰ Créneaux Horaires ({{ schedules.length }})
       </button>
+      <button @click="currentSubTab = 'ROOMS'" :class="currentSubTab === 'ROOMS' ? 'border-b-2 border-indigo-600 text-indigo-600 pb-3' : 'text-gray-500 pb-3'">
+        🚪 Salles de cours ({{ rooms.length }})
+      </button>
       <button @click="currentSubTab = 'CATEGORIES'" :class="currentSubTab === 'CATEGORIES' ? 'border-b-2 border-emerald-600 text-emerald-600 pb-3' : 'text-gray-500 pb-3'">
         📚 Catégories de Cours ({{ categories.length }})
       </button>
@@ -66,7 +69,12 @@
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
             <tr v-for="cls in filteredClassrooms" :key="cls.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
-              <td class="py-3.5 px-4 font-bold text-gray-900 dark:text-white">{{ cls.name }}</td>
+              <td class="py-3.5 px-4 font-bold text-gray-900 dark:text-white">
+                <div>{{ cls.name }}</div>
+                <span v-if="cls.code" class="inline-block px-2 py-0.5 mt-1 rounded text-[10px] font-extrabold bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                  🏷️ {{ cls.code }}
+                </span>
+              </td>
               <td class="py-3.5 px-4">
                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-50 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
                   {{ cls.level }}
@@ -318,6 +326,56 @@
       </div>
     </div>
 
+    <!-- TAB 6: Salles de Cours (Classrooms) CRUD Panel -->
+    <div v-if="currentSubTab === 'ROOMS'" class="space-y-4">
+      <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700 shadow-sm">
+        <div>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Gestion des Salles de Cours (Base MySQL)</h3>
+          <p class="text-xs text-gray-500">Configurez les salles, amphis et capacités d'accueil disponibles</p>
+        </div>
+        <button @click="openRoomModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow flex items-center gap-2 transition-all">
+          <span>+</span> Ajouter une Salle
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div v-for="rm in rooms" :key="rm.id" class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4 flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex justify-between items-start">
+              <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xl font-bold shadow-sm">
+                🚪
+              </div>
+              <span class="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 font-extrabold text-[11px] rounded-full">
+                Capacité: {{ rm.capacity }} él.
+              </span>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-gray-900 dark:text-white">{{ rm.name }}</h3>
+              <p v-if="rm.code" class="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">Code: {{ rm.code }}</p>
+            </div>
+            <p class="text-xs text-gray-500 leading-relaxed">{{ rm.description || 'Salle de classe équipée pour les cours' }}</p>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-3 border-t dark:border-gray-700">
+            <button
+              @click="openRoomModal(rm)"
+              title="Éditer la salle"
+              class="w-9 h-9 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+            >
+              ✏️
+            </button>
+            <button
+              @click="deleteRoom(rm)"
+              title="Supprimer la salle"
+              class="w-9 h-9 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+            >
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal Form pour Créer / Éditer une Classe -->
     <div v-if="showClassModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
@@ -329,9 +387,15 @@
         </div>
 
         <form @submit.prevent="saveClass" class="space-y-4 text-xs">
-          <div>
-            <label class="block font-semibold mb-1">Intitulé de la Classe</label>
-            <input v-model="classForm.name" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" placeholder="ex: Classe Débutant 2A" />
+          <div class="grid grid-cols-3 gap-3">
+            <div class="col-span-2">
+              <label class="block font-semibold mb-1">Intitulé de la Classe</label>
+              <input v-model="classForm.name" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" placeholder="ex: Classe Débutant 2A" />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Référence / Code</label>
+              <input v-model="classForm.code" type="text" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold text-brand-600 dark:text-gold-400" placeholder="ex: DEB-SAM-M" />
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -370,13 +434,9 @@
               </select>
             </div>
             <div>
-              <label class="block font-semibold mb-1">Salle de cours</label>
+              <label class="block font-semibold mb-1">Salle de cours (Base MySQL)</label>
               <select v-model="classForm.room" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold">
-                <option value="Salle Maryam 1">Salle Maryam 1</option>
-                <option value="Salle Maryam 2">Salle Maryam 2</option>
-                <option value="Salle Khadija 1">Salle Khadija 1</option>
-                <option value="Salle Khadija 2">Salle Khadija 2</option>
-                <option value="Grand Amphi A">Grand Amphi A</option>
+                <option v-for="rm in rooms" :key="rm.id" :value="rm.name">{{ rm.name }} ({{ rm.code || 'BBD' }})</option>
               </select>
             </div>
           </div>
@@ -386,6 +446,50 @@
               {{ submitting ? 'Enregistrement MySQL...' : 'Enregistrer dans la BBD MySQL' }}
             </button>
             <button type="button" @click="showClassModal = false" class="py-3 px-4 border rounded-xl text-gray-600 font-semibold">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Form pour Créer / Éditer une Salle -->
+    <div v-if="showRoomModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+        <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            {{ roomEditingId ? '✏️ Éditer la Salle' : '🚪 Nouvelle Salle de Cours' }}
+          </h3>
+          <button @click="showRoomModal = false" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+        </div>
+
+        <form @submit.prevent="saveRoom" class="space-y-4 text-xs">
+          <div>
+            <label class="block font-semibold mb-1">Nom de la Salle</label>
+            <input v-model="roomForm.name" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" placeholder="ex: Salle Maryam 3" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1">Code / Identifiant</label>
+              <input v-model="roomForm.code" type="text" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-mono font-bold" placeholder="ex: M3" />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Capacité d'accueil</label>
+              <input v-model="roomForm.capacity" type="number" min="5" max="100" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1">Description / Équipements</label>
+            <textarea v-model="roomForm.description" rows="3" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="ex: Équipée d'un tableau blanc et projecteur..."></textarea>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button type="submit" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow">
+              💾 Enregistrer la Salle
+            </button>
+            <button type="button" @click="showRoomModal = false" class="py-3 px-4 border rounded-xl text-gray-600 font-semibold">
               Annuler
             </button>
           </div>
@@ -666,8 +770,21 @@ import { showSuccessAlert, showErrorAlert, showDeleteConfirmDialog } from '../..
 
 const currentSubTab = ref('TABLE')
 const loading = ref(false)
-const submitting = ref(false)
-const classSearch = ref('')
+const categories = ref([])
+const levels = ref([])
+const teachersList = ref([])
+const schedules = ref([])
+const classrooms = ref([])
+const rooms = ref([])
+
+const showRoomModal = ref(false)
+const roomEditingId = ref(null)
+const roomForm = ref({
+  name: '',
+  code: '',
+  capacity: 20,
+  description: ''
+})
 
 const showClassModal = ref(false)
 const showScheduleModal = ref(false)
@@ -679,21 +796,16 @@ const scheduleEditingId = ref(null)
 const categoryEditingId = ref(null)
 const levelEditingId = ref(null)
 
-const categories = ref([])
-const levels = ref([])
-const teachersList = ref([])
-const schedules = ref([])
-const classrooms = ref([])
-
 const filteredClassrooms = computed(() => {
   if (!classSearch.value) return classrooms.value
   const q = classSearch.value.toLowerCase()
-  return classrooms.value.filter(c => c.name.toLowerCase().includes(q) || (c.teacher && c.teacher.toLowerCase().includes(q)) || (c.roomNumber && c.roomNumber.toLowerCase().includes(q)))
+  return classrooms.value.filter(c => c.name.toLowerCase().includes(q) || (c.code && c.code.toLowerCase().includes(q)) || (c.teacher && c.teacher.toLowerCase().includes(q)) || (c.roomNumber && c.roomNumber.toLowerCase().includes(q)))
 })
 
 const classForm = ref({
   id: null,
   name: '',
+  code: '',
   category: '',
   level: '',
   teacher: '',
@@ -747,6 +859,9 @@ async function fetchClassesData() {
       if (Array.isArray(res.data.schedules)) {
         schedules.value = res.data.schedules
       }
+      if (Array.isArray(res.data.rooms)) {
+        rooms.value = res.data.rooms
+      }
       if (Array.isArray(res.data.teachers)) {
         teachersList.value = res.data.teachers
       }
@@ -764,11 +879,12 @@ function openClassModal(cls = null) {
     classForm.value = {
       id: cls.id,
       name: cls.name || '',
+      code: cls.code || '',
       category: cls.category || (categories.value[0]?.name || 'Langue Arabe'),
-      level: cls.level || (levels.value[0]?.name || '6-8 ans (Débutant)'),
+      level: cls.level || (levels.value[0]?.name || 'Préparatoire 1'),
       teacher: cls.teacher || (teachersList.value[0]?.name || 'Cheikh Mahmoud'),
-      schedule: cls.schedule || (schedules.value[0]?.name || 'Samedi 09:00 - 12:00 (Matin)'),
-      room: cls.roomNumber || cls.room || 'Salle Maryam 1',
+      schedule: cls.schedule || (schedules.value[0]?.name || 'Samedi 09:30 - 13:30 (Matin)'),
+      room: cls.roomNumber || cls.room || (rooms.value[0]?.name || 'Salle Maryam 1'),
       capacity: cls.maxCapacity || cls.capacity || 20
     }
   } else {
@@ -776,15 +892,68 @@ function openClassModal(cls = null) {
     classForm.value = {
       id: null,
       name: '',
+      code: '',
       category: categories.value[0]?.name || 'Langue Arabe',
-      level: levels.value[0]?.name || '6-8 ans (Débutant)',
+      level: levels.value[0]?.name || 'Préparatoire 1',
       teacher: teachersList.value[0]?.name || 'Cheikh Mahmoud',
-      schedule: schedules.value[0]?.name || 'Samedi 09:00 - 12:00 (Matin)',
-      room: 'Salle Maryam 1',
+      schedule: schedules.value[0]?.name || 'Samedi 09:30 - 13:30 (Matin)',
+      room: rooms.value[0]?.name || 'Salle Maryam 1',
       capacity: 20
     }
   }
   showClassModal.value = true
+}
+
+function openRoomModal(rm = null) {
+  if (rm) {
+    roomEditingId.value = rm.id
+    roomForm.value = { name: rm.name, code: rm.code || '', capacity: rm.capacity || 20, description: rm.description || '' }
+  } else {
+    roomEditingId.value = null
+    roomForm.value = { name: '', code: '', capacity: 20, description: '' }
+  }
+  showRoomModal.value = true
+}
+
+async function saveRoom() {
+  try {
+    if (roomEditingId.value) {
+      await apiClient.put(`/admin/classes/rooms/${roomEditingId.value}`, roomForm.value)
+      const existing = rooms.value.find(r => r.id === roomEditingId.value)
+      if (existing) {
+        existing.name = roomForm.value.name
+        existing.code = roomForm.value.code
+        existing.capacity = roomForm.value.capacity
+        existing.description = roomForm.value.description
+      }
+      showSuccessAlert('Salle Modifiée ! 🚪', `La salle <strong>${roomForm.value.name}</strong> a été mise à jour dans MySQL.`)
+    } else {
+      const res = await apiClient.post('/admin/classes/rooms', roomForm.value)
+      if (res.data && res.data.room) {
+        rooms.value.push(res.data.room)
+      } else {
+        await fetchClassesData()
+      }
+      showSuccessAlert('Salle Enregistrée ! 🎉', `La salle <strong>${roomForm.value.name}</strong> a été enregistrée en BBD MySQL.`)
+    }
+  } catch (err) {
+    console.error('Erreur enregistrement salle:', err)
+  } finally {
+    showRoomModal.value = false
+  }
+}
+
+async function deleteRoom(rm) {
+  const res = await showDeleteConfirmDialog(`la salle ${rm.name}`)
+  if (res.isConfirmed) {
+    try {
+      await apiClient.delete(`/admin/classes/rooms/${rm.id}`)
+    } catch (err) {
+      console.warn('Suppression salle locale :', err)
+    }
+    rooms.value = rooms.value.filter(r => r.id !== rm.id)
+    showSuccessAlert('Salle Supprimée ! 🗑️', `La salle <strong>${rm.name}</strong> a été retirée de MySQL.`)
+  }
 }
 
 function openScheduleConfigModal(sch = null) {
@@ -956,10 +1125,13 @@ async function saveClass() {
     const selectedCategoryObj = categories.value.find(c => c.name === classForm.value.category)
     const selectedLevelObj = levels.value.find(l => l.name === classForm.value.level)
     const selectedScheduleObj = schedules.value.find(s => s.name === classForm.value.schedule)
+    const selectedRoomObj = rooms.value.find(r => r.name === classForm.value.room)
 
     const payload = {
       name: classForm.value.name,
+      code: classForm.value.code,
       roomNumber: classForm.value.room,
+      classroomId: selectedRoomObj?.id,
       maxCapacity: classForm.value.capacity,
       schedule: classForm.value.schedule,
       scheduleSlotId: selectedScheduleObj?.id,
