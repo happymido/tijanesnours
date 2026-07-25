@@ -138,59 +138,57 @@
       </div>
     </div>
 
-    <!-- Detailed Identity Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <!-- 1. Coordonnées & État Civil -->
-      <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
+    <!-- Detailed Identity Cards Grid (4/12 Coordonnées et 8/12 Suivi des Présences) -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+      <!-- 1. Coordonnées & État Civil (4/12) -->
+      <div class="md:col-span-4 bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center gap-3 border-b pb-3 dark:border-gray-700">
           <span class="w-8 h-8 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center text-sm font-bold">👤</span>
           <h3 class="font-bold text-base text-gray-900 dark:text-white">Coordonnées & État Civil</h3>
         </div>
 
-        <div class="space-y-3 text-xs">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <span class="text-gray-400 font-semibold block">Nom & Prénom :</span>
-              <strong v-if="!isEditing" class="text-gray-900 dark:text-white text-sm">{{ user.name }}</strong>
-              <input v-else v-model="editForm.name" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700 font-semibold" />
-            </div>
-            <div>
-              <span class="text-gray-400 font-semibold block">Email :</span>
-              <strong v-if="!isEditing" class="text-gray-900 dark:text-white">{{ user.email }}</strong>
-              <input v-else v-model="editForm.email" type="email" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700 font-semibold" />
-            </div>
+        <div class="space-y-3.5 text-xs">
+          <div>
+            <span class="text-gray-400 font-semibold block">Nom & Prénom :</span>
+            <strong v-if="!isEditing" class="text-gray-900 dark:text-white text-sm block">{{ user.name }}</strong>
+            <input v-else v-model="editForm.name" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700 font-semibold" />
           </div>
 
-          <div class="grid grid-cols-2 gap-4 pt-2">
-            <div>
-              <span class="text-gray-400 font-semibold block">Téléphone Joignable :</span>
-              <strong v-if="!isEditing" class="text-gray-900 dark:text-white">{{ user.contactInfo }}</strong>
-              <input v-else v-model="editForm.contactInfo" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
-            </div>
-            <div>
-              <span class="text-gray-400 font-semibold block">Adresse Résidence :</span>
-              <strong v-if="!isEditing" class="text-gray-900 dark:text-white">{{ user.details?.address }}</strong>
-              <input v-else v-model="editForm.address" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
-            </div>
+          <div>
+            <span class="text-gray-400 font-semibold block">Email :</span>
+            <strong v-if="!isEditing" class="text-gray-900 dark:text-white block truncate">{{ user.email }}</strong>
+            <input v-else v-model="editForm.email" type="email" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700 font-semibold" />
           </div>
 
-          <div v-if="user.role === 'ROLE_STUDENT'" class="grid grid-cols-2 gap-4 pt-2 border-t dark:border-gray-700">
+          <div>
+            <span class="text-gray-400 font-semibold block">Téléphone Joignable :</span>
+            <strong v-if="!isEditing" class="text-gray-900 dark:text-white block">{{ user.contactInfo }}</strong>
+            <input v-else v-model="editForm.contactInfo" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
+          </div>
+
+          <div>
+            <span class="text-gray-400 font-semibold block">Adresse Résidence :</span>
+            <strong v-if="!isEditing" class="text-gray-900 dark:text-white block">{{ user.details?.address }}</strong>
+            <input v-else v-model="editForm.address" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
+          </div>
+
+          <div v-if="user.role === 'ROLE_STUDENT'" class="space-y-3 pt-2 border-t dark:border-gray-700">
             <div>
               <span class="text-gray-400 font-semibold block">Date de Naissance :</span>
-              <strong v-if="!isEditing">{{ user.details?.dateOfBirth }}</strong>
+              <strong v-if="!isEditing" class="block">{{ user.details?.dateOfBirth }}</strong>
               <input v-else v-model="editForm.dateOfBirth" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
             </div>
             <div>
               <span class="text-gray-400 font-semibold block">Nationalité :</span>
-              <strong v-if="!isEditing">{{ user.details?.nationality }}</strong>
+              <strong v-if="!isEditing" class="block">{{ user.details?.nationality }}</strong>
               <input v-else v-model="editForm.nationality" type="text" class="w-full px-2.5 py-1.5 border rounded-lg dark:bg-gray-700" />
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 2. Informations Pédagogiques / Suivi des Présences Mensuelles -->
-      <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
+      <!-- 2. Informations Pédagogiques / Suivi des Présences Mensuelles (8/12) -->
+      <div class="md:col-span-8 bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
         <div class="flex items-center justify-between border-b pb-3 dark:border-gray-700">
           <div class="flex items-center gap-3">
             <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-bold">
