@@ -69,12 +69,7 @@
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
             <tr v-for="cls in filteredClassrooms" :key="cls.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
-              <td class="py-3.5 px-4 font-bold text-gray-900 dark:text-white">
-                <div>{{ cls.name }}</div>
-                <span v-if="cls.code" class="inline-block px-2 py-0.5 mt-1 rounded text-[10px] font-extrabold bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                  🏷️ {{ cls.code }}
-                </span>
-              </td>
+              <td class="py-3.5 px-4 font-bold text-gray-900 dark:text-white">{{ cls.name }}</td>
               <td class="py-3.5 px-4">
                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-50 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
                   {{ cls.level }}
@@ -387,15 +382,9 @@
         </div>
 
         <form @submit.prevent="saveClass" class="space-y-4 text-xs">
-          <div class="grid grid-cols-3 gap-3">
-            <div class="col-span-2">
-              <label class="block font-semibold mb-1">Intitulé de la Classe</label>
-              <input v-model="classForm.name" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" placeholder="ex: Classe Débutant 2A" />
-            </div>
-            <div>
-              <label class="block font-semibold mb-1">Référence / Code</label>
-              <input v-model="classForm.code" type="text" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold text-brand-600 dark:text-gold-400" placeholder="ex: DEB-SAM-M" />
-            </div>
+          <div>
+            <label class="block font-semibold mb-1">Intitulé de la Classe</label>
+            <input v-model="classForm.name" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" placeholder="ex: Classe Débutant 2A (Samedi Matin)" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -805,13 +794,12 @@ const levelEditingId = ref(null)
 const filteredClassrooms = computed(() => {
   if (!classSearch.value) return classrooms.value
   const q = classSearch.value.toLowerCase()
-  return classrooms.value.filter(c => c.name.toLowerCase().includes(q) || (c.code && c.code.toLowerCase().includes(q)) || (c.teacher && c.teacher.toLowerCase().includes(q)) || (c.roomNumber && c.roomNumber.toLowerCase().includes(q)))
+  return classrooms.value.filter(c => c.name.toLowerCase().includes(q) || (c.teacher && c.teacher.toLowerCase().includes(q)) || (c.roomNumber && c.roomNumber.toLowerCase().includes(q)))
 })
 
 const classForm = ref({
   id: null,
   name: '',
-  code: '',
   category: '',
   level: '',
   teacher: '',
@@ -885,7 +873,6 @@ function openClassModal(cls = null) {
     classForm.value = {
       id: cls.id,
       name: cls.name || '',
-      code: cls.code || '',
       category: cls.category || (categories.value[0]?.name || 'Langue Arabe'),
       level: cls.level || (levels.value[0]?.name || 'Préparatoire 1'),
       teacher: cls.teacher || (teachersList.value[0]?.name || 'Cheikh Mahmoud'),
@@ -898,7 +885,6 @@ function openClassModal(cls = null) {
     classForm.value = {
       id: null,
       name: '',
-      code: '',
       category: categories.value[0]?.name || 'Langue Arabe',
       level: levels.value[0]?.name || 'Préparatoire 1',
       teacher: teachersList.value[0]?.name || 'Cheikh Mahmoud',
@@ -1135,7 +1121,6 @@ async function saveClass() {
 
     const payload = {
       name: classForm.value.name,
-      code: classForm.value.code,
       roomNumber: classForm.value.room,
       classroomId: selectedRoomObj?.id,
       maxCapacity: classForm.value.capacity,

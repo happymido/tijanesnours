@@ -87,24 +87,9 @@ class AdminClassController extends AbstractController
             $roomId = $c->getClassroom() ? $c->getClassroom()->getId() : null;
             $scheduleName = $c->getScheduleSlot() ? $c->getScheduleSlot()->getName() : ($c->getSchedule() ?? 'Non défini');
 
-            $code = $c->getCode();
-            if (empty($code)) {
-                $dayPart = '';
-                if ($c->getScheduleSlot()) {
-                    $dayPart = strtoupper(substr($c->getScheduleSlot()->getDay(), 0, 3));
-                    if (str_contains(strtolower($c->getScheduleSlot()->getLabel()), 'matin')) {
-                        $dayPart .= '-M';
-                    } elseif (str_contains(strtolower($c->getScheduleSlot()->getLabel()), 'après')) {
-                        $dayPart .= '-AM';
-                    }
-                }
-                $code = !empty($dayPart) ? ($c->getName() . ' [' . $dayPart . ']') : $c->getName();
-            }
-
             $classData[] = [
                 'id' => $c->getId(),
                 'name' => $c->getName(),
-                'code' => $code,
                 'roomNumber' => $roomName,
                 'classroomId' => $roomId,
                 'maxCapacity' => $c->getMaxCapacity(),
@@ -205,10 +190,6 @@ class AdminClassController extends AbstractController
         $classEntity->setMaxCapacity($capacity);
         $classEntity->setSchedule($schedule);
 
-        if (!empty($payload['code'])) {
-            $classEntity->setCode(trim($payload['code']));
-        }
-
         if (!empty($payload['scheduleSlotId'])) {
             $slot = $em->getRepository(ScheduleSlot::class)->find((int)$payload['scheduleSlotId']);
             if ($slot) {
@@ -265,14 +246,12 @@ class AdminClassController extends AbstractController
         $em->flush();
 
         $roomName = $classEntity->getClassroom() ? $classEntity->getClassroom()->getName() : $classEntity->getRoomNumber();
-        $code = $classEntity->getCode() ?? ($classEntity->getName() . ($classEntity->getScheduleSlot() ? ' [' . strtoupper(substr($classEntity->getScheduleSlot()->getDay(), 0, 3)) . ']' : ''));
 
         return $this->json([
             'message' => 'Classe créée avec succès dans MySQL',
             'class' => [
                 'id' => $classEntity->getId(),
                 'name' => $classEntity->getName(),
-                'code' => $code,
                 'roomNumber' => $roomName,
                 'classroomId' => $classEntity->getClassroom() ? $classEntity->getClassroom()->getId() : null,
                 'maxCapacity' => $classEntity->getMaxCapacity(),
@@ -299,7 +278,6 @@ class AdminClassController extends AbstractController
 
         $payload = json_decode($request->getContent(), true);
         if (isset($payload['name'])) $classEntity->setName($payload['name']);
-        if (isset($payload['code'])) $classEntity->setCode($payload['code']);
         if (isset($payload['roomNumber'])) $classEntity->setRoomNumber($payload['roomNumber']);
         if (isset($payload['maxCapacity'])) $classEntity->setMaxCapacity((int)$payload['maxCapacity']);
 
@@ -379,14 +357,12 @@ class AdminClassController extends AbstractController
         $em->flush();
 
         $roomName = $classEntity->getClassroom() ? $classEntity->getClassroom()->getName() : ($classEntity->getRoomNumber() ?? 'Salle Principale');
-        $code = $classEntity->getCode() ?? ($classEntity->getName() . ($classEntity->getScheduleSlot() ? ' [' . strtoupper(substr($classEntity->getScheduleSlot()->getDay(), 0, 3)) . ']' : ''));
 
         return $this->json([
             'message' => 'Classe mise à jour avec succès dans MySQL',
             'class' => [
                 'id' => $classEntity->getId(),
                 'name' => $classEntity->getName(),
-                'code' => $code,
                 'roomNumber' => $roomName,
                 'classroomId' => $classEntity->getClassroom() ? $classEntity->getClassroom()->getId() : null,
                 'maxCapacity' => $classEntity->getMaxCapacity(),
