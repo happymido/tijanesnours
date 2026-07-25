@@ -663,6 +663,8 @@ class AdminClassController extends AbstractController
             return $this->json(['attendances' => [], 'month' => $monthStr]);
         }
 
+        $allStudents = $em->getRepository(Student::class)->findAll();
+
         $startDate = new \DateTime($monthStr . '-01 00:00:00');
         $endDate = (clone $startDate)->modify('last day of this month 23:59:59');
 
@@ -684,8 +686,6 @@ class AdminClassController extends AbstractController
             if (empty($teacherClasses)) {
                 $teacherClasses = $em->getRepository(SchoolClass::class)->findAll();
             }
-
-            $allStudents = $em->getRepository(Student::class)->findAll();
 
             $saturdays = [];
             $cur = clone $startDate;
@@ -780,11 +780,20 @@ class AdminClassController extends AbstractController
             $total = count($clsStudents);
             $pct = $total > 0 ? round(($present / $total) * 100) : 100;
 
+            $displayName = $cls ? $cls->getName() : 'Classe d\'apprentissage';
+            if ($cls) {
+                if (str_contains(strtolower($displayName), 'prep1')) {
+                    $displayName = 'Classe Éveil 1';
+                } elseif (str_contains(strtolower($displayName), 'prep2')) {
+                    $displayName = 'Classe Débutant 2A';
+                }
+            }
+
             $result[] = [
                 'id' => $a->getId(),
                 'date' => $a->getSessionDate()->format('d/m/Y'),
                 'dayName' => $dayNames[$dayIndex] ?? 'Samedi',
-                'className' => $cls ? $cls->getName() : 'Classe d\'apprentissage',
+                'className' => $displayName,
                 'room' => $cls ? $cls->getRoomNumber() : 'Salle Principale',
                 'schedule' => $cls ? $cls->getSchedule() : '09:30 - 13:30 (Matin)',
                 'status' => $a->getStatus(),
