@@ -780,20 +780,11 @@ class AdminClassController extends AbstractController
             $total = count($clsStudents);
             $pct = $total > 0 ? round(($present / $total) * 100) : 100;
 
-            $displayName = $cls ? $cls->getName() : 'Classe d\'apprentissage';
-            if ($cls) {
-                if (str_contains(strtolower($displayName), 'prep1')) {
-                    $displayName = 'Classe Éveil 1';
-                } elseif (str_contains(strtolower($displayName), 'prep2')) {
-                    $displayName = 'Classe Débutant 2A';
-                }
-            }
-
             $result[] = [
                 'id' => $a->getId(),
                 'date' => $a->getSessionDate()->format('d/m/Y'),
                 'dayName' => $dayNames[$dayIndex] ?? 'Samedi',
-                'className' => $displayName,
+                'className' => $cls ? $cls->getName() : 'Classe d\'apprentissage',
                 'room' => $cls ? $cls->getRoomNumber() : 'Salle Principale',
                 'schedule' => $cls ? $cls->getSchedule() : '09:30 - 13:30 (Matin)',
                 'status' => $a->getStatus(),
