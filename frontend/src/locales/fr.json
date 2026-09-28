@@ -17,6 +17,35 @@
     "cta_register": "Inscrire un enfant",
     "cta_courses": "Découvrir les programmes"
   },
+  "about": {
+    "subtitle": "Notre Mission",
+    "title": "Un Apprentissage Épanouissant & Inclusif pour Vos Enfants",
+    "description": "L'École Tijanes Nours propose une pédagogie vivante et progressive adaptée aux enfants vivant au Luxembourg. Nous transmettons la maîtrise de la langue arabe et la mémorisation du Coran dans le respect du rythme de chaque élève, en alliant méthodes traditionnelles et supports modernes interactifs.",
+    "counter_workshops": "Ateliers Ludiques & Interactifs",
+    "counter_teachers": "Enseignants Qualifiés",
+    "stat_students": "Élèves Accompagnés",
+    "stat_experience": "Années d'Expérience",
+    "stat_satisfaction": "Satisfaction des Parents",
+    "feature_1": "Cadre Bienveillant",
+    "feature_2": "Sécurité & Sérénité",
+    "feature_3": "Professeurs Passionnés",
+    "feature_4": "Pédagogie Moderne"
+  },
+  "domain": {
+    "subtitle": "Nos Domaines",
+    "title": "Programmes Adaptés à Chaque Âge",
+    "card1_title": "Éveil & Alphabet Arabe",
+    "card1_desc": "Découverte ludique du vocabulaire de tous les jours, comptines, reconnaissance auditive des lettres et mémorisation des premières sourates.",
+    "card2_title": "Lecture, Écriture & Expression",
+    "card2_desc": "Apprentissage de la lecture courante, règles d'écriture, vocabulaire thématique et bases fondamentales de la grammaire arabe.",
+    "card3_title": "Coran & Règles de Tajwid",
+    "card3_desc": "Programme personnalisé de mémorisation du Saint Coran avec application rigoureuse et mélodieuse des règles de Tajwid.",
+    "learn_more": "En savoir plus"
+  },
+  "programs": {
+    "subtitle": "Niveaux Scolaires & Tranches d'Âge",
+    "title": "Nos Niveaux Pédagogiques"
+  },
   "roles": {
     "ROLE_ADMIN": "Administration",
     "ROLE_PAYMENT_AGENT": "Agent Comptable",
@@ -31,5 +60,11 @@
     "save": "Enregistrer",
     "cancel": "Annuler",
     "success": "Opération réussie"
+  },
+  "footer": {
+    "about_text": "Association à but non lucratif enregistrée au Luxembourg (RCS F12999). Enseignement moderne et bienveillant de la langue arabe et du Coran pour enfants de 4 à 16 ans.",
+    "contact_title": "Coordonnées & Accès",
+    "quick_links": "Accès Rapide",
+    "copyright": "École Tijanes Nours ASBL. Tous droits réservés."
   }
 }

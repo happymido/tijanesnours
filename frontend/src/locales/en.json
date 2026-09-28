@@ -17,6 +17,35 @@
     "cta_register": "Enroll a Child",
     "cta_courses": "Explore Programs"
   },
+  "about": {
+    "subtitle": "Our Mission",
+    "title": "A Fulfilling & Inclusive Learning Journey for Your Children",
+    "description": "Tijanes Nours School offers a vibrant, progressive pedagogy tailored for children living in Luxembourg. We teach Arabic language mastery and Quran memorization respecting each student's pace, combining traditional methods with interactive modern media.",
+    "counter_workshops": "Fun & Interactive Workshops",
+    "counter_teachers": "Qualified Teachers",
+    "stat_students": "Guided Students",
+    "stat_experience": "Years of Experience",
+    "stat_satisfaction": "Parent Satisfaction",
+    "feature_1": "Caring Environment",
+    "feature_2": "Safety & Peace of Mind",
+    "feature_3": "Passionate Teachers",
+    "feature_4": "Modern Pedagogy"
+  },
+  "domain": {
+    "subtitle": "Our Fields",
+    "title": "Programs Tailored for Every Age",
+    "card1_title": "Awakening & Arabic Alphabet",
+    "card1_desc": "Playful discovery of everyday vocabulary, nursery rhymes, auditory letter recognition, and memorization of initial surahs.",
+    "card2_title": "Reading, Writing & Expression",
+    "card2_desc": "Learning fluent reading, handwriting rules, thematic vocabulary, and fundamental bases of Arabic grammar.",
+    "card3_title": "Quran & Tajweed Rules",
+    "card3_desc": "Personalized Holy Quran memorization program with rigorous and melodious application of Tajweed rules.",
+    "learn_more": "Learn more"
+  },
+  "programs": {
+    "subtitle": "Academic Levels & Age Groups",
+    "title": "Our Educational Levels"
+  },
   "roles": {
     "ROLE_ADMIN": "Administrator",
     "ROLE_PAYMENT_AGENT": "Accountant Agent",
@@ -31,5 +60,11 @@
     "save": "Save",
     "cancel": "Cancel",
     "success": "Operation Successful"
+  },
+  "footer": {
+    "about_text": "Non-profit association registered in Luxembourg (RCS F12999). Modern and caring Arabic language and Quran education for children aged 4 to 16.",
+    "contact_title": "Contact & Location",
+    "quick_links": "Quick Links",
+    "copyright": "Tijanes Nours School ASBL. All rights reserved."
   }
 }

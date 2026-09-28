@@ -38,6 +38,7 @@
           <span class="text-base">🏫</span> Structure & Classes
         </router-link>
 
+        <!-- Temporairement masqués
         <router-link
           to="/admin/pedagogy"
           active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
@@ -61,6 +62,7 @@
         >
           <span class="text-base">📰</span> CMS & Site Public
         </router-link>
+        -->
 
         <router-link
           to="/admin/settings"

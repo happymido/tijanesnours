@@ -25,6 +25,9 @@ class CourseLevel
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $translations = [];
+
     public function getId(): ?int
     {
         return $this->id;
@@ -72,5 +75,38 @@ class CourseLevel
     {
         $this->description = $description;
         return $this;
+    }
+
+    public function getTranslations(): array
+    {
+        return $this->translations ?? [];
+    }
+
+    public function setTranslations(?array $translations): self
+    {
+        $this->translations = $translations;
+        return $this;
+    }
+
+    public function getNameForLocale(string $locale = 'fr'): string
+    {
+        if (!empty($this->translations[$locale]['name'])) {
+            return $this->translations[$locale]['name'];
+        }
+        if (!empty($this->translations['fr']['name'])) {
+            return $this->translations['fr']['name'];
+        }
+        return $this->name;
+    }
+
+    public function getDescriptionForLocale(string $locale = 'fr'): ?string
+    {
+        if (!empty($this->translations[$locale]['description'])) {
+            return $this->translations[$locale]['description'];
+        }
+        if (!empty($this->translations['fr']['description'])) {
+            return $this->translations['fr']['description'];
+        }
+        return $this->description;
     }
 }

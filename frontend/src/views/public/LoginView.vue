@@ -1,36 +1,49 @@
 <template>
-  <div class="max-w-md mx-auto px-4 py-16">
-    <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl border border-gray-100 dark:border-gray-700">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">Connexion à votre espace</h1>
-      
-      <form @submit.prevent="handleLogin" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Adresse Email</label>
-          <input
-            v-model="email"
-            type="email"
-            required
-            class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-brand-500"
-            placeholder="votre@email.com"
-          />
+  <div class="login-view py-5 bg-gray-50 min-h-screen flex align-items-center">
+    <div class="container max-w-md mx-auto">
+      <div class="bg-white rounded-3xl p-5 p-sm-8 shadow-xl border border-gray-100">
+        <div class="text-center mb-4">
+          <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-brand-700 to-gold-500 flex items-center justify-center text-white font-bold text-2xl shadow-md">
+            TN
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900 mb-1">Connexion à votre espace</h1>
+          <p class="text-xs text-gray-500">Portail École Tijanes Nours Luxembourg</p>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Mot de passe</label>
-          <input
-            v-model="password"
-            type="password"
-            required
-            class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-brand-500"
-            placeholder="••••••••"
-          />
+        
+        <form @submit.prevent="handleLogin" class="space-y-4">
+          <div>
+            <label class="form-label text-xs font-bold text-gray-700 mb-1">Adresse Email</label>
+            <input
+              v-model="email"
+              type="email"
+              required
+              class="form-control px-4 py-2.5 rounded-xl border-gray-300 text-sm focus:ring-2 focus:ring-brand-500"
+              placeholder="votre@email.com"
+            />
+          </div>
+          <div>
+            <label class="form-label text-xs font-bold text-gray-700 mb-1">Mot de passe</label>
+            <input
+              v-model="password"
+              type="password"
+              required
+              class="form-control px-4 py-2.5 rounded-xl border-gray-300 text-sm focus:ring-2 focus:ring-brand-500"
+              placeholder="••••••••"
+            />
+          </div>
+          <button
+            type="submit"
+            class="default-btn w-100 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-md transition-all mt-3"
+          >
+            <i class="ri-login-box-line me-1"></i> Se connecter
+          </button>
+        </form>
+
+        <div class="mt-4 pt-3 border-top text-center text-xs text-gray-500">
+          Vous n'avez pas de compte ? 
+          <router-link to="/register" class="text-brand-600 font-bold hover:underline">S'inscrire</router-link>
         </div>
-        <button
-          type="submit"
-          class="w-full py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
-        >
-          Se connecter
-        </button>
-      </form>
+      </div>
     </div>
   </div>
 </template>

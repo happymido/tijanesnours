@@ -22,6 +22,12 @@ export function setLanguage(lang) {
   const dir = lang === 'ar' ? 'rtl' : 'ltr'
   document.documentElement.setAttribute('dir', dir)
   document.documentElement.setAttribute('lang', lang)
+
+  // Dynamically switch stylesheet between LTR and RTL
+  const themeLink = document.getElementById('theme-style')
+  if (themeLink) {
+    themeLink.setAttribute('href', `/assets/css/style-${dir}.css`)
+  }
 }
 
 // Initial direction setting

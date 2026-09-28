@@ -1,106 +1,233 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
-    <!-- Navbar Header -->
-    <header class="sticky top-0 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+  <div class="public-layout">
+    <!-- Start Navbar Area --> 
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm border-bottom py-3 sticky-top" id="navbar">
+      <div class="container d-flex align-items-center justify-between" style="max-width: 1200px; margin: 0 auto;">
         <!-- Logo -->
-        <router-link to="/" class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-700 to-gold-500 flex items-center justify-center text-white font-bold text-xl shadow-md">
-            TN
-          </div>
-          <div>
-            <h1 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">École Tijanes Nours</h1>
-            <p class="text-xs text-brand-600 dark:text-gold-400 font-medium">Langue Arabe & Coran • Luxembourg</p>
-          </div>
+        <router-link class="navbar-brand p-0 d-flex align-items-center gap-2" to="/">
+          <img src="/assets/img/logo.png" alt="Tijanes Nours" style="max-height: 55px;">
         </router-link>
 
-        <!-- Navigation Links -->
-        <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-700 dark:text-gray-200">
-          <router-link to="/" class="hover:text-brand-600 dark:hover:text-gold-400 transition-colors">{{ t('nav.home') }}</router-link>
-          <router-link to="/courses" class="hover:text-brand-600 dark:hover:text-gold-400 transition-colors">{{ t('nav.courses') }}</router-link>
-          <router-link to="/about" class="hover:text-brand-600 dark:hover:text-gold-400 transition-colors">{{ t('nav.about') }}</router-link>
-        </nav>
+        <!-- Menu Navigation Top Bar (Desktop) -->
+        <div class="d-none d-lg-flex align-items-center mx-auto">
+          <ul class="navbar-nav d-flex flex-row gap-4 mb-0">
+            <li class="nav-item">
+              <router-link to="/" class="nav-link text-dark font-bold text-sm px-2" active-class="text-brand-600 font-extrabold active">{{ t('nav.home') }}</router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/courses" class="nav-link text-dark font-bold text-sm px-2" active-class="text-brand-600 font-extrabold active">{{ t('nav.courses') }}</router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/about" class="nav-link text-dark font-bold text-sm px-2" active-class="text-brand-600 font-extrabold active">{{ t('nav.about') }}</router-link>
+            </li>
+          </ul>
+        </div>
 
-        <!-- Controls: Language Selector + Auth CTA -->
-        <div class="flex items-center gap-4">
-          <!-- Language Selector -->
-          <div class="relative">
-            <select
-              v-model="currentLang"
-              @change="changeLang"
-              class="bg-gray-100 dark:bg-gray-700 border-none text-xs font-semibold rounded-lg px-3 py-2 text-gray-800 dark:text-gray-200 cursor-pointer focus:ring-2 focus:ring-brand-500"
-            >
-              <option value="fr">🇫🇷 FR</option>
-              <option value="ar">🇱🇺/🇦🇪 العربية (RTL)</option>
-              <option value="en">🇬🇧 EN</option>
-            </select>
+        <!-- Controls: Language Selector Flags + Auth -->
+        <div class="others-options d-flex align-items-center gap-3">
+          <div class="option-item">
+            <div class="lang-switcher-flags d-flex align-items-center gap-1">
+              <button
+                @click="setLang('fr')"
+                class="flag-btn"
+                :class="{ active: currentLang === 'fr' }"
+                title="Français"
+              >
+                <span>🇫🇷</span> <small class="d-none d-sm-inline">FR</small>
+              </button>
+              <button
+                @click="setLang('ar')"
+                class="flag-btn"
+                :class="{ active: currentLang === 'ar' }"
+                title="العربية"
+              >
+                <span>🇦🇪</span> <small class="d-none d-sm-inline">العربية</small>
+              </button>
+              <button
+                @click="setLang('en')"
+                class="flag-btn"
+                :class="{ active: currentLang === 'en' }"
+                title="English"
+              >
+                <span>🇬🇧</span> <small class="d-none d-sm-inline">EN</small>
+              </button>
+            </div>
           </div>
 
-          <!-- Register / Login Button -->
           <template v-if="!authStore.isAuthenticated">
-            <router-link
-              to="/register"
-              class="hidden sm:inline-flex px-4 py-2 text-xs font-bold rounded-lg text-white bg-brand-600 hover:bg-brand-700 shadow-md shadow-brand-500/20 transition-all"
+            <div class="option-item">
+              <router-link to="/register" class="default-btn py-2 px-3 text-xs">
+                {{ t('nav.register') }}
+              </router-link>
+            </div>
+            <div class="option-item d-none d-sm-block">
+              <router-link to="/login" class="btn btn-outline-secondary font-bold text-xs px-3 py-2" style="border-radius: 30px;">
+                {{ t('nav.login') }}
+              </router-link>
+            </div>
+          </template>
+          <template v-else>
+            <div class="option-item">
+              <button @click="goToDashboard" class="default-btn py-2 px-3 text-xs">
+                {{ t('nav.dashboard') }}
+              </button>
+            </div>
+          </template>
+
+          <!-- Mobile Toggle Button -->
+          <a class="navbar-toggler border-0 shadow-none d-lg-none" data-bs-toggle="offcanvas" href="#navbarOffcanvas" role="button" aria-controls="navbarOffcanvas">
+            <span class="burger-menu text-2xl">
+              <i class="ri-menu-line"></i>
+            </span>
+          </a>
+        </div>
+      </div>
+    </nav>
+    <!-- End Navbar Area -->
+
+    <!-- Start Mobile Device Navbar Area -->
+    <div class="responsive-navbar offcanvas offcanvas-end" tabindex="-1" id="navbarOffcanvas">
+      <div class="offcanvas-header border-bottom">
+        <router-link to="/" class="logo d-inline-block" data-bs-dismiss="offcanvas">
+          <img src="/assets/img/logo.png" alt="Tijanes Nours" style="max-height: 45px;">
+        </router-link>
+        <button type="button" class="close-btn border-0 bg-transparent" data-bs-dismiss="offcanvas" aria-label="Close">
+          <i class="ri-close-line text-2xl"></i>
+        </button>
+      </div>
+      <div class="offcanvas-body">
+        <ul class="navbar-nav mb-4 space-y-2">
+          <li class="nav-item">
+            <router-link to="/" class="nav-link font-bold text-base text-gray-800" active-class="active" data-bs-dismiss="offcanvas">{{ t('nav.home') }}</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/courses" class="nav-link font-bold text-base text-gray-800" active-class="active" data-bs-dismiss="offcanvas">{{ t('nav.courses') }}</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/about" class="nav-link font-bold text-base text-gray-800" active-class="active" data-bs-dismiss="offcanvas">{{ t('nav.about') }}</router-link>
+          </li>
+        </ul>
+
+        <div class="others-options d-flex align-items-center gap-2 pt-3 border-top">
+          <div class="lang-switcher-flags d-flex align-items-center gap-1">
+            <button
+              @click="setLang('fr')"
+              class="flag-btn"
+              :class="{ active: currentLang === 'fr' }"
+              title="Français"
             >
+              <span>🇫🇷</span> <small>FR</small>
+            </button>
+            <button
+              @click="setLang('ar')"
+              class="flag-btn"
+              :class="{ active: currentLang === 'ar' }"
+              title="العربية"
+            >
+              <span>🇦🇪</span> <small>العربية</small>
+            </button>
+            <button
+              @click="setLang('en')"
+              class="flag-btn"
+              :class="{ active: currentLang === 'en' }"
+              title="English"
+            >
+              <span>🇬🇧</span> <small>EN</small>
+            </button>
+          </div>
+
+          <template v-if="!authStore.isAuthenticated">
+            <router-link to="/register" class="default-btn py-2 px-3 text-xs" data-bs-dismiss="offcanvas">
               {{ t('nav.register') }}
-            </router-link>
-            <router-link
-              to="/login"
-              class="px-4 py-2 text-xs font-bold rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-            >
-              {{ t('nav.login') }}
             </router-link>
           </template>
           <template v-else>
-            <button
-              @click="goToDashboard"
-              class="px-4 py-2 text-xs font-bold rounded-lg text-white bg-gold-600 hover:bg-gold-500 transition-all shadow-md"
-            >
+            <button @click="goToDashboard" class="default-btn py-2 px-3 text-xs" data-bs-dismiss="offcanvas">
               {{ t('nav.dashboard') }}
             </button>
           </template>
         </div>
       </div>
-    </header>
+    </div>
+    <!-- End Mobile Device Navbar Area -->
 
     <!-- Main View Outlet -->
-    <main class="flex-grow">
+    <main>
       <router-view />
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 text-sm border-t border-gray-800">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div>
-          <h3 class="text-white font-bold text-lg mb-3">École Tijanes Nours ASBL</h3>
-          <p class="text-xs text-gray-400 leading-relaxed">
-            Association à but non lucratif enregistrée au Luxembourg (RCS F12999).
-            Enseignement de la langue arabe et du Coran pour enfants de 4 à 16 ans.
-          </p>
-        </div>
-        <div>
-          <h4 class="text-white font-semibold mb-3">Coordonnées</h4>
-          <p class="text-xs text-gray-400">Centre Maryam / LJM Luxembourg</p>
-          <p class="text-xs text-gray-400 mt-1">Email: contact@tijanesnours.lu</p>
-        </div>
-        <div>
-          <h4 class="text-white font-semibold mb-3">Langues</h4>
-          <div class="flex gap-2">
-            <button @click="setLang('fr')" class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300 hover:text-white">Français</button>
-            <button @click="setLang('ar')" class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300 hover:text-white">العربية</button>
-            <button @click="setLang('en')" class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300 hover:text-white">English</button>
+    <!-- Start Footer Area (Light Theme) -->
+    <footer class="footer-area pt-5 pb-4 bg-gray-50 border-top text-gray-700">
+      <div class="container" style="max-width: 1200px; margin: 0 auto;">
+        <div class="row g-4">
+          <div class="col-lg-5 col-md-6">
+            <div class="footer-widget">
+              <div class="logo mb-3">
+                <router-link to="/">
+                  <img src="/assets/img/logo.png" alt="Tijanes Nours" style="max-height: 50px;">
+                </router-link>
+              </div>
+              <p class="text-xs leading-relaxed text-gray-600">
+                {{ t('footer.about_text') }}
+              </p>
+              <div class="d-flex gap-2 mt-3">
+                <button @click="setLang('fr')" class="btn btn-sm btn-outline-secondary text-xs">Français</button>
+                <button @click="setLang('ar')" class="btn btn-sm btn-outline-secondary text-xs">العربية</button>
+                <button @click="setLang('en')" class="btn btn-sm btn-outline-secondary text-xs">English</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6">
+            <div class="footer-widget style2">
+              <h3 class="text-gray-900 font-bold text-base mb-3">{{ t('footer.contact_title') }}</h3>
+              <ul class="footer-contact-list text-xs space-y-3 list-unstyled">
+                <li class="contact-item">
+                  <div class="contact-icon">
+                    <i class="ri-map-pin-line"></i>
+                  </div>
+                  <span class="contact-text">Centre Maryam / LJM Luxembourg</span>
+                </li>
+                <li class="contact-item">
+                  <div class="contact-icon">
+                    <i class="ri-mail-line"></i>
+                  </div>
+                  <a href="mailto:contact@tijanesnours.lu" class="contact-text">contact@tijanesnours.lu</a>
+                </li>
+                <li class="contact-item">
+                  <div class="contact-icon">
+                    <i class="ri-phone-line"></i>
+                  </div>
+                  <a href="tel:+352691123456" class="contact-text">+352 691 123 456</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <div class="footer-widget">
+              <h3 class="text-gray-900 font-bold text-base mb-2">{{ t('footer.quick_links') }}</h3>
+              <ul class="footer-quick-links text-xs space-y-1 list-unstyled m-0 p-0">
+                <li><router-link to="/" class="text-gray-700 hover:text-brand-600 d-inline-block py-1">{{ t('nav.home') }}</router-link></li>
+                <li><router-link to="/courses" class="text-gray-700 hover:text-brand-600 d-inline-block py-1">{{ t('nav.courses') }}</router-link></li>
+                <li><router-link to="/about" class="text-gray-700 hover:text-brand-600 d-inline-block py-1">{{ t('nav.about') }}</router-link></li>
+                <li><router-link to="/login" class="text-gray-700 hover:text-brand-600 d-inline-block py-1">{{ t('nav.login') }}</router-link></li>
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="border-t border-gray-800 text-center py-4 text-xs text-gray-500">
-        &copy; 2026 École Tijanes Nours. Tous droits réservés.
+
+        <div class="copyright-area text-center mt-4 pt-3 border-top border-gray-200 text-xs text-gray-500">
+          <p>&copy; 2026 {{ t('footer.copyright') }}</p>
+        </div>
       </div>
     </footer>
+    <!-- End Footer Area -->
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.store'
@@ -111,6 +238,10 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const currentLang = ref(locale.value)
+
+watch(locale, (newLoc) => {
+  currentLang.value = newLoc
+})
 
 function changeLang() {
   setLanguage(currentLang.value)
@@ -128,3 +259,101 @@ function goToDashboard() {
   else router.push('/')
 }
 </script>
+
+<style scoped>
+.container {
+  max-width: 1200px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.footer-contact-list {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.contact-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  position: static !important;
+  padding: 0 !important;
+  margin-bottom: 12px !important;
+}
+
+.contact-icon {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  border-radius: 50% !important;
+  background-color: rgba(140, 198, 63, 0.15) !important;
+  color: #8CC63F !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+}
+
+.contact-text {
+  color: #374151 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+}
+
+.contact-text:hover {
+  color: #8CC63F !important;
+}
+
+.footer-quick-links {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.footer-quick-links li {
+  margin-bottom: 2px !important;
+}
+
+/* Sticky Navbar Styling */
+.navbar.sticky-top {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1030 !important;
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Flag Buttons Language Switcher Styling */
+.flag-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 4px 10px !important;
+  border-radius: 20px !important;
+  border: 1px solid #d1d5db !important;
+  background-color: #ffffff !important;
+  color: #374151 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.flag-btn:hover {
+  border-color: #8CC63F !important;
+  color: #8CC63F !important;
+}
+
+.flag-btn.active {
+  background-color: #8CC63F !important;
+  border-color: #8CC63F !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+</style>

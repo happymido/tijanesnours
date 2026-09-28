@@ -133,7 +133,8 @@ class AdminClassController extends AbstractController
                 'minAge' => $ageMin,
                 'maxAge' => $ageMax,
                 'ageGroup' => $ageGroupStr,
-                'description' => $l->getDescription() ?? 'Objectifs pédagogiques et programme annuel'
+                'description' => $l->getDescription() ?? 'Objectifs pédagogiques et programme annuel',
+                'translations' => $l->getTranslations()
             ];
         }
 
@@ -488,10 +489,33 @@ class AdminClassController extends AbstractController
     {
         $payload = json_decode($request->getContent(), true);
         $lvl = new CourseLevel();
-        $lvl->setName(trim($payload['name'] ?? 'Nouveau Niveau'));
+
+        $translations = $payload['translations'] ?? [];
+        if (empty($translations['fr'])) {
+            $translations['fr'] = [
+                'name' => trim($payload['name'] ?? 'Nouveau Niveau'),
+                'description' => trim($payload['description'] ?? '')
+            ];
+        }
+        if (empty($translations['en'])) {
+            $translations['en'] = [
+                'name' => $translations['fr']['name'],
+                'description' => $translations['fr']['description']
+            ];
+        }
+        if (empty($translations['ar'])) {
+            $translations['ar'] = [
+                'name' => $translations['fr']['name'],
+                'description' => $translations['fr']['description']
+            ];
+        }
+
+        $lvl->setName(trim($translations['fr']['name'] ?? $payload['name'] ?? 'Nouveau Niveau'));
         $lvl->setTargetAgeMin((int) ($payload['minAge'] ?? 6));
         $lvl->setTargetAgeMax((int) ($payload['maxAge'] ?? 10));
-        $lvl->setDescription(trim($payload['description'] ?? ''));
+        $lvl->setDescription(trim($translations['fr']['description'] ?? $payload['description'] ?? ''));
+        $lvl->setTranslations($translations);
+
         $em->persist($lvl);
         $em->flush();
 
@@ -503,7 +527,8 @@ class AdminClassController extends AbstractController
                 'minAge' => $lvl->getTargetAgeMin(),
                 'maxAge' => $lvl->getTargetAgeMax(),
                 'ageGroup' => $lvl->getTargetAgeMin() . '-' . $lvl->getTargetAgeMax() . ' ans',
-                'description' => $lvl->getDescription()
+                'description' => $lvl->getDescription(),
+                'translations' => $lvl->getTranslations()
             ]
         ], Response::HTTP_CREATED);
     }
@@ -514,10 +539,23 @@ class AdminClassController extends AbstractController
         $lvl = $em->getRepository(CourseLevel::class)->find($id);
         if ($lvl) {
             $payload = json_decode($request->getContent(), true);
-            if (isset($payload['name'])) $lvl->setName($payload['name']);
             if (isset($payload['minAge'])) $lvl->setTargetAgeMin((int)$payload['minAge']);
             if (isset($payload['maxAge'])) $lvl->setTargetAgeMax((int)$payload['maxAge']);
-            if (isset($payload['description'])) $lvl->setDescription($payload['description']);
+
+            if (isset($payload['translations'])) {
+                $translations = $payload['translations'];
+                $lvl->setTranslations($translations);
+                if (!empty($translations['fr']['name'])) {
+                    $lvl->setName($translations['fr']['name']);
+                }
+                if (isset($translations['fr']['description'])) {
+                    $lvl->setDescription($translations['fr']['description']);
+                }
+            } else {
+                if (isset($payload['name'])) $lvl->setName($payload['name']);
+                if (isset($payload['description'])) $lvl->setDescription($payload['description']);
+            }
+
             $em->flush();
         }
         return $this->json(['message' => 'Niveau mis à jour dans MySQL']);

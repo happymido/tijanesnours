@@ -252,9 +252,20 @@
               <span class="px-3 py-1 bg-purple-50 text-purple-700 dark:bg-purple-900/40 text-xs font-bold rounded-full border border-purple-200">
                 Tranche {{ lvl.ageGroup || `${lvl.minAge}-${lvl.maxAge} ans` }}
               </span>
+              <div class="flex items-center gap-1">
+                <span :class="lvl.translations?.fr?.name ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-gray-100 text-gray-400 border-gray-200'" class="px-2 py-0.5 rounded-md border text-[10px] font-bold" title="Traduction Française">
+                  🇫🇷 FR
+                </span>
+                <span :class="lvl.translations?.en?.name ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-gray-100 text-gray-400 border-gray-200'" class="px-2 py-0.5 rounded-md border text-[10px] font-bold" title="Traduction Anglaise">
+                  🇬🇧 EN
+                </span>
+                <span :class="lvl.translations?.ar?.name ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-gray-100 text-gray-400 border-gray-200'" class="px-2 py-0.5 rounded-md border text-[10px] font-bold" title="Traduction Arabe">
+                  🇸🇦 AR
+                </span>
+              </div>
             </div>
             <h3 class="font-bold text-lg text-gray-900 dark:text-white">{{ lvl.name }}</h3>
-            <p class="text-xs text-gray-500 leading-relaxed">{{ lvl.description }}</p>
+            <p class="text-xs text-gray-500 leading-relaxed" style="white-space: pre-line;">{{ lvl.description }}</p>
           </div>
 
           <div class="flex justify-end gap-2 pt-3 border-t dark:border-gray-700">
@@ -593,25 +604,85 @@
         </div>
 
         <form @submit.prevent="saveLevelConfig" class="space-y-4 text-xs">
-          <div>
-            <label class="block font-semibold mb-1">Intitulé du Niveau</label>
-            <input v-model="levelForm.name" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" placeholder="ex: 6-8 ans (Débutant)" />
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
+          <!-- Tranche d'âge globale -->
+          <div class="grid grid-cols-2 gap-3 p-3 bg-purple-50/50 dark:bg-purple-900/20 rounded-2xl border border-purple-100 dark:border-purple-800/40">
             <div>
-              <label class="block font-semibold mb-1">Âge Minimum</label>
-              <input v-model="levelForm.minAge" type="number" min="3" max="18" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" />
+              <label class="block font-semibold mb-1 text-purple-900 dark:text-purple-300">Âge Minimum</label>
+              <input v-model="levelForm.minAge" type="number" min="3" max="18" required class="w-full px-3 py-2 rounded-xl border bg-white dark:bg-gray-700 font-bold" />
             </div>
             <div>
-              <label class="block font-semibold mb-1">Âge Maximum</label>
-              <input v-model="levelForm.maxAge" type="number" min="4" max="25" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" />
+              <label class="block font-semibold mb-1 text-purple-900 dark:text-purple-300">Âge Maximum</label>
+              <input v-model="levelForm.maxAge" type="number" min="4" max="25" required class="w-full px-3 py-2 rounded-xl border bg-white dark:bg-gray-700 font-bold" />
             </div>
           </div>
 
-          <div>
-            <label class="block font-semibold mb-1">Description du Niveau</label>
-            <textarea v-model="levelForm.description" rows="3" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="Description des compétences visées..."></textarea>
+          <!-- Onglets des langues pour traductions -->
+          <div class="space-y-2">
+            <label class="block font-bold text-gray-800 dark:text-gray-200">
+              Traductions du Niveau (FR / EN / AR)
+            </label>
+            <div class="flex gap-2 border-b dark:border-gray-700 pb-2">
+              <button
+                type="button"
+                @click="modalLevelLangTab = 'fr'"
+                :class="modalLevelLangTab === 'fr' ? 'bg-purple-600 text-white font-bold shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'"
+                class="px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all"
+              >
+                <span>🇫🇷</span> Français (Défaut)
+              </button>
+              <button
+                type="button"
+                @click="modalLevelLangTab = 'en'"
+                :class="modalLevelLangTab === 'en' ? 'bg-purple-600 text-white font-bold shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'"
+                class="px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all"
+              >
+                <span>🇬🇧</span> English
+              </button>
+              <button
+                type="button"
+                @click="modalLevelLangTab = 'ar'"
+                :class="modalLevelLangTab === 'ar' ? 'bg-purple-600 text-white font-bold shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'"
+                class="px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all"
+              >
+                <span>🇸🇦</span> العربية
+              </button>
+            </div>
+          </div>
+
+          <!-- Saisie Langue 1 : Français -->
+          <div v-if="modalLevelLangTab === 'fr'" class="space-y-3">
+            <div>
+              <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-300">Intitulé du Niveau (Français) *</label>
+              <input v-model="levelForm.translations.fr.name" type="text" required class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" placeholder="ex: Préparatoire 1" />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-300">Description du Niveau (Français)</label>
+              <textarea v-model="levelForm.translations.fr.description" rows="3" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="Description des objectifs pédagogiques en français..."></textarea>
+            </div>
+          </div>
+
+          <!-- Saisie Langue 2 : English -->
+          <div v-else-if="modalLevelLangTab === 'en'" class="space-y-3">
+            <div>
+              <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-300">Level Name (English)</label>
+              <input v-model="levelForm.translations.en.name" type="text" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold" placeholder="ex: Preparatory 1" />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-300">Description (English)</label>
+              <textarea v-model="levelForm.translations.en.description" rows="3" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700" placeholder="Educational objectives in English..."></textarea>
+            </div>
+          </div>
+
+          <!-- Saisie Langue 3 : العربية (RTL) -->
+          <div v-else-if="modalLevelLangTab === 'ar'" class="space-y-3" dir="rtl">
+            <div>
+              <label class="block font-semibold mb-1 text-right text-gray-700 dark:text-gray-300">اسم المستوى (بالعربية)</label>
+              <input v-model="levelForm.translations.ar.name" type="text" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-bold text-right" placeholder="مثال: المستوى التحضيري 1" />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-right text-gray-700 dark:text-gray-300">وصف المستوى والأهداف (بالعربية)</label>
+              <textarea v-model="levelForm.translations.ar.description" rows="3" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 text-right" placeholder="وصف المهارات والأهداف التعليمية باللغة العربية..."></textarea>
+            </div>
           </div>
 
           <div class="flex gap-3 pt-4">
@@ -822,11 +893,17 @@ const categoryForm = ref({
   icon: '📖'
 })
 
+const modalLevelLangTab = ref('fr')
 const levelForm = ref({
   name: '',
-  minAge: 6,
-  maxAge: 10,
-  description: ''
+  minAge: 4,
+  maxAge: 16,
+  description: '',
+  translations: {
+    fr: { name: '', description: '' },
+    en: { name: '', description: '' },
+    ar: { name: '', description: '' }
+  }
 })
 
 function getClassesForTeacher(teacherName) {
@@ -1057,38 +1134,88 @@ async function deleteCategory(cat) {
 
 // CRUD NIVEAUX
 function openLevelModal(lvl = null) {
+  modalLevelLangTab.value = 'fr'
   if (lvl) {
     levelEditingId.value = lvl.id
-    levelForm.value = { name: lvl.name, minAge: lvl.minAge || 6, maxAge: lvl.maxAge || 10, description: lvl.description || '' }
+    const trans = lvl.translations || {}
+    levelForm.value = {
+      name: lvl.name || '',
+      minAge: lvl.minAge || 4,
+      maxAge: lvl.maxAge || 16,
+      description: lvl.description || '',
+      translations: {
+        fr: {
+          name: trans.fr?.name || lvl.name || '',
+          description: trans.fr?.description || lvl.description || ''
+        },
+        en: {
+          name: trans.en?.name || '',
+          description: trans.en?.description || ''
+        },
+        ar: {
+          name: trans.ar?.name || '',
+          description: trans.ar?.description || ''
+        }
+      }
+    }
   } else {
     levelEditingId.value = null
-    levelForm.value = { name: '', minAge: 6, maxAge: 10, description: '' }
+    levelForm.value = {
+      name: '',
+      minAge: 4,
+      maxAge: 16,
+      description: '',
+      translations: {
+        fr: { name: '', description: '' },
+        en: { name: '', description: '' },
+        ar: { name: '', description: '' }
+      }
+    }
   }
   showLevelModal.value = true
 }
 
 async function saveLevelConfig() {
   try {
+    const trans = levelForm.value.translations
+    const nameFr = trans.fr?.name || levelForm.value.name || 'Nouveau Niveau'
+    const descFr = trans.fr?.description || levelForm.value.description || ''
+
+    // Ensure fallback to FR if EN/AR are empty
+    if (!trans.en?.name) trans.en.name = nameFr
+    if (!trans.en?.description) trans.en.description = descFr
+    if (!trans.ar?.name) trans.ar.name = nameFr
+    if (!trans.ar?.description) trans.ar.description = descFr
+
+    const payload = {
+      name: nameFr,
+      description: descFr,
+      minAge: levelForm.value.minAge,
+      maxAge: levelForm.value.maxAge,
+      translations: trans
+    }
+
     const ageGroupStr = `${levelForm.value.minAge}-${levelForm.value.maxAge} ans`
     if (levelEditingId.value) {
-      await apiClient.put(`/admin/classes/levels/${levelEditingId.value}`, levelForm.value)
+      await apiClient.put(`/admin/classes/levels/${levelEditingId.value}`, payload)
       const existing = levels.value.find(l => l.id === levelEditingId.value)
       if (existing) {
-        existing.name = levelForm.value.name
+        existing.name = nameFr
         existing.minAge = levelForm.value.minAge
         existing.maxAge = levelForm.value.maxAge
         existing.ageGroup = ageGroupStr
-        existing.description = levelForm.value.description
+        existing.description = descFr
+        existing.translations = JSON.parse(JSON.stringify(trans))
       }
-      showSuccessAlert('Niveau Mis à Jour ! 📊', `Le niveau <strong>${levelForm.value.name}</strong> a été mis à jour dans MySQL.`)
+      showSuccessAlert('Niveau Mis à Jour ! 📊', `Le niveau <strong>${nameFr}</strong> et ses traductions (FR/EN/AR) ont été enregistrés dans MySQL.`)
     } else {
-      const res = await apiClient.post('/admin/classes/levels', levelForm.value)
+      const res = await apiClient.post('/admin/classes/levels', payload)
       if (res.data && res.data.level) {
         levels.value.push(res.data.level)
       } else {
-        levels.value.push({ id: Date.now(), ageGroup: ageGroupStr, ...levelForm.value })
+        levels.value.push({ id: Date.now(), ageGroup: ageGroupStr, ...payload })
       }
-      showSuccessAlert('Niveau Enregistré ! 🎉', `Le niveau <strong>${levelForm.value.name}</strong> a été créé en BBD MySQL.`)
+      showSuccessAlert('Niveau Enregistré ! 🎉', `Le niveau <strong>${nameFr}</strong> et ses traductions ont été ajoutés en BBD MySQL.`)
     }
   } catch (err) {
     console.error('Erreur enregistrement niveau:', err)
