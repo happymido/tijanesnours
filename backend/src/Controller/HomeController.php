@@ -8,6 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
+    #[Route('/{vueRouting}', name: 'app_home_spa', requirements: ['vueRouting' => '^(?!api).+'], priority: -100)]
     #[Route('/', name: 'app_home')]
     public function index(): Response
     {
