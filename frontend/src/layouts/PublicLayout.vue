@@ -23,8 +23,8 @@
           </ul>
         </div>
 
-        <!-- Controls: Language Selector Flags + Auth -->
-        <div class="others-options d-flex align-items-center gap-3">
+        <!-- Controls: Language Selector Flags + Auth + Mobile Toggle -->
+        <div class="navbar-controls-wrapper d-flex align-items-center gap-2 gap-sm-3">
           <div class="option-item">
             <div class="lang-switcher-flags d-flex align-items-center gap-1">
               <button
@@ -432,9 +432,9 @@ function goToDashboard() {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(3px);
-  z-index: 9998;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 10490;
 }
 
 .mobile-menu-drawer {
@@ -444,11 +444,13 @@ function goToDashboard() {
   width: 320px;
   max-width: 85vw;
   background-color: #ffffff;
-  z-index: 9999;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10500;
+  box-shadow: 0 0 35px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s ease;
   display: flex;
   flex-direction: column;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* LTR Positioning */
@@ -460,6 +462,8 @@ html:not([dir="rtl"]) .mobile-menu-drawer,
 html:not([dir="rtl"]) .mobile-menu-drawer.is-open,
 [dir="ltr"] .mobile-menu-drawer.is-open {
   transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
 }
 
 /* RTL Positioning */
@@ -472,6 +476,8 @@ html[dir="rtl"] .mobile-menu-drawer,
 html[dir="rtl"] .mobile-menu-drawer.is-open,
 [dir="rtl"] .mobile-menu-drawer.is-open {
   transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .fade-enter-active,
@@ -490,21 +496,26 @@ html[dir="rtl"] .mobile-menu-drawer.is-open,
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 40px !important;
-    height: 40px !important;
-    min-width: 40px !important;
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
     padding: 0 !important;
-    background-color: #f3f4f6 !important;
-    border: 1px solid #d1d5db !important;
+    background-color: #ffffff !important;
+    border: 1.5px solid #d1d5db !important;
     border-radius: 10px !important;
     color: #111827 !important;
     cursor: pointer !important;
-    margin-left: 8px !important;
+    margin-left: 6px !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
     z-index: 1040 !important;
     transition: all 0.2s ease !important;
   }
+  [dir="rtl"] .mobile-menu-toggle-btn {
+    margin-left: 0 !important;
+    margin-right: 6px !important;
+  }
   .mobile-menu-toggle-btn:hover {
-    background-color: #e5e7eb !important;
+    background-color: #f9fafb !important;
     border-color: #8CC63F !important;
   }
   .burger-icon {
@@ -530,6 +541,26 @@ html[dir="rtl"] .mobile-menu-drawer.is-open,
 
 @media (min-width: 992px) {
   .mobile-menu-toggle-btn {
+    display: none !important;
+  }
+}
+</style>
+
+<style>
+/* Global High-Specificity Overrides to guarantee mobile controls & navbar elements are NEVER hidden by theme CSS */
+body .public-layout .navbar .navbar-controls-wrapper,
+body .public-layout .navbar .others-options,
+nav.navbar .others-options {
+  display: flex !important;
+  align-items: center !important;
+}
+
+body .public-layout .navbar .mobile-menu-toggle-btn {
+  display: inline-flex !important;
+}
+
+@media (min-width: 992px) {
+  body .public-layout .navbar .mobile-menu-toggle-btn {
     display: none !important;
   }
 }
