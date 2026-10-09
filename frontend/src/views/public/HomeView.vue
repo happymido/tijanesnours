@@ -554,7 +554,19 @@ onMounted(async () => {
   box-shadow: 0 8px 20px rgba(140, 198, 63, 0.35);
 }
 
-/* Stat Counter (500+ Élèves) Alignment & Sizing */
+/* Stat Counter (500+ Élèves) Card Box & Text Styling */
+.hero-area1 .hero-content .hero-count {
+  background: #8CC63F !important;
+  border-radius: 20px !important;
+  padding: 18px 16px !important;
+  box-shadow: 0 8px 25px rgba(140, 198, 63, 0.3) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
 .hero-area1 .hero-content .hero-count .time {
   display: flex !important;
   align-items: center !important;
@@ -562,19 +574,12 @@ onMounted(async () => {
   gap: 2px !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
-  margin-bottom: 8px !important;
+  margin-bottom: 6px !important;
   position: static !important;
 }
 
 .hero-area1 .hero-content .hero-count .time h3,
-.hero-area1 .hero-content .hero-count .time .h3 {
-  font-size: 2.25rem !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-  margin: 0 !important;
-  color: #8CC63F !important;
-}
-
+.hero-area1 .hero-content .hero-count .time .h3,
 .hero-area1 .hero-content .hero-count .time span {
   position: static !important;
   top: auto !important;
@@ -583,14 +588,17 @@ onMounted(async () => {
   font-size: 2.25rem !important;
   font-weight: 800 !important;
   line-height: 1 !important;
-  color: #8CC63F !important;
+  margin: 0 !important;
+  color: #ffffff !important;
 }
 
-.hero-area1 .hero-content .hero-count h5 {
+.hero-area1 .hero-content .hero-count h5,
+.hero-area1 .hero-content .hero-count .h5 {
   font-size: 15px !important;
   font-weight: 700 !important;
   margin: 0 !important;
-  color: #1f2937 !important;
+  color: #ffffff !important;
+  text-align: center !important;
 }
 
 /* Notre Mission Counters Alignment & Sizing Fix */
@@ -725,21 +733,20 @@ onMounted(async () => {
   }
 
   .hero-area1 .hero-content .hero-count {
-    background: rgba(255, 255, 255, 0.92) !important;
-    backdrop-filter: blur(6px) !important;
+    background: #8CC63F !important;
     border-radius: 16px !important;
-    padding: 12px 8px !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+    padding: 14px 10px !important;
+    box-shadow: 0 8px 20px rgba(140, 198, 63, 0.35) !important;
     margin-bottom: 10px !important;
   }
 
   .hero-area1 .hero-content .hero-count .time h3,
   .hero-area1 .hero-content .hero-count .time span {
-    color: #8CC63F !important;
+    color: #ffffff !important;
   }
 
   .hero-area1 .hero-content .hero-count h5 {
-    color: #1f2937 !important;
+    color: #ffffff !important;
   }
 }
 </style>
