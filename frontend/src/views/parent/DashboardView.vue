@@ -137,7 +137,7 @@ function downloadBulletin(childName, className) {
 }
 
 function downloadInvoice(childName) {
-  generateInvoicePdf(parentName.value, childName, 450)
+  generateInvoicePdf(parentName.value, childName, 690)
   showSuccessAlert('Génération PDF', `La facture officielle acquittée pour ${childName} a été téléchargée au format PDF.`)
 }
 

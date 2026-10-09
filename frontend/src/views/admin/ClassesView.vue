@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Gestion & Configuration Scolaire (Base MySQL)</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Gestion & Configuration Scolaire</h1>
         <p class="text-xs text-gray-500">Classes, créneaux horaires, catégories et niveaux configurables en temps réel</p>
       </div>
     </div>
@@ -34,7 +34,7 @@
     <div v-if="currentSubTab === 'TABLE'" class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-3 dark:border-gray-700">
         <div>
-          <h3 class="font-bold text-base text-gray-900 dark:text-white">Liste Détaillée des Classes (Base MySQL)</h3>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Liste Détaillée des Classes</h3>
           <p class="text-xs text-gray-500">Gestion et configuration des classes</p>
         </div>
         <div class="flex items-center gap-3">
@@ -51,7 +51,7 @@
       </div>
 
       <div v-if="loading" class="py-8 text-center text-xs font-bold text-gray-500">
-        Chargement des données depuis MySQL...
+        Chargement des données...
       </div>
 
       <div v-else class="overflow-x-auto">
@@ -131,7 +131,7 @@
     <div v-if="currentSubTab === 'SCHEDULES'" class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-3 dark:border-gray-700">
         <div>
-          <h3 class="font-bold text-base text-gray-900 dark:text-white">Configuration des Créneaux Horaires (Base MySQL)</h3>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Configuration des Créneaux Horaires</h3>
           <p class="text-xs text-gray-500">Créneaux utilisables dans la création de classes et d'enseignants</p>
         </div>
         <button @click="openScheduleConfigModal()" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
@@ -192,7 +192,7 @@
     <div v-if="currentSubTab === 'CATEGORIES'" class="space-y-4">
       <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700">
         <div>
-          <h3 class="font-bold text-base text-gray-900 dark:text-white">Gestion des Catégories de Cours (Enregistré dans MySQL)</h3>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Gestion des Catégories de Cours</h3>
           <p class="text-xs text-gray-500">Gérez les domaines d'enseignement (Langue Arabe, Tajwid, Éthique, etc.)</p>
         </div>
         <button @click="openCategoryModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow flex items-center gap-2">
@@ -237,7 +237,7 @@
     <div v-if="currentSubTab === 'LEVELS'" class="space-y-4">
       <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700">
         <div>
-          <h3 class="font-bold text-base text-gray-900 dark:text-white">Gestion des Niveaux de Cours (Enregistré dans MySQL)</h3>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Gestion des Niveaux de Cours</h3>
           <p class="text-xs text-gray-500">Définissez les tranches d'âge et objectifs pédagogiques par niveau</p>
         </div>
         <button @click="openLevelModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow flex items-center gap-2">
@@ -292,7 +292,7 @@
     <div v-if="currentSubTab === 'TEACHER_ASSIGNMENTS'" class="space-y-6">
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
         <h3 class="font-bold text-base text-gray-900 dark:text-white border-b pb-3 dark:border-gray-700">
-          Matrice d'Affectation des Enseignants aux Classes (Stocké en BBD MySQL)
+          Matrice d'Affectation des Enseignants aux Classes
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -312,7 +312,7 @@
             </div>
 
             <div class="space-y-2 pt-2 border-t dark:border-gray-600">
-              <span class="text-[10px] font-bold text-gray-400 uppercase">Classes Assignées dans MySQL :</span>
+              <span class="text-[10px] font-bold text-gray-400 uppercase">Classes Assignées :</span>
               <div class="space-y-1">
                 <div v-for="c in getClassesForTeacher(teacher.name)" :key="c.id" class="px-3 py-1.5 bg-white dark:bg-gray-800 rounded-xl border text-xs font-bold text-gray-800 dark:text-gray-200 flex justify-between items-center">
                   <span>📚 {{ c.name }}</span>
@@ -336,7 +336,7 @@
     <div v-if="currentSubTab === 'ROOMS'" class="space-y-4">
       <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700 shadow-sm">
         <div>
-          <h3 class="font-bold text-base text-gray-900 dark:text-white">Gestion des Salles de Cours (Base MySQL)</h3>
+          <h3 class="font-bold text-base text-gray-900 dark:text-white">Gestion des Salles de Cours</h3>
           <p class="text-xs text-gray-500">Configurez les salles, amphis et capacités d'accueil disponibles</p>
         </div>
         <button @click="openRoomModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow flex items-center gap-2 transition-all">
@@ -434,16 +434,16 @@
               </select>
             </div>
             <div>
-              <label class="block font-semibold mb-1">Salle de cours (Base MySQL)</label>
+              <label class="block font-semibold mb-1">Salle de cours</label>
               <select v-model="classForm.room" class="w-full px-3 py-2.5 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold">
-                <option v-for="rm in rooms" :key="rm.id" :value="rm.name">{{ rm.name }} ({{ rm.code || 'BBD' }})</option>
+                <option v-for="rm in rooms" :key="rm.id" :value="rm.name">{{ rm.name }} ({{ rm.code || 'Salle' }})</option>
               </select>
             </div>
           </div>
 
           <div class="flex gap-3 pt-4">
             <button type="submit" :disabled="submitting" class="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow disabled:opacity-50">
-              {{ submitting ? 'Enregistrement MySQL...' : 'Enregistrer dans la BBD MySQL' }}
+              {{ submitting ? 'Enregistrement...' : 'Enregistrer la Classe' }}
             </button>
             <button type="button" @click="showClassModal = false" class="py-3 px-4 border rounded-xl text-gray-600 font-semibold">
               Annuler
@@ -705,7 +705,7 @@
             <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <span>👨‍🏫</span> Affectations de Classes - {{ selectedAssignTeacher?.name }}
             </h3>
-            <p class="text-xs text-gray-500">Cochez ou décochez les classes attribuées à cet enseignant dans MySQL</p>
+            <p class="text-xs text-gray-500">Cochez ou décochez les classes attribuées à cet enseignant</p>
           </div>
           <button @click="showAssignModal = false" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
         </div>
@@ -742,7 +742,7 @@
 
           <div class="flex gap-3 pt-4">
             <button type="submit" :disabled="submitting" class="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow disabled:opacity-50">
-              {{ submitting ? 'Enregistrement MySQL...' : '💾 Valider les Affectations dans MySQL' }}
+              {{ submitting ? 'Enregistrement...' : '💾 Valider les Affectations' }}
             </button>
             <button type="button" @click="showAssignModal = false" class="py-3 px-4 border rounded-xl text-gray-600 font-semibold">
               Annuler
@@ -775,7 +775,7 @@
         <div class="space-y-4">
           <div class="flex justify-between items-center text-xs">
             <span class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-extrabold rounded-full">
-              {{ currentRosterStudents.length }} Élève(s) inscrit(s) en BBD MySQL
+              {{ currentRosterStudents.length }} Élève(s) inscrit(s)
             </span>
             <input
               v-model="rosterSearch"
@@ -786,7 +786,7 @@
           </div>
 
           <div v-if="loadingRoster" class="py-8 text-center text-xs font-bold text-gray-500">
-            Chargement de l'effectif depuis MySQL...
+            Chargement de l'effectif...
           </div>
 
           <div v-else class="overflow-x-auto max-h-80 overflow-y-auto rounded-2xl border border-gray-100 dark:border-gray-700">
@@ -995,7 +995,7 @@ async function saveRoom() {
         existing.capacity = roomForm.value.capacity
         existing.description = roomForm.value.description
       }
-      showSuccessAlert('Salle Modifiée ! 🚪', `La salle <strong>${roomForm.value.name}</strong> a été mise à jour dans MySQL.`)
+      showSuccessAlert('Salle Modifiée ! 🚪', `La salle <strong>${roomForm.value.name}</strong> a été mise à jour.`)
     } else {
       const res = await apiClient.post('/admin/classes/rooms', roomForm.value)
       if (res.data && res.data.room) {
@@ -1003,7 +1003,7 @@ async function saveRoom() {
       } else {
         await fetchClassesData()
       }
-      showSuccessAlert('Salle Enregistrée ! 🎉', `La salle <strong>${roomForm.value.name}</strong> a été enregistrée en BBD MySQL.`)
+      showSuccessAlert('Salle Enregistrée ! 🎉', `La salle <strong>${roomForm.value.name}</strong> a été enregistrée avec succès.`)
     }
   } catch (err) {
     console.error('Erreur enregistrement salle:', err)
@@ -1021,7 +1021,7 @@ async function deleteRoom(rm) {
       console.warn('Suppression salle locale :', err)
     }
     rooms.value = rooms.value.filter(r => r.id !== rm.id)
-    showSuccessAlert('Salle Supprimée ! 🗑️', `La salle <strong>${rm.name}</strong> a été retirée de MySQL.`)
+    showSuccessAlert('Salle Supprimée ! 🗑️', `La salle <strong>${rm.name}</strong> a été retirée.`)
   }
 }
 
@@ -1049,7 +1049,7 @@ async function saveScheduleConfig() {
         existing.label = scheduleForm.value.label
         existing.name = generatedName
       }
-      showSuccessAlert('Créneau Mis à Jour ! ⏰', `Le créneau <strong>${generatedName}</strong> a été mis à jour dans la BBD MySQL.`)
+      showSuccessAlert('Créneau Mis à Jour ! ⏰', `Le créneau <strong>${generatedName}</strong> a été mis à jour.`)
     } else {
       const res = await apiClient.post('/admin/classes/schedules', scheduleForm.value)
       if (res.data && res.data.schedule) {
@@ -1057,7 +1057,7 @@ async function saveScheduleConfig() {
       } else {
         schedules.value.push({ id: Date.now(), day: scheduleForm.value.day, startTime: scheduleForm.value.startTime, endTime: scheduleForm.value.endTime, label: scheduleForm.value.label, name: generatedName })
       }
-      showSuccessAlert('Nouveau Créneau Enregistré ! 🎉', `Le créneau <strong>${generatedName}</strong> a été enregistré en BBD MySQL.`)
+      showSuccessAlert('Nouveau Créneau Enregistré ! 🎉', `Le créneau <strong>${generatedName}</strong> a été enregistré.`)
     }
   } catch (err) {
     console.error('Erreur sauvegarde créneau:', err)
@@ -1075,7 +1075,7 @@ async function deleteSchedule(sch) {
       console.warn('Suppression créneau locale :', err)
     }
     schedules.value = schedules.value.filter(s => s.id !== sch.id)
-    showSuccessAlert('Créneau Supprimé ! 🗑️', `Le créneau <strong>${sch.name}</strong> a été retiré de la BBD MySQL.`)
+    showSuccessAlert('Créneau Supprimé ! 🗑️', `Le créneau <strong>${sch.name}</strong> a été retiré.`)
   }
 }
 
@@ -1102,7 +1102,7 @@ async function saveCategoryConfig() {
         existing.color = categoryForm.value.color
         existing.icon = categoryForm.value.icon
       }
-      showSuccessAlert('Catégorie Mis à Jour ! 📚', `La catégorie <strong>${categoryForm.value.name}</strong> a été enregistrée en BBD MySQL.`)
+      showSuccessAlert('Catégorie Mis à Jour ! 📚', `La catégorie <strong>${categoryForm.value.name}</strong> a été enregistrée.`)
     } else {
       const res = await apiClient.post('/admin/classes/categories', categoryForm.value)
       if (res.data && res.data.category) {
@@ -1110,7 +1110,7 @@ async function saveCategoryConfig() {
       } else {
         categories.value.push({ id: Date.now(), ...categoryForm.value })
       }
-      showSuccessAlert('Catégorie Créée ! 🎉', `La catégorie <strong>${categoryForm.value.name}</strong> a été ajoutée en BBD MySQL.`)
+      showSuccessAlert('Catégorie Créée ! 🎉', `La catégorie <strong>${categoryForm.value.name}</strong> a été ajoutée avec succès.`)
     }
   } catch (err) {
     console.error('Erreur enregistrement catégorie:', err)
@@ -1128,7 +1128,7 @@ async function deleteCategory(cat) {
       console.warn('Suppression catégorie locale :', err)
     }
     categories.value = categories.value.filter(c => c.id !== cat.id)
-    showSuccessAlert('Catégorie Supprimée ! 🗑️', `La catégorie <strong>${cat.name}</strong> a été supprimée de MySQL.`)
+    showSuccessAlert('Catégorie Supprimée ! 🗑️', `La catégorie <strong>${cat.name}</strong> a été supprimée.`)
   }
 }
 
@@ -1207,7 +1207,7 @@ async function saveLevelConfig() {
         existing.description = descFr
         existing.translations = JSON.parse(JSON.stringify(trans))
       }
-      showSuccessAlert('Niveau Mis à Jour ! 📊', `Le niveau <strong>${nameFr}</strong> et ses traductions (FR/EN/AR) ont été enregistrés dans MySQL.`)
+      showSuccessAlert('Niveau Mis à Jour ! 📊', `Le niveau <strong>${nameFr}</strong> et ses traductions (FR/EN/AR) ont été enregistrés.`)
     } else {
       const res = await apiClient.post('/admin/classes/levels', payload)
       if (res.data && res.data.level) {
@@ -1215,7 +1215,7 @@ async function saveLevelConfig() {
       } else {
         levels.value.push({ id: Date.now(), ageGroup: ageGroupStr, ...payload })
       }
-      showSuccessAlert('Niveau Enregistré ! 🎉', `Le niveau <strong>${nameFr}</strong> et ses traductions ont été ajoutés en BBD MySQL.`)
+      showSuccessAlert('Niveau Enregistré ! 🎉', `Le niveau <strong>${nameFr}</strong> et ses traductions ont été ajoutés.`)
     }
   } catch (err) {
     console.error('Erreur enregistrement niveau:', err)
@@ -1233,7 +1233,7 @@ async function deleteLevel(lvl) {
       console.warn('Suppression niveau locale :', err)
     }
     levels.value = levels.value.filter(l => l.id !== lvl.id)
-    showSuccessAlert('Niveau Supprimé ! 🗑️', `Le niveau <strong>${lvl.name}</strong> a été retiré de MySQL.`)
+    showSuccessAlert('Niveau Supprimé ! 🗑️', `Le niveau <strong>${lvl.name}</strong> a été retiré.`)
   }
 }
 
@@ -1272,7 +1272,7 @@ async function saveClass() {
       } else {
         await fetchClassesData()
       }
-      showSuccessAlert('Classe Modifiée ! ✏️', `La classe <strong>${classForm.value.name}</strong> a été mise à jour dans MySQL.`)
+      showSuccessAlert('Classe Modifiée ! ✏️', `La classe <strong>${classForm.value.name}</strong> a été mise à jour.`)
     } else {
       const res = await apiClient.post('/admin/classes', payload)
       if (res.data && res.data.class) {
@@ -1280,7 +1280,7 @@ async function saveClass() {
       } else {
         await fetchClassesData()
       }
-      showSuccessAlert('Classe Enregistrée ! 🎉', `La classe <strong>${classForm.value.name}</strong> a été créée avec succès dans MySQL.`)
+      showSuccessAlert('Classe Enregistrée ! 🎉', `La classe <strong>${classForm.value.name}</strong> a été créée avec succès.`)
     }
     showClassModal.value = false
   } catch (err) {
@@ -1332,7 +1332,7 @@ async function saveTeacherAssignments() {
     showAssignModal.value = false
     showSuccessAlert(
       'Affectations Mises à Jour ! 🎉',
-      `Les affectations de classes pour <strong>${teacherName}</strong> ont été enregistrées et mises à jour dans la base MySQL.`
+      `Les affectations de classes pour <strong>${teacherName}</strong> ont été enregistrées et mises à jour.`
     )
   } catch (err) {
     console.error('Erreur sauvegarde affectations:', err)
@@ -1423,7 +1423,7 @@ async function deleteClass(cls) {
       console.warn('Suppression classe locale :', err)
     }
     classrooms.value = classrooms.value.filter(c => c.id !== cls.id)
-    showSuccessAlert('Classe Supprimée ! 🗑️', `La classe <strong>${cls.name}</strong> a été supprimée de la base de données MySQL.`)
+    showSuccessAlert('Classe Supprimée ! 🗑️', `La classe <strong>${cls.name}</strong> a été supprimée.`)
   }
 }
 

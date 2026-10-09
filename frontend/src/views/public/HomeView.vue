@@ -677,4 +677,57 @@ onMounted(async () => {
   height: 50px !important;
   object-fit: contain !important;
 }
+
+/* Responsive Mobile Banner & Hero Area Fixes */
+@media (max-width: 991px) {
+  .hero-area1 {
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+    background-image: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.45) 0%,
+        rgba(255, 255, 255, 0.85) 100%
+      ),
+      url('/assets/images/hero-image/hero-image2.jpg') !important;
+    background-position: center 20% !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    min-height: 480px !important;
+  }
+
+  .hero-area1 .hero-content {
+    width: 100% !important;
+  }
+
+  .hero-area1 .hero-content .hero-card {
+    background: rgba(117, 193, 55, 0.92) !important;
+    backdrop-filter: blur(8px) !important;
+    border-radius: 24px !important;
+    padding: 24px 18px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+    margin-bottom: 20px !important;
+  }
+
+  .hero-area1 .hero-content .hero-card h3 {
+    font-size: 1.45rem !important;
+    line-height: 1.35 !important;
+    color: #ffffff !important;
+  }
+
+  .hero-area1 .hero-content .hero-card p {
+    font-size: 0.95rem !important;
+    margin-top: 10px !important;
+    margin-bottom: 16px !important;
+    color: #f3f4f6 !important;
+  }
+
+  .hero-area1 .hero-content .hero-count {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(6px) !important;
+    border-radius: 16px !important;
+    padding: 12px 8px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+    margin-bottom: 10px !important;
+  }
+}
 </style>

@@ -77,7 +77,7 @@ export const generateBulletinPdf = (studentName, className, grades = []) => {
   doc.save(`Bulletin_${studentName.replace(/\s+/g, '_')}_T1.pdf`)
 }
 
-export const generateInvoicePdf = (parentName, childName, amount = 450) => {
+export const generateInvoicePdf = (parentName, childName, amount = 690) => {
   const doc = new jsPDF()
 
   // Header Banner

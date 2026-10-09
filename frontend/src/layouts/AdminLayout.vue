@@ -38,31 +38,13 @@
           <span class="text-base">🏫</span> Structure & Classes
         </router-link>
 
-        <!-- Temporairement masqués
-        <router-link
-          to="/admin/pedagogy"
-          active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"
-        >
-          <span class="text-base">📖</span> Examens, Notes & Bulletins
-        </router-link>
-
         <router-link
           to="/admin/finance"
           active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
           class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"
         >
-          <span class="text-base">💶</span> Gestion Financière
+          <span class="text-base">💶</span> Inscriptions & Règlements
         </router-link>
-
-        <router-link
-          to="/admin/cms"
-          active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"
-        >
-          <span class="text-base">📰</span> CMS & Site Public
-        </router-link>
-        -->
 
         <router-link
           to="/admin/settings"

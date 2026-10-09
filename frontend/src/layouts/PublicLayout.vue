@@ -75,80 +75,144 @@
           </template>
 
           <!-- Mobile Toggle Button -->
-          <a class="navbar-toggler border-0 shadow-none d-lg-none" data-bs-toggle="offcanvas" href="#navbarOffcanvas" role="button" aria-controls="navbarOffcanvas">
-            <span class="burger-menu text-2xl">
-              <i class="ri-menu-line"></i>
+          <button 
+            @click="isMobileMenuOpen = !isMobileMenuOpen" 
+            class="navbar-toggler border-0 shadow-none d-lg-none bg-transparent p-1"
+            type="button"
+            aria-label="Toggle Navigation"
+          >
+            <span class="burger-menu text-2xl text-gray-800">
+              <i :class="isMobileMenuOpen ? 'ri-close-line' : 'ri-menu-line'"></i>
             </span>
-          </a>
+          </button>
         </div>
       </div>
     </nav>
     <!-- End Navbar Area -->
 
-    <!-- Start Mobile Device Navbar Area -->
-    <div class="responsive-navbar offcanvas offcanvas-end" tabindex="-1" id="navbarOffcanvas">
-      <div class="offcanvas-header border-bottom">
-        <router-link to="/" class="logo d-inline-block" data-bs-dismiss="offcanvas">
-          <img src="/assets/img/logo.png" alt="Tijanes Nours" style="max-height: 45px;">
-        </router-link>
-        <button type="button" class="close-btn border-0 bg-transparent" data-bs-dismiss="offcanvas" aria-label="Close">
-          <i class="ri-close-line text-2xl"></i>
-        </button>
-      </div>
-      <div class="offcanvas-body">
-        <ul class="navbar-nav mb-4 space-y-2">
-          <li class="nav-item">
-            <router-link to="/" class="nav-link font-bold text-base text-gray-800" active-class="active" data-bs-dismiss="offcanvas">{{ t('nav.home') }}</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/courses" class="nav-link font-bold text-base text-gray-800" active-class="active" data-bs-dismiss="offcanvas">{{ t('nav.courses') }}</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/about" class="nav-link font-bold text-base text-gray-800" active-class="active" data-bs-dismiss="offcanvas">{{ t('nav.about') }}</router-link>
-          </li>
-        </ul>
+    <!-- Mobile Navigation Drawer Overlay & Drawer -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div 
+          v-if="isMobileMenuOpen" 
+          class="mobile-menu-backdrop" 
+          @click="isMobileMenuOpen = false"
+        ></div>
+      </Transition>
+      
+      <div 
+        class="mobile-menu-drawer" 
+        :class="{ 'is-open': isMobileMenuOpen }"
+      >
+        <div class="mobile-menu-header d-flex align-items-center justify-content-between p-3 border-bottom">
+          <router-link to="/" class="logo d-inline-block" @click="isMobileMenuOpen = false">
+            <img src="/assets/img/logo.png" alt="Tijanes Nours" style="max-height: 42px;">
+          </router-link>
+          <button 
+            type="button" 
+            class="close-btn border-0 bg-transparent p-2 text-2xl text-gray-600 hover:text-gray-900" 
+            @click="isMobileMenuOpen = false"
+            aria-label="Close"
+          >
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
 
-        <div class="others-options d-flex align-items-center gap-2 pt-3 border-top">
-          <div class="lang-switcher-flags d-flex align-items-center gap-1">
-            <button
-              @click="setLang('fr')"
-              class="flag-btn"
-              :class="{ active: currentLang === 'fr' }"
-              title="Français"
-            >
-              <span>🇫🇷</span> <small>FR</small>
-            </button>
-            <button
-              @click="setLang('ar')"
-              class="flag-btn"
-              :class="{ active: currentLang === 'ar' }"
-              title="العربية"
-            >
-              <span>🇦🇪</span> <small>العربية</small>
-            </button>
-            <button
-              @click="setLang('en')"
-              class="flag-btn"
-              :class="{ active: currentLang === 'en' }"
-              title="English"
-            >
-              <span>🇬🇧</span> <small>EN</small>
-            </button>
+        <div class="mobile-menu-body p-4 flex-1 overflow-y-auto">
+          <ul class="navbar-nav mb-4 gap-2 list-unstyled">
+            <li class="nav-item">
+              <router-link 
+                to="/" 
+                class="nav-link font-bold text-base py-2 px-3 rounded text-gray-800" 
+                active-class="bg-brand-50 text-brand-600 active" 
+                @click="isMobileMenuOpen = false"
+              >
+                {{ t('nav.home') }}
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link 
+                to="/courses" 
+                class="nav-link font-bold text-base py-2 px-3 rounded text-gray-800" 
+                active-class="bg-brand-50 text-brand-600 active" 
+                @click="isMobileMenuOpen = false"
+              >
+                {{ t('nav.courses') }}
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link 
+                to="/about" 
+                class="nav-link font-bold text-base py-2 px-3 rounded text-gray-800" 
+                active-class="bg-brand-50 text-brand-600 active" 
+                @click="isMobileMenuOpen = false"
+              >
+                {{ t('nav.about') }}
+              </router-link>
+            </li>
+          </ul>
+
+          <div class="pt-4 border-top d-flex flex-column gap-3">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+              {{ currentLang === 'ar' ? 'اللغة' : 'Langue' }}
+            </label>
+            <div class="lang-switcher-flags d-flex align-items-center justify-content-between gap-2">
+              <button
+                @click="setLang('fr')"
+                class="flag-btn flex-1 justify-content-center"
+                :class="{ active: currentLang === 'fr' }"
+              >
+                <span>🇫🇷</span> <small>FR</small>
+              </button>
+              <button
+                @click="setLang('ar')"
+                class="flag-btn flex-1 justify-content-center"
+                :class="{ active: currentLang === 'ar' }"
+              >
+                <span>🇦🇪</span> <small>العربية</small>
+              </button>
+              <button
+                @click="setLang('en')"
+                class="flag-btn flex-1 justify-content-center"
+                :class="{ active: currentLang === 'en' }"
+              >
+                <span>🇬🇧</span> <small>EN</small>
+              </button>
+            </div>
+
+            <div class="mt-2">
+              <template v-if="!authStore.isAuthenticated">
+                <div class="d-flex flex-column gap-2">
+                  <router-link 
+                    to="/register" 
+                    class="default-btn w-100 text-center py-2 text-sm" 
+                    @click="isMobileMenuOpen = false"
+                  >
+                    {{ t('nav.register') }}
+                  </router-link>
+                  <router-link 
+                    to="/login" 
+                    class="btn btn-outline-secondary w-100 font-bold text-sm py-2" 
+                    style="border-radius: 30px;"
+                    @click="isMobileMenuOpen = false"
+                  >
+                    {{ t('nav.login') }}
+                  </router-link>
+                </div>
+              </template>
+              <template v-else>
+                <button 
+                  @click="goToDashboard(); isMobileMenuOpen = false" 
+                  class="default-btn w-100 text-center py-2 text-sm"
+                >
+                  {{ t('nav.dashboard') }}
+                </button>
+              </template>
+            </div>
           </div>
-
-          <template v-if="!authStore.isAuthenticated">
-            <router-link to="/register" class="default-btn py-2 px-3 text-xs" data-bs-dismiss="offcanvas">
-              {{ t('nav.register') }}
-            </router-link>
-          </template>
-          <template v-else>
-            <button @click="goToDashboard" class="default-btn py-2 px-3 text-xs" data-bs-dismiss="offcanvas">
-              {{ t('nav.dashboard') }}
-            </button>
-          </template>
         </div>
       </div>
-    </div>
+    </Teleport>
     <!-- End Mobile Device Navbar Area -->
 
     <!-- Main View Outlet -->
@@ -238,6 +302,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const currentLang = ref(locale.value)
+const isMobileMenuOpen = ref(false)
 
 watch(locale, (newLoc) => {
   currentLang.value = newLoc
@@ -355,5 +420,64 @@ function goToDashboard() {
   border-color: #8CC63F !important;
   color: #ffffff !important;
   font-weight: 700 !important;
+}
+
+/* Mobile Menu Backdrop & Drawer Styling */
+.mobile-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  z-index: 9998;
+}
+
+.mobile-menu-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 85vw;
+  background-color: #ffffff;
+  z-index: 9999;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* LTR Positioning */
+html:not([dir="rtl"]) .mobile-menu-drawer,
+[dir="ltr"] .mobile-menu-drawer {
+  right: 0;
+  transform: translateX(100%);
+}
+html:not([dir="rtl"]) .mobile-menu-drawer.is-open,
+[dir="ltr"] .mobile-menu-drawer.is-open {
+  transform: translateX(0);
+}
+
+/* RTL Positioning */
+html[dir="rtl"] .mobile-menu-drawer,
+[dir="rtl"] .mobile-menu-drawer {
+  left: 0;
+  right: auto;
+  transform: translateX(-100%);
+}
+html[dir="rtl"] .mobile-menu-drawer.is-open,
+[dir="rtl"] .mobile-menu-drawer.is-open {
+  transform: translateX(0);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

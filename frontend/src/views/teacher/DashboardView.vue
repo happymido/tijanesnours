@@ -93,7 +93,7 @@
 
       <div class="flex justify-end pt-4 border-t dark:border-gray-700">
         <button @click="submitAttendance" :disabled="saving" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2 disabled:opacity-50">
-          <span>💾</span> {{ saving ? 'Enregistrement MySQL...' : 'Valider & Enregistrer l\'Appel en BBD' }}
+          <span>💾</span> {{ saving ? 'Enregistrement...' : 'Valider & Enregistrer l\'Appel' }}
         </button>
       </div>
     </div>
@@ -171,7 +171,7 @@ async function submitAttendance() {
     const presentsCount = studentsList.value.filter(s => s.attendance === 'PRESENT').length
     showSuccessAlert(
       'Feuille d\'Appel Enregistrée ! 🎉',
-      `La feuille d'appel du <strong>${attendanceDate.value}</strong> pour la <strong>${selectedClass.value}</strong> a été enregistrée dans MySQL. (<strong>${presentsCount}/${studentsList.value.length} Présents</strong>)`
+      `La feuille d'appel du <strong>${attendanceDate.value}</strong> pour la <strong>${selectedClass.value}</strong> a été enregistrée avec succès. (<strong>${presentsCount}/${studentsList.value.length} Présents</strong>)`
     )
   } catch (err) {
     showErrorAlert('Erreur', 'Erreur lors de la validation de la feuille d\'appel.')
@@ -183,7 +183,7 @@ async function submitAttendance() {
 function submitGrades() {
   showSuccessAlert(
     'Évaluations Enregistrées ! 📝',
-    `Les notes et appréciations pédagogiques de la <strong>${selectedClass.value}</strong> ont été enregistrées avec succès dans la base MySQL.`
+    `Les notes et appréciations pédagogiques de la <strong>${selectedClass.value}</strong> ont été enregistrées avec succès.`
   )
 }
 </script>

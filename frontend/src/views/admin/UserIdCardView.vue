@@ -14,7 +14,7 @@
         <!-- Boutons Enregistrer & Annuler (Mode Édition) -->
         <template v-else>
           <button @click="saveChanges" :disabled="saving" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2 disabled:opacity-50">
-            <span>💾</span> {{ saving ? 'Enregistrement MySQL...' : 'Enregistrer dans MySQL' }}
+            <span>💾</span> {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
           </button>
           <button @click="cancelEdit" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold text-xs rounded-xl transition-all flex items-center gap-2 border">
             <span>❌</span> Annuler les modifications
@@ -39,7 +39,7 @@
           </span>
           <div v-if="!isEditing">
             <h1 class="text-3xl font-extrabold mt-1">{{ user.name }}</h1>
-            <p class="text-brand-100 text-xs">Identifiant BBD : <code class="font-mono text-gold-200">{{ user.id }}</code></p>
+            <p class="text-brand-100 text-xs">Identifiant : <code class="font-mono text-gold-200">{{ user.id }}</code></p>
           </div>
           <div v-else class="space-y-2 pt-2">
             <input v-model="editForm.name" type="text" class="px-3 py-1.5 rounded-xl bg-white/10 border border-white/30 text-white text-lg font-bold w-full" placeholder="Nom et Prénom" />
@@ -104,13 +104,13 @@
       </div>
     </div>
 
-    <!-- Section Spéciale Classes & Créneaux d'Enseignement pour les Enseignants (Base MySQL) -->
+    <!-- Section Spéciale Classes & Créneaux d'Enseignement pour les Enseignants -->
     <div v-if="user.role === 'ROLE_TEACHER'" class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-lg border border-emerald-200 space-y-4">
       <div class="flex items-center justify-between border-b pb-3 dark:border-gray-700">
         <div class="flex items-center gap-3">
           <span class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg font-bold">👨‍🏫</span>
           <div>
-            <h3 class="font-bold text-base text-gray-900 dark:text-white">Classes & Créneaux d'Enseignement Affectés (Base BBD MySQL)</h3>
+            <h3 class="font-bold text-base text-gray-900 dark:text-white">Classes & Créneaux d'Enseignement Affectés</h3>
             <p class="text-xs text-gray-500">Toutes les classes sous la responsabilité pédagogique de {{ user.name }}</p>
           </div>
         </div>
@@ -476,7 +476,7 @@
               Annuler
             </button>
             <button type="submit" :disabled="savingAttendance" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold shadow-md flex items-center gap-2 disabled:opacity-50 transition-all">
-              <span>💾</span> {{ savingAttendance ? 'Enregistrement MySQL...' : 'Enregistrer dans MySQL' }}
+              <span>💾</span> {{ savingAttendance ? 'Enregistrement...' : 'Enregistrer' }}
             </button>
           </div>
         </form>
@@ -559,7 +559,7 @@ function openAttendanceModal(log) {
     teacherStatus: log.status || 'PRESENT',
     presentCount: presentInitial,
     totalCount: totalInitial,
-    notes: log.notes || 'Séance régulièrement dispensée et émargée dans MySQL.',
+    notes: log.notes || 'Séance régulièrement dispensée et émargée.',
     studentsList: matchingStudents
   }
 
@@ -590,7 +590,7 @@ async function saveSessionAttendance() {
 
     await apiClient.put(`/admin/classes/attendance/${activeAttendanceSession.value.id}`, payload)
 
-    showSuccessAlert('Émargement Enregistré ! 🎉', `La feuille de présence pour la séance du <strong>${activeAttendanceSession.value.date}</strong> (${activeAttendanceSession.value.className}) a été mise à jour dans MySQL.`)
+    showSuccessAlert('Émargement Enregistré ! 🎉', `La feuille de présence pour la séance du <strong>${activeAttendanceSession.value.date}</strong> (${activeAttendanceSession.value.className}) a été mise à jour avec succès.`)
     showAttendanceModal.value = false
     await fetchTeacherAttendance()
   } catch (err) {
@@ -912,7 +912,7 @@ async function saveChanges() {
     user.value.details.teacherSpecialities = editForm.value.teacherSpecialities
 
     isEditing.value = false
-    showSuccessAlert('Modifications Enregistrées ! 🎉', `La fiche de <strong>${user.value.name}</strong> et le rattachement parent ont été mis à jour dans MySQL.`)
+    showSuccessAlert('Modifications Enregistrées ! 🎉', `La fiche de <strong>${user.value.name}</strong> et le rattachement parent ont été mis à jour avec succès.`)
   } catch (err) {
     console.error('Erreur enregistrement modifications:', err)
     user.value.name = editForm.value.name

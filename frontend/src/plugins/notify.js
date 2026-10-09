@@ -62,7 +62,7 @@ export const showConfirmDialog = (title, message, confirmText = 'Oui, confirmer'
 export const showDeleteConfirmDialog = (itemName = 'cet élément') => {
   return Swal.fire({
     title: 'Confirmation de Suppression',
-    html: `<div class="text-sm text-gray-600 dark:text-gray-300 mt-2">Êtes-vous sûr de vouloir supprimer définitivement <strong>${itemName}</strong> de la base de données MySQL ?</div>`,
+    html: `<div class="text-sm text-gray-600 dark:text-gray-300 mt-2">Êtes-vous sûr de vouloir supprimer définitivement <strong>${itemName}</strong> ?</div>`,
     icon: 'warning',
     iconColor: '#f59e0b',
     showCancelButton: true,

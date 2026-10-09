@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Gestion des Élèves, Parents & Enseignants</h1>
-        <p class="text-xs text-gray-500">Statuts Actif/Inactif en BBD, Fiches d'identité détaillées et sélecteurs de classes</p>
+        <p class="text-xs text-gray-500">Statuts Actif/Inactif, Fiches d'identité détaillées et sélecteurs de classes</p>
       </div>
       <div class="flex gap-3">
         <button @click="openModal('STUDENT')" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
@@ -48,7 +48,7 @@
     <!-- Datatable -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6 space-y-4">
       <div v-if="loading" class="text-center py-8 text-xs font-bold text-gray-500">
-        Chargement des données depuis MySQL...
+        Chargement des données...
       </div>
       <div v-else class="space-y-4">
         <div class="overflow-x-auto">
@@ -59,7 +59,7 @@
                 <th class="py-3 px-4">Rôle</th>
                 <th class="py-3 px-4">Classe / Spécialité</th>
                 <th class="py-3 px-4">Parent Rattaché / Contact</th>
-                <th class="py-3 px-4">Statut Compte BBD</th>
+                <th class="py-3 px-4">Statut Compte</th>
                 <th class="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -266,7 +266,7 @@
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block font-semibold mb-1">Email du Parent (Identifiant BBD)</label>
+                <label class="block font-semibold mb-1">Email du Parent</label>
                 <input v-model="form.parentEmail" type="email" required class="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700 font-semibold" placeholder="karim.benali@email.lu" />
               </div>
               <div>
@@ -278,7 +278,7 @@
 
           <div class="flex gap-3 pt-4">
             <button type="submit" :disabled="submitting" class="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow disabled:opacity-50">
-              {{ submitting ? 'Enregistrement MySQL...' : 'Enregistrer dans la BBD MySQL' }}
+              {{ submitting ? 'Enregistrement...' : 'Enregistrer l\'Utilisateur' }}
             </button>
             <button type="button" @click="showModal = false" class="py-3 px-4 border rounded-xl text-gray-600 font-semibold">
               Annuler
@@ -407,7 +407,7 @@ async function toggleStatus(user) {
     }
     showSuccessAlert(
       'Statut Modifié',
-      `Le compte de <strong>${user.name}</strong> est désormais <strong>${user.status === 'ACTIVE' ? 'ACTIF' : 'INACTIF'}</strong> dans la base MySQL.`
+      `Le compte de <strong>${user.name}</strong> est désormais <strong>${user.status === 'ACTIVE' ? 'ACTIF' : 'INACTIF'}</strong>.`
     )
   } catch (err) {
     user.status = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
@@ -436,7 +436,7 @@ async function fetchClassesList() {
       })
     }
   } catch (err) {
-    console.error('Erreur chargement des classes BBD:', err)
+    console.error('Erreur chargement des classes:', err)
   }
 }
 
@@ -501,7 +501,7 @@ async function saveUser() {
         'Inscription Validée ! 🎉',
         isExisting
           ? `L'élève <strong>${payload.studentFirstName} ${payload.studentLastName}</strong> a été rattaché avec succès au compte Parent existant de <strong>${payload.parentFullName}</strong> (${payload.parentEmail}) !`
-          : `L'élève <strong>${payload.studentFirstName} ${payload.studentLastName}</strong> et le nouveau compte Parent <strong>${payload.parentFullName}</strong> (${payload.parentEmail}) ont été enregistrés avec succès dans MySQL.`
+          : `L'élève <strong>${payload.studentFirstName} ${payload.studentLastName}</strong> et le nouveau compte Parent <strong>${payload.parentFullName}</strong> (${payload.parentEmail}) ont été enregistrés avec succès.`
       )
     } else {
       const newTeacher = {
@@ -520,7 +520,7 @@ async function saveUser() {
       showSuccessAlert('Enseignant Créé !', `L'enseignant <strong>${newTeacher.name}</strong> a été créé.`)
     }
   } catch (err) {
-    console.error('Erreur enregistrement BBD:', err)
+    console.error('Erreur enregistrement:', err)
     if (err.response && err.response.status === 401) {
       showErrorAlert('Session Expirée', 'Votre session a expiré. Veuillez vous reconnecter.')
       setTimeout(() => {
@@ -557,7 +557,7 @@ async function deleteUser(user) {
       console.warn('Suppression locale :', err)
     }
     usersList.value = usersList.value.filter(u => u.id !== user.id)
-    showSuccessAlert('Supprimé avec succès ! 🗑️', `L'utilisateur <strong>${user.name}</strong> a été supprimé de la base de données MySQL.`)
+    showSuccessAlert('Supprimé avec succès ! 🗑️', `L'utilisateur <strong>${user.name}</strong> a été supprimé.`)
   }
 }
 
