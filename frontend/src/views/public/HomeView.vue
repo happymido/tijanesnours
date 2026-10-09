@@ -572,6 +572,7 @@ onMounted(async () => {
   font-weight: 800 !important;
   line-height: 1 !important;
   margin: 0 !important;
+  color: #8CC63F !important;
 }
 
 .hero-area1 .hero-content .hero-count .time span {
@@ -582,12 +583,14 @@ onMounted(async () => {
   font-size: 2.25rem !important;
   font-weight: 800 !important;
   line-height: 1 !important;
+  color: #8CC63F !important;
 }
 
 .hero-area1 .hero-content .hero-count h5 {
   font-size: 15px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   margin: 0 !important;
+  color: #1f2937 !important;
 }
 
 /* Notre Mission Counters Alignment & Sizing Fix */
@@ -728,6 +731,15 @@ onMounted(async () => {
     padding: 12px 8px !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
     margin-bottom: 10px !important;
+  }
+
+  .hero-area1 .hero-content .hero-count .time h3,
+  .hero-area1 .hero-content .hero-count .time span {
+    color: #8CC63F !important;
+  }
+
+  .hero-area1 .hero-content .hero-count h5 {
+    color: #1f2937 !important;
   }
 }
 </style>

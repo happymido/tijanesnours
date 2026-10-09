@@ -77,13 +77,16 @@
           <!-- Mobile Toggle Button -->
           <button 
             @click="isMobileMenuOpen = !isMobileMenuOpen" 
-            class="navbar-toggler border-0 shadow-none d-lg-none bg-transparent p-1"
+            class="mobile-menu-toggle-btn d-lg-none"
             type="button"
             aria-label="Toggle Navigation"
           >
-            <span class="burger-menu text-2xl text-gray-800">
-              <i :class="isMobileMenuOpen ? 'ri-close-line' : 'ri-menu-line'"></i>
+            <span v-if="!isMobileMenuOpen" class="burger-icon">
+              <span></span>
+              <span></span>
+              <span></span>
             </span>
+            <span v-else class="close-icon font-bold">✕</span>
           </button>
         </div>
       </div>
@@ -479,5 +482,55 @@ html[dir="rtl"] .mobile-menu-drawer.is-open,
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Mobile Toggle Button Explicit CSS */
+@media (max-width: 991.98px) {
+  .mobile-menu-toggle-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    padding: 0 !important;
+    background-color: #f3f4f6 !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 10px !important;
+    color: #111827 !important;
+    cursor: pointer !important;
+    margin-left: 8px !important;
+    z-index: 1040 !important;
+    transition: all 0.2s ease !important;
+  }
+  .mobile-menu-toggle-btn:hover {
+    background-color: #e5e7eb !important;
+    border-color: #8CC63F !important;
+  }
+  .burger-icon {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    width: 20px !important;
+    height: 14px !important;
+  }
+  .burger-icon span {
+    display: block !important;
+    width: 100% !important;
+    height: 2.5px !important;
+    background-color: #1f2937 !important;
+    border-radius: 2px !important;
+  }
+  .close-icon {
+    font-size: 20px !important;
+    line-height: 1 !important;
+    color: #1f2937 !important;
+  }
+}
+
+@media (min-width: 992px) {
+  .mobile-menu-toggle-btn {
+    display: none !important;
+  }
 }
 </style>
