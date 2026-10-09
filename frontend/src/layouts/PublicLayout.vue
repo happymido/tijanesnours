@@ -1,11 +1,11 @@
 <template>
   <div class="public-layout">
     <!-- Start Navbar Area --> 
-    <nav class="navbar navbar-expand-lg bg-white shadow-sm border-bottom py-3 sticky-top" id="navbar">
-      <div class="container d-flex align-items-center justify-between" style="max-width: 1200px; margin: 0 auto;">
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm border-bottom py-2 py-lg-3 sticky-top" id="navbar">
+      <div class="container d-flex align-items-center justify-content-between w-100" style="max-width: 1200px; margin: 0 auto;">
         <!-- Logo -->
-        <router-link class="navbar-brand p-0 d-flex align-items-center gap-2" to="/">
-          <img src="/assets/img/logo.png" alt="Tijanes Nours" style="max-height: 55px;">
+        <router-link class="navbar-brand p-0 m-0 d-inline-flex align-items-center" to="/">
+          <img src="/assets/img/logo.png" alt="Tijanes Nours" class="header-logo-img">
         </router-link>
 
         <!-- Menu Navigation Top Bar (Desktop) -->
@@ -490,15 +490,26 @@ html[dir="rtl"] .mobile-menu-drawer.is-open,
   opacity: 0;
 }
 
+/* Header Logo Image Sizing & Responsive Alignment */
+.header-logo-img {
+  max-height: 52px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
 /* Mobile Toggle Button Explicit CSS */
 @media (max-width: 991.98px) {
+  .header-logo-img {
+    max-height: 38px !important;
+  }
   .mobile-menu-toggle-btn {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 42px !important;
-    height: 42px !important;
-    min-width: 42px !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
     padding: 0 !important;
     background-color: #ffffff !important;
     border: 1.5px solid #d1d5db !important;
@@ -506,6 +517,7 @@ html[dir="rtl"] .mobile-menu-drawer.is-open,
     color: #111827 !important;
     cursor: pointer !important;
     margin-left: 6px !important;
+    align-self: center !important;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
     z-index: 1040 !important;
     transition: all 0.2s ease !important;
@@ -522,8 +534,8 @@ html[dir="rtl"] .mobile-menu-drawer.is-open,
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
-    width: 20px !important;
-    height: 14px !important;
+    width: 18px !important;
+    height: 13px !important;
   }
   .burger-icon span {
     display: block !important;
@@ -533,7 +545,7 @@ html[dir="rtl"] .mobile-menu-drawer.is-open,
     border-radius: 2px !important;
   }
   .close-icon {
-    font-size: 20px !important;
+    font-size: 18px !important;
     line-height: 1 !important;
     color: #1f2937 !important;
   }
@@ -547,12 +559,27 @@ html[dir="rtl"] .mobile-menu-drawer.is-open,
 </style>
 
 <style>
-/* Global High-Specificity Overrides to guarantee mobile controls & navbar elements are NEVER hidden by theme CSS */
+/* Global High-Specificity Overrides to guarantee mobile controls & navbar alignment */
+body .public-layout .navbar .container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+body .public-layout .navbar .navbar-brand {
+  width: auto !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
 body .public-layout .navbar .navbar-controls-wrapper,
 body .public-layout .navbar .others-options,
 nav.navbar .others-options {
   display: flex !important;
   align-items: center !important;
+  margin: 0 !important;
 }
 
 body .public-layout .navbar .mobile-menu-toggle-btn {
