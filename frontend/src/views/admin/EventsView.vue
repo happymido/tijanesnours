@@ -97,9 +97,23 @@
                   {{ item.isPublished ? '✓ Publié' : '⏳ Brouillon' }}
                 </button>
               </td>
-              <td class="py-3.5 px-4 text-right space-x-2">
-                <button @click="openEventModal(item)" class="text-brand-600 hover:text-brand-700 font-bold">Éditer</button>
-                <button @click="deleteEvent(item)" class="text-red-500 hover:text-red-700 font-bold ml-2">Supprimer</button>
+              <td class="py-3.5 px-4 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button
+                    @click="openEventModal(item)"
+                    title="Éditer l'événement"
+                    class="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    @click="deleteEvent(item)"
+                    title="Supprimer l'événement"
+                    class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+                  >
+                    🗑️
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -149,9 +163,23 @@
                   {{ cat.isActive ? 'Active' : 'Inactive' }}
                 </span>
               </td>
-              <td class="py-3.5 px-4 text-right space-x-2">
-                <button @click="openCategoryModal(cat)" class="text-brand-600 hover:text-brand-700 font-bold">Éditer</button>
-                <button @click="deleteCategory(cat)" class="text-red-500 hover:text-red-700 font-bold ml-2">Supprimer</button>
+              <td class="py-3.5 px-4 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button
+                    @click="openCategoryModal(cat)"
+                    title="Éditer la catégorie"
+                    class="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    @click="deleteCategory(cat)"
+                    title="Supprimer la catégorie"
+                    class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 flex items-center justify-center text-sm shadow-sm transition-all hover:scale-105"
+                  >
+                    🗑️
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>

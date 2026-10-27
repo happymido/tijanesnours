@@ -75,8 +75,12 @@
               <p class="text-[10px] text-gray-500">admin@tijanesnours.lu</p>
             </div>
           </div>
-          <button @click="authStore.logout()" class="text-red-400 hover:text-red-300 text-xs font-bold">
-            🚪
+          <button
+            @click="authStore.logout()"
+            class="w-8 h-8 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 flex items-center justify-center transition-all hover:scale-105 border border-red-500/20"
+            title="Se déconnecter"
+          >
+            <i class="ri-logout-box-r-line text-base"></i>
           </button>
         </div>
       </div>
