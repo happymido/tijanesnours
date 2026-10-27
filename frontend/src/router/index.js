@@ -11,6 +11,7 @@ const routes = [
       { path: '', name: 'home', component: HomeView },
       { path: 'about', name: 'about', component: () => import('../views/public/AboutView.vue') },
       { path: 'courses', name: 'courses', component: () => import('../views/public/CoursesView.vue') },
+      { path: 'contact', name: 'contact', component: () => import('../views/public/ContactView.vue') },
       { path: 'register', name: 'register', component: () => import('../views/public/RegisterView.vue') },
       { path: 'login', name: 'login', component: () => import('../views/public/LoginView.vue') }
     ]

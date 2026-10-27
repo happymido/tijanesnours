@@ -20,6 +20,9 @@
             <li class="nav-item">
               <router-link to="/about" class="nav-link text-dark font-bold text-sm px-2" active-class="text-brand-600 font-extrabold active">{{ t('nav.about') }}</router-link>
             </li>
+            <li class="nav-item">
+              <router-link to="/contact" class="nav-link text-dark font-bold text-sm px-2" active-class="text-brand-600 font-extrabold active">{{ t('nav.contact') }}</router-link>
+            </li>
           </ul>
         </div>
 
@@ -153,6 +156,16 @@
                 {{ t('nav.about') }}
               </router-link>
             </li>
+            <li class="nav-item">
+              <router-link 
+                to="/contact" 
+                class="nav-link font-bold text-base py-2 px-3 rounded text-gray-800" 
+                active-class="bg-brand-50 text-brand-600 active" 
+                @click="isMobileMenuOpen = false"
+              >
+                {{ t('nav.contact') }}
+              </router-link>
+            </li>
           </ul>
 
           <div class="pt-4 border-top d-flex flex-column gap-3">
@@ -278,6 +291,7 @@
                 <li><router-link to="/" class="text-gray-700 hover:text-brand-600 d-inline-block py-1">{{ t('nav.home') }}</router-link></li>
                 <li><router-link to="/courses" class="text-gray-700 hover:text-brand-600 d-inline-block py-1">{{ t('nav.courses') }}</router-link></li>
                 <li><router-link to="/about" class="text-gray-700 hover:text-brand-600 d-inline-block py-1">{{ t('nav.about') }}</router-link></li>
+                <li><router-link to="/contact" class="text-gray-700 hover:text-brand-600 d-inline-block py-1">{{ t('nav.contact') }}</router-link></li>
                 <li><router-link to="/login" class="text-gray-700 hover:text-brand-600 d-inline-block py-1">{{ t('nav.login') }}</router-link></li>
               </ul>
             </div>
