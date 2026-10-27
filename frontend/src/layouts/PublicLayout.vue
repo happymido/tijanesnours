@@ -282,7 +282,7 @@
                   <div class="contact-icon">
                     <i class="ri-map-pin-line"></i>
                   </div>
-                  <span class="contact-text">Centre Maryam / LJM Luxembourg</span>
+                  <span class="contact-text">32, Rue Dernier Sol, L-2543 Luxembourg</span>
                 </li>
                 <li class="contact-item">
                   <div class="contact-icon">

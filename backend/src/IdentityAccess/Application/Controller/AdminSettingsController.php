@@ -44,7 +44,7 @@ class AdminSettingsController extends AbstractController
             'tranche_1_amount' => '230.00',
             'school_name' => 'École Tijanes Nours ASBL',
             'school_rcs' => 'RCS F12999',
-            'school_address' => 'Centre Maryam / LJM Luxembourg',
+            'school_address' => '32, Rue Dernier Sol, L-2543 Luxembourg',
             'school_email' => 'contact@tijanesnours.lu',
         ];
 

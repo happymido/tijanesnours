@@ -160,4 +160,22 @@ HTML);
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    #[Route('/contact-info', name: 'contact_info', methods: ['GET'])]
+    public function getContactInfo(EntityManagerInterface $em): JsonResponse
+    {
+        $settings = $em->getRepository(SystemSetting::class)->findAll();
+        $map = [];
+        foreach ($settings as $setting) {
+            $map[$setting->getSettingKey()] = $setting->getSettingValue();
+        }
+
+        return $this->json([
+            'school_name' => $map['school_name'] ?? 'École Tijanes Nours ASBL',
+            'school_rcs' => $map['school_rcs'] ?? 'RCS F12999',
+            'school_address' => $map['school_address'] ?? '32, Rue Dernier Sol, L-2543 Luxembourg',
+            'school_email' => $map['school_email'] ?? 'contact@tijanesnours.lu',
+            'school_phone' => $map['school_phone'] ?? '+352 691 123 456'
+        ]);
+    }
 }

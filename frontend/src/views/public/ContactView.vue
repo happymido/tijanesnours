@@ -28,8 +28,8 @@
                 </div>
                 <div>
                   <div class="text-xs font-bold text-gray-500 uppercase">{{ t('contact.address_label') }}</div>
-                  <div class="text-sm font-semibold text-gray-800 mt-1">{{ t('contact.address_value') }}</div>
-                  <div class="text-xs text-gray-500 mt-0.5">Luxembourg (RCS F12999)</div>
+                  <div class="text-sm font-semibold text-gray-800 mt-1">{{ contactInfo.school_address || t('contact.address_value') }}</div>
+                  <div class="text-xs text-gray-500 mt-0.5">Luxembourg ({{ contactInfo.school_rcs || 'RCS F12999' }})</div>
                 </div>
               </div>
 
@@ -40,8 +40,8 @@
                 </div>
                 <div>
                   <div class="text-xs font-bold text-gray-500 uppercase">{{ t('contact.email_label') }}</div>
-                  <a href="mailto:contact@tijanesnours.lu" class="text-sm font-semibold text-brand-600 hover:underline mt-1 d-block">
-                    contact@tijanesnours.lu
+                  <a :href="'mailto:' + (contactInfo.school_email || 'contact@tijanesnours.lu')" class="text-sm font-semibold text-brand-600 hover:underline mt-1 d-block">
+                    {{ contactInfo.school_email || 'contact@tijanesnours.lu' }}
                   </a>
                   <div class="text-xs text-gray-500 mt-0.5">Réponse garantie sous 24h à 48h</div>
                 </div>
@@ -54,8 +54,8 @@
                 </div>
                 <div>
                   <div class="text-xs font-bold text-gray-500 uppercase">{{ t('contact.phone_label') }}</div>
-                  <a href="tel:+352691123456" class="text-sm font-semibold text-gray-800 hover:text-brand-600 mt-1 d-block">
-                    {{ t('contact.phone_value') }}
+                  <a :href="'tel:' + (contactInfo.school_phone || '+352691123456')" class="text-sm font-semibold text-gray-800 hover:text-brand-600 mt-1 d-block">
+                    {{ contactInfo.school_phone || t('contact.phone_value') }}
                   </a>
                   <div class="text-xs text-gray-500 mt-0.5">Permanence téléphonique le week-end</div>
                 </div>
@@ -214,16 +214,79 @@
           </div>
         </div>
       </div>
+
+      <!-- Google Map Section -->
+      <div class="row mt-5">
+        <div class="col-12">
+          <div class="map-card bg-white p-3 p-md-4 rounded-3xl border shadow-sm">
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <div class="icon-box text-brand-600 bg-brand-50 rounded-xl p-2 flex-shrink-0">
+                  <i class="ri-map-2-line text-xl font-bold"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-0">Plan d'Accès & Localisation</h3>
+                  <p class="text-xs text-gray-500 mb-0">{{ contactInfo.school_address || '32, Rue Dernier Sol, L-2543 Luxembourg' }}</p>
+                </div>
+              </div>
+              <a 
+                :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(contactInfo.school_address || '32, Rue Dernier Sol, L-2543 Luxembourg')" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1.5 text-xs font-bold d-flex align-items-center gap-1.5"
+              >
+                <span>Ouvrir dans Google Maps</span>
+                <i class="ri-external-link-line"></i>
+              </a>
+            </div>
+            <div class="map-frame-wrapper rounded-2xl overflow-hidden border" style="height: 380px;">
+              <iframe
+                title="Google Maps Location - Tijanes Nours"
+                :src="'https://maps.google.com/maps?q=' + encodeURIComponent(contactInfo.school_address || '32, Rue Dernier Sol, L-2543 Luxembourg') + '&t=&z=16&ie=UTF8&iwloc=&output=embed'"
+                width="100%"
+                height="100%"
+                style="border:0;"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import apiClient from '../../plugins/axios'
 
 const { t } = useI18n()
+
+const contactInfo = reactive({
+  school_name: 'École Tijanes Nours ASBL',
+  school_rcs: 'RCS F12999',
+  school_address: '32, Rue Dernier Sol, L-2543 Luxembourg',
+  school_email: 'contact@tijanesnours.lu',
+  school_phone: '+352 691 123 456'
+})
+
+async function fetchContactInfo() {
+  try {
+    const res = await apiClient.get('/public/contact-info')
+    if (res.data) {
+      Object.assign(contactInfo, res.data)
+    }
+  } catch (err) {
+    console.error('Erreur chargement informations de contact :', err)
+  }
+}
+
+onMounted(() => {
+  fetchContactInfo()
+})
 
 const form = reactive({
   fullName: '',
