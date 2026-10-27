@@ -241,14 +241,12 @@
             </div>
             <div class="map-frame-wrapper rounded-2xl overflow-hidden border" style="height: 380px;">
               <iframe
-                title="Google Maps Location - Tijanes Nours"
-                :src="'https://maps.google.com/maps?q=' + encodeURIComponent(contactInfo.school_address || '32, Rue Dernier Sol, L-2543 Luxembourg') + '&t=&z=16&ie=UTF8&iwloc=&output=embed'"
+                title="Localisation - Tijanes Nours (32, Rue Dernier Sol, Luxembourg)"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=6.1300%2C49.5930%2C6.1420%2C49.6010&amp;layer=mapnik&amp;marker=49.5976%2C6.1388"
                 width="100%"
                 height="100%"
                 style="border:0;"
-                allowfullscreen=""
                 loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
               ></iframe>
             </div>
           </div>
