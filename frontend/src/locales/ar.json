@@ -75,7 +75,7 @@
     "full_name": "الاسم الكامل",
     "full_name_placeholder": "مثال: سارة بن علي",
     "email": "البريد الإلكتروني",
-    "email_placeholder": "مثال: sarah@example.com",
+    "email_placeholder": "مثال: sarah{'@'}example.com",
     "phone": "رقم الهاتف (اختياري)",
     "phone_placeholder": "مثال: 456 123 691 352+",
     "subject": "موضوع الرسالة",

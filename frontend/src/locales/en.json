@@ -75,7 +75,7 @@
     "full_name": "Full Name",
     "full_name_placeholder": "E.g.: Sarah Benali",
     "email": "Email Address",
-    "email_placeholder": "E.g.: sarah@example.com",
+    "email_placeholder": "E.g.: sarah{'@'}example.com",
     "phone": "Phone Number (Optional)",
     "phone_placeholder": "E.g.: +352 691 123 456",
     "subject": "Subject",
