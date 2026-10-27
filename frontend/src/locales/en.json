@@ -5,6 +5,7 @@
     "courses": "Courses",
     "pedagogy": "Pedagogy",
     "news": "News",
+    "events": "Events",
     "contact": "Contact",
     "register": "Register",
     "login": "Login",
@@ -95,5 +96,29 @@
     "success_msg": "Thank you for reaching out. Our team will get back to you shortly.",
     "error_title": "Failed to send message",
     "error_default": "An error occurred while sending your message. Please try again or contact us by phone."
+  },
+  "about_page": {
+    "banner_title": "About Tijanes Nours School",
+    "banner_subtitle": "Non-profit organization registered in Luxembourg (RCS F12999).",
+    "history_subtitle": "Our Heritage & Values",
+    "history_title": "Teaching the Arabic Language & Quran with Excellence and Compassion",
+    "history_p1": "Tijanes Nours School was founded to provide families residing in Luxembourg with a professional, modern, and caring educational framework.",
+    "history_p2": "Our curricula are crafted by seasoned educators to unite academic rigor, peaceful Quran memorization, and the personal flourishing of every child.",
+    "pillar_1": "Certified & Qualified Teachers",
+    "pillar_2": "Small Group Classes",
+    "pillar_3": "Digital Grade & Attendance Tracking",
+    "pillar_4": "Secure & Adapted Premises"
+  },
+  "events": {
+    "title": "Events & Activities",
+    "subtitle": "Discover celebrations, open days, workshops, and gatherings at Tijanes Nours School.",
+    "filter_all": "All Events",
+    "no_events": "No events are currently scheduled in this category.",
+    "location_label": "Location:",
+    "time_label": "Time:",
+    "capacity_label": "Seats:",
+    "learn_more": "Learn More",
+    "upcoming_badge": "Upcoming",
+    "past_badge": "Completed"
   }
 }

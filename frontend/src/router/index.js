@@ -11,6 +11,7 @@ const routes = [
       { path: '', name: 'home', component: HomeView },
       { path: 'about', name: 'about', component: () => import('../views/public/AboutView.vue') },
       { path: 'courses', name: 'courses', component: () => import('../views/public/CoursesView.vue') },
+      { path: 'events', name: 'events', component: () => import('../views/public/EventsView.vue') },
       { path: 'contact', name: 'contact', component: () => import('../views/public/ContactView.vue') },
       { path: 'register', name: 'register', component: () => import('../views/public/RegisterView.vue') },
       { path: 'login', name: 'login', component: () => import('../views/public/LoginView.vue') }
@@ -43,6 +44,7 @@ const routes = [
       { path: 'classes', name: 'admin-classes', component: () => import('../views/admin/ClassesView.vue') },
       { path: 'pedagogy', name: 'admin-pedagogy', component: () => import('../views/admin/PedagogyView.vue') },
       { path: 'finance', name: 'admin-finance', component: () => import('../views/admin/FinanceView.vue') },
+      { path: 'events', name: 'admin-events', component: () => import('../views/admin/EventsView.vue') },
       { path: 'cms', name: 'admin-cms', component: () => import('../views/admin/CmsView.vue') },
       { path: 'settings', name: 'admin-settings', component: () => import('../views/admin/SettingsView.vue') }
     ]

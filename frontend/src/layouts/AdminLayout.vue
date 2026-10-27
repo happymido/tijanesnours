@@ -47,6 +47,14 @@
         </router-link>
 
         <router-link
+          to="/admin/events"
+          active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"
+        >
+          <span class="text-base">📅</span> Événements & Catégories
+        </router-link>
+
+        <router-link
           to="/admin/settings"
           active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
           class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"

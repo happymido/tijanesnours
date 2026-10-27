@@ -5,6 +5,7 @@
     "courses": "Nos Cours",
     "pedagogy": "Pédagogie",
     "news": "Actualités",
+    "events": "Événements",
     "contact": "Contact",
     "register": "S'inscrire",
     "login": "Connexion",
@@ -95,5 +96,29 @@
     "success_msg": "Merci pour votre message. Notre équipe pédagogique vous répondra dans les plus brefs délais.",
     "error_title": "Erreur lors de l'envoi",
     "error_default": "Une erreur est survenue lors de l'envoi de votre message. Veuillez réessayer ou nous contacter par téléphone."
+  },
+  "about_page": {
+    "banner_title": "À Propos de l'École Tijanes Nours",
+    "banner_subtitle": "Association à but non lucratif enregistrée au Luxembourg (RCS F12999).",
+    "history_subtitle": "Notre Histoire & Valeurs",
+    "history_title": "Transmettre la Langue Arabe & le Coran avec Excellence et Bienveillance",
+    "history_p1": "L'École Tijanes Nours est née de la volonté d'offrir aux familles résidant au Luxembourg une structure éducative professionnelle, moderne et accueillante.",
+    "history_p2": "Nos programmes sont conçus par des pédagoges expérimentés afin d'associer rigueur académique, mémorisation sereine du Coran et épanouissement personnel des enfants.",
+    "pillar_1": "Enseignants Diplômés",
+    "pillar_2": "Groupes Réduits",
+    "pillar_3": "Suivi Numérique des Notes",
+    "pillar_4": "Locaux Sécurisés"
+  },
+  "events": {
+    "title": "Événements & Activités",
+    "subtitle": "Retrouvez les célébrations, portes ouvertes, ateliers et rencontres de l'École Tijanes Nours.",
+    "filter_all": "Tous les événements",
+    "no_events": "Aucun événement prévu pour le moment dans cette catégorie.",
+    "location_label": "Lieu :",
+    "time_label": "Horaire :",
+    "capacity_label": "Places :",
+    "learn_more": "En savoir plus",
+    "upcoming_badge": "À venir",
+    "past_badge": "Terminé"
   }
 }
