@@ -42,6 +42,7 @@ class AdminEventController extends AbstractController
                 'description' => $cat->getDescription(),
                 'position' => $cat->getPosition(),
                 'isActive' => $cat->isActive(),
+                'translations' => $cat->getTranslations() ?? [],
                 'eventsCount' => $cat->getEvents()->count(),
                 'createdAt' => $cat->getCreatedAt()->format('d/m/Y')
             ];
@@ -79,6 +80,10 @@ class AdminEventController extends AbstractController
             ->setPosition(isset($payload['position']) ? (int)$payload['position'] : 0)
             ->setIsActive(isset($payload['isActive']) ? (bool)$payload['isActive'] : true);
 
+        if (isset($payload['translations']) && is_array($payload['translations'])) {
+            $category->setTranslations($payload['translations']);
+        }
+
         $em->persist($category);
         $em->flush();
 
@@ -92,7 +97,8 @@ class AdminEventController extends AbstractController
                 'color' => $category->getColor(),
                 'description' => $category->getDescription(),
                 'position' => $category->getPosition(),
-                'isActive' => $category->isActive()
+                'isActive' => $category->isActive(),
+                'translations' => $category->getTranslations() ?? []
             ]
         ], Response::HTTP_CREATED);
     }
@@ -121,6 +127,9 @@ class AdminEventController extends AbstractController
         }
         if (isset($payload['isActive'])) {
             $category->setIsActive((bool)$payload['isActive']);
+        }
+        if (isset($payload['translations']) && is_array($payload['translations'])) {
+            $category->setTranslations($payload['translations']);
         }
 
         $em->flush();

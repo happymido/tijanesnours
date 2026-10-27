@@ -4,15 +4,15 @@
     <nav class="navbar navbar-expand-lg bg-white shadow-sm border-bottom py-2 py-lg-3 sticky-top" id="navbar">
       <div class="container d-flex align-items-center justify-content-between w-100" style="max-width: 1200px; margin: 0 auto;">
         <!-- Left / Center Group: Logo + Desktop Menu Navigation -->
-        <div class="d-flex align-items-center gap-4 gap-xl-5">
+        <div class="d-flex align-items-center gap-3 gap-xl-4">
           <!-- Logo -->
           <router-link class="navbar-brand p-0 m-0 d-inline-flex align-items-center" to="/">
             <img src="/assets/img/logo.png" alt="Tijanes Nours" class="header-logo-img">
           </router-link>
 
           <!-- Menu Navigation Top Bar (Desktop) -->
-          <div class="d-none d-lg-flex align-items-center">
-            <ul class="navbar-nav d-flex flex-row gap-1 gap-xl-2 mb-0">
+          <div class="d-none d-lg-flex align-items-center ms-1 ms-xl-2">
+            <ul class="navbar-nav d-flex flex-row gap-1 mb-0">
               <li class="nav-item">
                 <router-link to="/" class="nav-link text-dark font-bold text-sm px-2.5 py-1.5 rounded-lg transition-colors hover:text-brand-600" active-class="text-brand-600 font-extrabold active">{{ t('nav.home') }}</router-link>
               </li>

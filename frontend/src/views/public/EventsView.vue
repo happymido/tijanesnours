@@ -29,7 +29,7 @@
           :class="selectedCategory === cat.id ? 'active-filter' : 'bg-white text-gray-700 border'"
         >
           <span class="category-dot" :style="{ backgroundColor: cat.color }"></span>
-          <span>{{ cat.name }}</span>
+          <span>{{ getCategoryName(cat) }}</span>
         </button>
       </div>
 
@@ -72,7 +72,7 @@
                   class="badge px-3 py-1.5 text-xs font-bold rounded-pill text-white shadow-sm"
                   :style="{ backgroundColor: event.category.color }"
                 >
-                  {{ event.category.name }}
+                  {{ getCategoryName(event.category) }}
                 </span>
               </div>
 
@@ -181,6 +181,15 @@ function getEventDescription(event) {
     return event.translations[loc].description
   }
   return event.description
+}
+
+function getCategoryName(category) {
+  if (!category) return ''
+  const loc = locale.value
+  if (loc !== 'fr' && category.translations && category.translations[loc] && category.translations[loc].name) {
+    return category.translations[loc].name
+  }
+  return category.name
 }
 
 function formatTimeRange(startStr, endStr) {

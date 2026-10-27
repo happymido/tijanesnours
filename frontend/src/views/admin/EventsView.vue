@@ -311,10 +311,57 @@
         </div>
 
         <form @submit.prevent="saveCategory" class="space-y-4 text-xs">
-          <!-- Name -->
-          <div>
-            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Nom de la Catégorie *</label>
-            <input v-model="categoryForm.name" required type="text" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs" placeholder="Ex: Stages de Vacances" />
+          <!-- Language Tabs for Multilingual Category Name -->
+          <div class="border rounded-2xl p-3 bg-gray-50/70 dark:bg-gray-750 border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
+              <span class="font-bold text-gray-800 dark:text-gray-200 text-xs flex items-center gap-1.5">
+                🌐 Nom multilingue
+              </span>
+              <div class="flex items-center gap-1">
+                <button 
+                  type="button" 
+                  @click="activeCategoryLangTab = 'fr'"
+                  class="px-2 py-1 rounded-lg text-xs font-bold transition-all"
+                  :class="activeCategoryLangTab === 'fr' ? 'bg-brand-600 text-white shadow-sm' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100'"
+                >
+                  🇫🇷 FR
+                </button>
+                <button 
+                  type="button" 
+                  @click="activeCategoryLangTab = 'ar'"
+                  class="px-2 py-1 rounded-lg text-xs font-bold transition-all"
+                  :class="activeCategoryLangTab === 'ar' ? 'bg-brand-600 text-white shadow-sm' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100'"
+                >
+                  🇦🇪 العربية
+                </button>
+                <button 
+                  type="button" 
+                  @click="activeCategoryLangTab = 'en'"
+                  class="px-2 py-1 rounded-lg text-xs font-bold transition-all"
+                  :class="activeCategoryLangTab === 'en' ? 'bg-brand-600 text-white shadow-sm' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100'"
+                >
+                  🇬🇧 EN
+                </button>
+              </div>
+            </div>
+
+            <!-- French (Base) -->
+            <div v-show="activeCategoryLangTab === 'fr'">
+              <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Nom de la Catégorie (FR) *</label>
+              <input v-model="categoryForm.name" required type="text" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs" placeholder="Ex: Stages de Vacances" />
+            </div>
+
+            <!-- Arabic -->
+            <div v-show="activeCategoryLangTab === 'ar'" dir="rtl">
+              <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1 text-right">اسم التصنيف (العربية)</label>
+              <input v-model="categoryForm.translations.ar.name" type="text" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs text-right" placeholder="مثال: دورات العطل المدرسية" />
+            </div>
+
+            <!-- English -->
+            <div v-show="activeCategoryLangTab === 'en'">
+              <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Category Name (EN)</label>
+              <input v-model="categoryForm.translations.en.name" type="text" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs" placeholder="Ex: Holiday Workshops" />
+            </div>
           </div>
 
           <!-- Color Picker with presets -->
@@ -396,6 +443,7 @@ const eventForm = reactive({
   }
 })
 
+const activeCategoryLangTab = ref('fr')
 const showCategoryModal = ref(false)
 const isEditingCategory = ref(false)
 const editingCategoryId = ref(null)
@@ -403,7 +451,11 @@ const categoryForm = reactive({
   name: '',
   color: '#8CC63F',
   description: '',
-  position: 0
+  position: 0,
+  translations: {
+    ar: { name: '' },
+    en: { name: '' }
+  }
 })
 
 async function fetchCategories() {
@@ -506,6 +558,7 @@ async function deleteEvent(event) {
 
 // Category Actions
 function openCategoryModal(cat = null) {
+  activeCategoryLangTab.value = 'fr'
   if (cat) {
     isEditingCategory.value = true
     editingCategoryId.value = cat.id
@@ -513,6 +566,10 @@ function openCategoryModal(cat = null) {
     categoryForm.color = cat.color
     categoryForm.description = cat.description || ''
     categoryForm.position = cat.position || 0
+    categoryForm.translations = {
+      ar: { name: cat.translations?.ar?.name || '' },
+      en: { name: cat.translations?.en?.name || '' }
+    }
   } else {
     isEditingCategory.value = false
     editingCategoryId.value = null
@@ -520,6 +577,10 @@ function openCategoryModal(cat = null) {
     categoryForm.color = '#8CC63F'
     categoryForm.description = ''
     categoryForm.position = categories.value.length + 1
+    categoryForm.translations = {
+      ar: { name: '' },
+      en: { name: '' }
+    }
   }
   showCategoryModal.value = true
 }

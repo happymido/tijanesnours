@@ -29,7 +29,8 @@ class PublicEventController extends AbstractController
                 'slug' => $cat->getSlug(),
                 'color' => $cat->getColor(),
                 'description' => $cat->getDescription(),
-                'position' => $cat->getPosition()
+                'position' => $cat->getPosition(),
+                'translations' => $cat->getTranslations() ?? []
             ];
         }
 
@@ -73,7 +74,8 @@ class PublicEventController extends AbstractController
                     'id' => $cat->getId(),
                     'name' => $cat->getName(),
                     'slug' => $cat->getSlug(),
-                    'color' => $cat->getColor()
+                    'color' => $cat->getColor(),
+                    'translations' => $cat->getTranslations() ?? []
                 ] : null
             ];
         }

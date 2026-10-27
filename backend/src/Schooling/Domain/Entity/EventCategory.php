@@ -36,6 +36,9 @@ class EventCategory
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $translations = null;
+
     /**
      * @var Collection<int, SchoolEvent>
      */
@@ -122,6 +125,17 @@ class EventCategory
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getTranslations(): ?array
+    {
+        return $this->translations;
+    }
+
+    public function setTranslations(?array $translations): self
+    {
+        $this->translations = $translations;
+        return $this;
     }
 
     /**
