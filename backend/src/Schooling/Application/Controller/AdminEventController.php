@@ -173,6 +173,7 @@ class AdminEventController extends AbstractController
                 'isPublished' => $event->isPublished(),
                 'capacity' => $event->getCapacity(),
                 'imageUrl' => $event->getImageUrl(),
+                'translations' => $event->getTranslations() ?? [],
                 'category' => $cat ? [
                     'id' => $cat->getId(),
                     'name' => $cat->getName(),
@@ -226,7 +227,8 @@ class AdminEventController extends AbstractController
             ->setLocation(!empty($payload['location']) ? trim((string)$payload['location']) : 'Centre Maryam / LJM Luxembourg')
             ->setIsPublished(isset($payload['isPublished']) ? (bool)$payload['isPublished'] : true)
             ->setCapacity(isset($payload['capacity']) && is_numeric($payload['capacity']) ? (int)$payload['capacity'] : null)
-            ->setImageUrl(!empty($payload['imageUrl']) ? trim((string)$payload['imageUrl']) : null);
+            ->setImageUrl(!empty($payload['imageUrl']) ? trim((string)$payload['imageUrl']) : null)
+            ->setTranslations(!empty($payload['translations']) && is_array($payload['translations']) ? $payload['translations'] : []);
 
         if (!empty($payload['categoryId'])) {
             $cat = $em->getRepository(EventCategory::class)->find((int)$payload['categoryId']);
@@ -286,6 +288,9 @@ class AdminEventController extends AbstractController
         }
         if (array_key_exists('imageUrl', $payload)) {
             $event->setImageUrl(!empty($payload['imageUrl']) ? trim((string)$payload['imageUrl']) : null);
+        }
+        if (array_key_exists('translations', $payload)) {
+            $event->setTranslations(is_array($payload['translations']) ? $payload['translations'] : []);
         }
         if (array_key_exists('categoryId', $payload)) {
             if (!empty($payload['categoryId'])) {

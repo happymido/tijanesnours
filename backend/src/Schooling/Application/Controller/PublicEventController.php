@@ -68,6 +68,7 @@ class PublicEventController extends AbstractController
                 'location' => $event->getLocation(),
                 'capacity' => $event->getCapacity(),
                 'imageUrl' => $event->getImageUrl(),
+                'translations' => $event->getTranslations() ?? [],
                 'category' => $cat ? [
                     'id' => $cat->getId(),
                     'name' => $cat->getName(),
@@ -100,6 +101,7 @@ class PublicEventController extends AbstractController
             'location' => $event->getLocation(),
             'capacity' => $event->getCapacity(),
             'imageUrl' => $event->getImageUrl(),
+            'translations' => $event->getTranslations() ?? [],
             'category' => $cat ? [
                 'id' => $cat->getId(),
                 'name' => $cat->getName(),

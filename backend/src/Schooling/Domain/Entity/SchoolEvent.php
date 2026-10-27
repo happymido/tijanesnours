@@ -44,6 +44,9 @@ class SchoolEvent
     #[ORM\Column(name: 'image_url', type: 'string', length: 255, nullable: true)]
     private ?string $imageUrl = null;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $translations = [];
+
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
@@ -54,6 +57,7 @@ class SchoolEvent
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
+        $this->translations = [];
     }
 
     public function getId(): ?int
@@ -176,6 +180,18 @@ class SchoolEvent
     public function setImageUrl(?string $imageUrl): self
     {
         $this->imageUrl = $imageUrl;
+        $this->updatedAt = new \DateTimeImmutable();
+        return $this;
+    }
+
+    public function getTranslations(): ?array
+    {
+        return $this->translations;
+    }
+
+    public function setTranslations(?array $translations): self
+    {
+        $this->translations = $translations;
         $this->updatedAt = new \DateTimeImmutable();
         return $this;
     }

@@ -170,10 +170,75 @@
         </div>
 
         <form @submit.prevent="saveEvent" class="space-y-4 text-xs">
-          <!-- Title -->
-          <div>
-            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Titre de l'Événement *</label>
-            <input v-model="eventForm.title" required type="text" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs" placeholder="Ex: Célébration fin d'année Coran" />
+          <!-- Language Tabs for Multilingual Title & Description -->
+          <div class="border rounded-2xl p-3 bg-gray-50/70 dark:bg-gray-750 border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
+              <span class="font-bold text-gray-800 dark:text-gray-200 text-xs flex items-center gap-1.5">
+                🌐 Contenu multilingue
+              </span>
+              <div class="flex items-center gap-1">
+                <button 
+                  type="button" 
+                  @click="activeLangTab = 'fr'"
+                  class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all"
+                  :class="activeLangTab === 'fr' ? 'bg-brand-600 text-white shadow-sm' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100'"
+                >
+                  🇫🇷 Français (Défaut)
+                </button>
+                <button 
+                  type="button" 
+                  @click="activeLangTab = 'ar'"
+                  class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all"
+                  :class="activeLangTab === 'ar' ? 'bg-brand-600 text-white shadow-sm' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100'"
+                >
+                  🇦🇪 العربية
+                </button>
+                <button 
+                  type="button" 
+                  @click="activeLangTab = 'en'"
+                  class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all"
+                  :class="activeLangTab === 'en' ? 'bg-brand-600 text-white shadow-sm' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100'"
+                >
+                  🇬🇧 English
+                </button>
+              </div>
+            </div>
+
+            <!-- French (Base) -->
+            <div v-show="activeLangTab === 'fr'" class="space-y-3">
+              <div>
+                <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Titre de l'Événement (FR) *</label>
+                <input v-model="eventForm.title" required type="text" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs" placeholder="Ex: Célébration fin d'année Coran" />
+              </div>
+              <div>
+                <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Description détaillée (FR) *</label>
+                <textarea v-model="eventForm.description" required rows="4" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs" placeholder="Détails du programme, horaires, public cible en français..."></textarea>
+              </div>
+            </div>
+
+            <!-- Arabic -->
+            <div v-show="activeLangTab === 'ar'" class="space-y-3" dir="rtl">
+              <div>
+                <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1 text-right">عنوان الفعالية (العربية)</label>
+                <input v-model="eventForm.translations.ar.title" type="text" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs text-right" placeholder="مثال: حفل ختام السنة القرآنية وتكريم الحفظة" />
+              </div>
+              <div>
+                <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1 text-right">الوصف والتفاصيل (العربية)</label>
+                <textarea v-model="eventForm.translations.ar.description" rows="4" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs text-right" placeholder="تفاصيل البرنامج، التوقيت، الفئات المستهدفة..."></textarea>
+              </div>
+            </div>
+
+            <!-- English -->
+            <div v-show="activeLangTab === 'en'" class="space-y-3">
+              <div>
+                <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Event Title (EN)</label>
+                <input v-model="eventForm.translations.en.title" type="text" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs" placeholder="Ex: Quran Year-End Celebration" />
+              </div>
+              <div>
+                <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Detailed Description (EN)</label>
+                <textarea v-model="eventForm.translations.en.description" rows="4" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs" placeholder="Event details, schedule, target audience in English..."></textarea>
+              </div>
+            </div>
           </div>
 
           <!-- Category Selection -->
@@ -215,12 +280,6 @@
           <div>
             <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">URL Image (Optionnel)</label>
             <input v-model="eventForm.imageUrl" type="text" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs" placeholder="/assets/images/about/about-group-image.png" />
-          </div>
-
-          <!-- Description -->
-          <div>
-            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Description détaillée *</label>
-            <textarea v-model="eventForm.description" required rows="4" class="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white text-xs" placeholder="Détails du programme, horaires, public cible..."></textarea>
           </div>
 
           <!-- Status Published -->
@@ -315,6 +374,8 @@ const categories = ref([])
 
 const presetColors = ['#8CC63F', '#5a00a1', '#f5cd00', '#0284c7', '#f21e09', '#10b981', '#ec4899', '#6366f1']
 
+const activeLangTab = ref('fr')
+
 // Modal States
 const showEventModal = ref(false)
 const isEditingEvent = ref(false)
@@ -328,7 +389,11 @@ const eventForm = reactive({
   capacity: null,
   imageUrl: '',
   description: '',
-  isPublished: true
+  isPublished: true,
+  translations: {
+    ar: { title: '', description: '' },
+    en: { title: '', description: '' }
+  }
 })
 
 const showCategoryModal = ref(false)
@@ -361,6 +426,7 @@ async function fetchEvents() {
 
 // Event Actions
 function openEventModal(event = null) {
+  activeLangTab.value = 'fr'
   if (event) {
     isEditingEvent.value = true
     editingEventId.value = event.id
@@ -373,6 +439,16 @@ function openEventModal(event = null) {
     eventForm.imageUrl = event.imageUrl || ''
     eventForm.description = event.description
     eventForm.isPublished = event.isPublished
+    eventForm.translations = {
+      ar: {
+        title: event.translations?.ar?.title || '',
+        description: event.translations?.ar?.description || ''
+      },
+      en: {
+        title: event.translations?.en?.title || '',
+        description: event.translations?.en?.description || ''
+      }
+    }
   } else {
     isEditingEvent.value = false
     editingEventId.value = null
@@ -385,6 +461,10 @@ function openEventModal(event = null) {
     eventForm.imageUrl = ''
     eventForm.description = ''
     eventForm.isPublished = true
+    eventForm.translations = {
+      ar: { title: '', description: '' },
+      en: { title: '', description: '' }
+    }
   }
   showEventModal.value = true
 }

@@ -87,10 +87,10 @@
             <div class="p-4 flex-grow-1 d-flex flex-column justify-content-between">
               <div>
                 <h3 class="text-lg font-bold text-gray-900 mb-2 leading-snug">
-                  {{ event.title }}
+                  {{ getEventTitle(event) }}
                 </h3>
                 <p class="text-xs text-gray-600 line-clamp-3 mb-4 leading-relaxed">
-                  {{ event.description }}
+                  {{ getEventDescription(event) }}
                 </p>
               </div>
 
@@ -163,6 +163,24 @@ function getMonth(dateStr) {
   const d = new Date(dateStr)
   const loc = locale.value === 'ar' ? 'ar-TN' : (locale.value === 'en' ? 'en-US' : 'fr-FR')
   return d.toLocaleDateString(loc, { month: 'short' }).toUpperCase()
+}
+
+function getEventTitle(event) {
+  if (!event) return ''
+  const loc = locale.value
+  if (loc !== 'fr' && event.translations && event.translations[loc] && event.translations[loc].title) {
+    return event.translations[loc].title
+  }
+  return event.title
+}
+
+function getEventDescription(event) {
+  if (!event) return ''
+  const loc = locale.value
+  if (loc !== 'fr' && event.translations && event.translations[loc] && event.translations[loc].description) {
+    return event.translations[loc].description
+  }
+  return event.description
 }
 
 function formatTimeRange(startStr, endStr) {
