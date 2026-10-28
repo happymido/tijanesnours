@@ -18,6 +18,22 @@ const routes = [
     ]
   },
   {
+    path: '/teacher',
+    component: () => import('../layouts/TeacherLayout.vue'),
+    meta: { requiresAuth: true, role: 'ROLE_TEACHER' },
+    children: [
+      { path: 'dashboard', name: 'teacher-dashboard', component: () => import('../views/teacher/DashboardView.vue') }
+    ]
+  },
+  {
+    path: '/student',
+    component: () => import('../layouts/StudentLayout.vue'),
+    meta: { requiresAuth: true, role: 'ROLE_STUDENT' },
+    children: [
+      { path: 'dashboard', name: 'student-dashboard', component: () => import('../views/student/DashboardView.vue') }
+    ]
+  },
+  {
     path: '/parent',
     component: () => import('../layouts/ParentLayout.vue'),
     meta: { requiresAuth: true, role: 'ROLE_PARENT' },

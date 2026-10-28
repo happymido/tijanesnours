@@ -33,11 +33,50 @@
           </div>
           <button
             type="submit"
-            class="default-btn w-100 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-md transition-all mt-3"
+            :disabled="authStore.loading"
+            class="default-btn w-100 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-md transition-all mt-3 disabled:opacity-50"
           >
-            <i class="ri-login-box-line me-1"></i> Se connecter
+            <i class="ri-login-box-line me-1"></i>
+            {{ authStore.loading ? 'Connexion en cours...' : 'Se connecter' }}
           </button>
         </form>
+
+        <!-- Comptes de démonstration / Accès Rapide -->
+        <div class="mt-5 pt-4 border-t border-gray-100">
+          <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 text-center">
+            Comptes de test (cliquez pour préremplir)
+          </p>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <button
+              type="button"
+              @click="fillCredentials('mahmoud@tijanesnours.lu', 'teacherpassword123')"
+              class="px-2.5 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-semibold text-left transition-all flex items-center gap-1.5"
+            >
+              <span>👨‍🏫</span> <span>Enseignant</span>
+            </button>
+            <button
+              type="button"
+              @click="fillCredentials('youssef@student.lu', 'studentpassword123')"
+              class="px-2.5 py-1.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 font-semibold text-left transition-all flex items-center gap-1.5"
+            >
+              <span>🎓</span> <span>Élève</span>
+            </button>
+            <button
+              type="button"
+              @click="fillCredentials('parent@tijanesnours.lu', 'parentpassword123')"
+              class="px-2.5 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-800 hover:bg-blue-100 font-semibold text-left transition-all flex items-center gap-1.5"
+            >
+              <span>👨‍👩‍👧</span> <span>Parent</span>
+            </button>
+            <button
+              type="button"
+              @click="fillCredentials('admin@tijanesnours.lu', 'adminpassword123')"
+              class="px-2.5 py-1.5 rounded-lg border border-purple-200 bg-purple-50 text-purple-800 hover:bg-purple-100 font-semibold text-left transition-all flex items-center gap-1.5"
+            >
+              <span>⚡</span> <span>Admin</span>
+            </button>
+          </div>
+        </div>
 
         <div class="mt-4 pt-3 border-top text-center text-xs text-gray-500">
           Vous n'avez pas de compte ? 
@@ -58,15 +97,29 @@ const password = ref('')
 const router = useRouter()
 const authStore = useAuthStore()
 
+function fillCredentials(testEmail, testPassword) {
+  email.value = testEmail
+  password.value = testPassword
+}
+
 async function handleLogin() {
   try {
     await authStore.login(email.value, password.value)
-    if (authStore.isAdmin) router.push('/admin/dashboard')
-    else if (authStore.isPaymentAgent) router.push('/payment-agent/dashboard')
-    else if (authStore.isParent) router.push('/parent/dashboard')
-    else router.push('/')
+    if (authStore.isAdmin) {
+      router.push('/admin/dashboard')
+    } else if (authStore.isPaymentAgent) {
+      router.push('/payment-agent/dashboard')
+    } else if (authStore.isTeacher) {
+      router.push('/teacher/dashboard')
+    } else if (authStore.isParent) {
+      router.push('/parent/dashboard')
+    } else if (authStore.isStudent) {
+      router.push('/student/dashboard')
+    } else {
+      router.push('/')
+    }
   } catch (err) {
-    alert('Identifiants incorrects')
+    alert('Identifiants incorrects. Veuillez vérifier votre adresse email et votre mot de passe.')
   }
 }
 </script>

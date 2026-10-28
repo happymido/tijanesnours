@@ -144,12 +144,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '../../stores/auth.store'
 import apiClient from '../../plugins/axios'
 import { showSuccessAlert, showErrorAlert } from '../../plugins/notify'
 
+const authStore = useAuthStore()
 const activeTab = ref('ATTENDANCE')
-const teacherName = ref('Cheikh Mahmoud')
+const teacherName = computed(() => {
+  if (authStore.user?.email === 'mahmoud@tijanesnours.lu') return 'Cheikh Mahmoud'
+  return authStore.user?.email || 'Enseignant'
+})
 const selectedClass = ref('Classe Débutant 2A')
 const attendanceDate = ref(new Date().toISOString().split('T')[0])
 const saving = ref(false)

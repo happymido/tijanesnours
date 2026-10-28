@@ -354,7 +354,9 @@ function setLang(lang) {
 function goToDashboard() {
   if (authStore.isAdmin) router.push('/admin/dashboard')
   else if (authStore.isPaymentAgent) router.push('/payment-agent/dashboard')
+  else if (authStore.isTeacher) router.push('/teacher/dashboard')
   else if (authStore.isParent) router.push('/parent/dashboard')
+  else if (authStore.isStudent) router.push('/student/dashboard')
   else router.push('/')
 }
 </script>
