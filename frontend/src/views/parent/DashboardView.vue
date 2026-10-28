@@ -40,7 +40,7 @@
           <div class="grid grid-cols-3 gap-3 text-center">
             <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
               <span class="text-[10px] uppercase font-bold text-gray-400">Présence</span>
-              <p class="text-lg font-extrabold text-emerald-600">98%</p>
+              <p class="text-lg font-extrabold" :class="youssefAttendanceRate >= 80 ? 'text-emerald-600' : 'text-red-500'">{{ youssefAttendanceRate }}%</p>
             </div>
             <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
               <span class="text-[10px] uppercase font-bold text-gray-400">Moyenne</span>
@@ -125,11 +125,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import apiClient from '../../plugins/axios'
 import { generateBulletinPdf, generateInvoicePdf } from '../../plugins/pdfGenerator'
 import { showSuccessAlert } from '../../plugins/notify'
 
 const parentName = ref('Karim Benali')
+const youssefAttendanceRate = ref(98)
+
+async function fetchChildrenAttendance() {
+  try {
+    const res = await apiClient.get('/student/attendance?student_id=1')
+    if (res.data?.summary?.rate !== undefined) {
+      youssefAttendanceRate.value = res.data.summary.rate
+    }
+  } catch (err) {
+    console.error('Erreur assiduité enfant:', err)
+  }
+}
 
 function downloadBulletin(childName, className) {
   generateBulletinPdf(childName, className)
@@ -145,4 +158,8 @@ function copyRef() {
   navigator.clipboard.writeText('RF12-2026-0042-89')
   showSuccessAlert('Référence Copiée', 'La référence de virement bancaire RF12-2026-0042-89 a été copiée dans le presse-papier !')
 }
+
+onMounted(() => {
+  fetchChildrenAttendance()
+})
 </script>

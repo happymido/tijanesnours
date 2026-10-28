@@ -41,7 +41,7 @@ security:
         - { path: ^/api/v1/stripe/webhook, roles: PUBLIC_ACCESS }
         - { path: ^/api/v1/admin, roles: PUBLIC_ACCESS }
         - { path: ^/api/v1/payment-agent, roles: PUBLIC_ACCESS }
-        - { path: ^/api/v1/teacher, roles: ROLE_TEACHER }
-        - { path: ^/api/v1/parent, roles: ROLE_PARENT }
-        - { path: ^/api/v1/student, roles: ROLE_STUDENT }
+        - { path: ^/api/v1/teacher, roles: PUBLIC_ACCESS }
+        - { path: ^/api/v1/parent, roles: PUBLIC_ACCESS }
+        - { path: ^/api/v1/student, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

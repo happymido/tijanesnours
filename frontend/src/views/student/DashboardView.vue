@@ -17,7 +17,7 @@
       <div class="flex items-center gap-3">
         <div class="p-3 bg-white/10 backdrop-blur-md rounded-2xl text-center border border-white/20">
           <span class="text-[10px] uppercase font-bold text-amber-200 block">Classe</span>
-          <strong class="text-sm sm:text-base font-extrabold">{{ className }}</strong>
+          <strong class="text-sm sm:text-base font-extrabold">{{ currentClassName }}</strong>
         </div>
         <div class="p-3 bg-white/10 backdrop-blur-md rounded-2xl text-center border border-white/20">
           <span class="text-[10px] uppercase font-bold text-amber-200 block">Enseignant</span>
@@ -26,15 +26,22 @@
       </div>
     </div>
 
-    <!-- Quick Stats Cards -->
+    <!-- Quick Stats Cards (Connected to Database) -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
         <div class="flex items-center justify-between text-gray-400 mb-2">
-          <span class="text-xs font-bold uppercase tracking-wider">Assiduité</span>
+          <span class="text-xs font-bold uppercase tracking-wider">Taux d'Assiduité</span>
           <span class="text-lg">📅</span>
         </div>
-        <p class="text-2xl font-black text-emerald-600">98%</p>
-        <span class="text-[11px] text-gray-400">Présent & Ponctuel</span>
+        <p
+          class="text-2xl font-black"
+          :class="attendanceSummary.rate >= 80 ? 'text-emerald-600' : 'text-red-500'"
+        >
+          {{ attendanceSummary.rate }}%
+        </p>
+        <span class="text-[11px]" :class="attendanceSummary.absences > 0 ? 'text-red-500 font-bold' : 'text-gray-400'">
+          {{ attendanceSummary.absences }} absence(s) comptabilisée(s)
+        </span>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
@@ -52,7 +59,7 @@
           <span class="text-lg">📖</span>
         </div>
         <p class="text-2xl font-black text-amber-500">12 Sourates</p>
-        <span class="text-[11px] text-gray-400">Juz' Amma validé à 35%</span>
+        <span class="text-[11px] text-gray-400">Juz' Amma validé</span>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
@@ -65,29 +72,138 @@
       </div>
     </div>
 
+    <!-- Alert if there are absences registered by the teacher -->
+    <div
+      v-if="attendanceSummary.absences > 0"
+      class="p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-2xl flex items-start sm:items-center justify-between gap-4"
+    >
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">⚠️</span>
+        <div>
+          <h4 class="font-bold text-red-900 dark:text-red-200 text-sm">
+            Vous avez {{ attendanceSummary.absences }} absence(s) enregistrée(s) par l'enseignant
+          </h4>
+          <p class="text-xs text-red-700 dark:text-red-300">
+            Dernière séance marquée : {{ latestAbsence?.formattedDate }}
+            <span v-if="latestAbsence?.justification"> (Motif : {{ latestAbsence.justification }})</span>
+          </p>
+        </div>
+      </div>
+      <button
+        @click="activeTab = 'ATTENDANCE'"
+        class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition-all shrink-0"
+      >
+        Voir le Registre
+      </button>
+    </div>
+
     <!-- Navigation Tabs -->
     <div class="flex border-b border-gray-200 dark:border-gray-700 text-xs font-bold gap-6">
       <button
+        @click="activeTab = 'ATTENDANCE'"
+        :class="activeTab === 'ATTENDANCE' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 pb-3 font-extrabold' : 'text-gray-500 pb-3'"
+      >
+        📋 Mon Assiduité & Registre des Absences ({{ attendanceHistory.length }})
+      </button>
+      <button
         @click="activeTab = 'SCHEDULE'"
-        :class="activeTab === 'SCHEDULE' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 pb-3' : 'text-gray-500 pb-3'"
+        :class="activeTab === 'SCHEDULE' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 pb-3 font-extrabold' : 'text-gray-500 pb-3'"
       >
         🕒 Mon Emploi du Temps du Samedi
       </button>
       <button
         @click="activeTab = 'TAJWID'"
-        :class="activeTab === 'TAJWID' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 pb-3' : 'text-gray-500 pb-3'"
+        :class="activeTab === 'TAJWID' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 pb-3 font-extrabold' : 'text-gray-500 pb-3'"
       >
         📖 Suivi Sourates & Tajwid
       </button>
       <button
         @click="activeTab = 'DOCUMENTS'"
-        :class="activeTab === 'DOCUMENTS' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 pb-3' : 'text-gray-500 pb-3'"
+        :class="activeTab === 'DOCUMENTS' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 pb-3 font-extrabold' : 'text-gray-500 pb-3'"
       >
         📄 Mes Bulletins & Attestations
       </button>
     </div>
 
-    <!-- TAB 1: Emploi du Temps -->
+    <!-- TAB 1: Assiduité & Absences (Directly synced with Teacher and DB) -->
+    <div v-if="activeTab === 'ATTENDANCE'" class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4 dark:border-gray-700">
+          <div>
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white">Registre Officiel d'Assiduité</h3>
+            <p class="text-xs text-gray-500">
+              Historique des séances émargées par Cheikh Mahmoud. Toute mise à jour de l'enseignant est répercutée en direct ici.
+            </p>
+          </div>
+          <button
+            @click="fetchAttendance"
+            class="px-3 py-1.5 rounded-xl border bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto"
+          >
+            <span>🔄</span> Actualiser
+          </button>
+        </div>
+
+        <!-- Breakdown counters -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl text-center">
+            <span class="text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-300 block">Présences</span>
+            <p class="text-xl font-extrabold text-emerald-600">{{ attendanceSummary.presents }}</p>
+          </div>
+          <div class="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-2xl text-center">
+            <span class="text-[10px] uppercase font-bold text-red-800 dark:text-red-300 block">Absences</span>
+            <p class="text-xl font-extrabold text-red-600">{{ attendanceSummary.absences }}</p>
+          </div>
+          <div class="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl text-center">
+            <span class="text-[10px] uppercase font-bold text-amber-800 dark:text-amber-300 block">Retards</span>
+            <p class="text-xl font-extrabold text-amber-600">{{ attendanceSummary.lates }}</p>
+          </div>
+        </div>
+
+        <div v-if="loadingAttendance" class="py-8 text-center text-xs font-bold text-gray-400">
+          Chargement de votre registre d'émargement...
+        </div>
+
+        <div v-else-if="attendanceHistory.length === 0" class="py-8 text-center text-xs font-bold text-gray-400">
+          Aucun cours n'a encore été émargé pour votre profil. Les présences saisies par votre enseignant apparaîtront ici.
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 uppercase font-semibold">
+              <tr>
+                <th class="py-3 px-4">Date de la Séance</th>
+                <th class="py-3 px-4">Classe & Cours</th>
+                <th class="py-3 px-4">Statut</th>
+                <th class="py-3 px-4">Motif / Justification</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+              <tr v-for="rec in attendanceHistory" :key="rec.id">
+                <td class="py-3.5 px-4 font-bold text-gray-900 dark:text-white">{{ rec.formattedDate }}</td>
+                <td class="py-3.5 px-4 text-gray-600 dark:text-gray-300">{{ rec.className || currentClassName }}</td>
+                <td class="py-3.5 px-4">
+                  <span
+                    class="px-2.5 py-1 rounded-full text-[10px] font-bold"
+                    :class="{
+                      'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300': rec.status === 'PRESENT',
+                      'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300': rec.status === 'ABSENT',
+                      'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300': rec.status === 'LATE'
+                    }"
+                  >
+                    {{ rec.status === 'PRESENT' ? '🟢 Présent' : (rec.status === 'ABSENT' ? '🔴 Absent' : '🟡 Retard') }}
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-gray-500">
+                  {{ rec.justification || '—' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Emploi du Temps -->
     <div v-if="activeTab === 'SCHEDULE'" class="space-y-6">
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
         <div class="flex items-center justify-between border-b pb-4 mb-4 dark:border-gray-700">
@@ -124,7 +240,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: Suivi Sourates & Tajwid -->
+    <!-- TAB 3: Suivi Sourates & Tajwid -->
     <div v-if="activeTab === 'TAJWID'" class="space-y-6">
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
         <div class="flex items-center justify-between border-b pb-4 mb-4 dark:border-gray-700">
@@ -159,7 +275,7 @@
       </div>
     </div>
 
-    <!-- TAB 3: Bulletins & Documents -->
+    <!-- TAB 4: Bulletins & Documents -->
     <div v-if="activeTab === 'DOCUMENTS'" class="space-y-6">
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
         <div class="border-b pb-4 mb-4 dark:border-gray-700">
@@ -210,13 +326,18 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/auth.store'
+import apiClient from '../../plugins/axios'
 import { showSuccessAlert } from '../../plugins/notify'
 
 const authStore = useAuthStore()
 
-const activeTab = ref('SCHEDULE')
+const activeTab = ref('ATTENDANCE')
+const loadingAttendance = ref(false)
+
+const currentClassName = ref('Classe Débutant 2A (6-8 ans)')
+const teacherName = ref('Cheikh Mahmoud')
 
 const studentName = computed(() => {
   if (authStore.user?.email === 'youssef@student.lu') return 'Youssef Benali'
@@ -224,8 +345,40 @@ const studentName = computed(() => {
   return authStore.user?.email?.split('@')[0] || 'Élève'
 })
 
-const className = ref('Classe Débutant 2A (6-8 ans)')
-const teacherName = ref('Cheikh Mahmoud')
+const attendanceSummary = ref({
+  totalSessions: 0,
+  presents: 0,
+  absences: 0,
+  lates: 0,
+  rate: 100.0
+})
+
+const attendanceHistory = ref([])
+
+const latestAbsence = computed(() => {
+  return attendanceHistory.value.find(a => a.status === 'ABSENT') || null
+})
+
+async function fetchAttendance() {
+  loadingAttendance.value = true
+  try {
+    const res = await apiClient.get('/student/attendance', {
+      params: {
+        email: authStore.user?.email
+      }
+    })
+
+    if (res.data) {
+      if (res.data.className) currentClassName.value = res.data.className
+      if (res.data.summary) attendanceSummary.value = res.data.summary
+      if (Array.isArray(res.data.history)) attendanceHistory.value = res.data.history
+    }
+  } catch (err) {
+    console.error('Erreur chargement assiduité élève:', err)
+  } finally {
+    loadingAttendance.value = false
+  }
+}
 
 const scheduleSessions = ref([
   {
@@ -281,4 +434,8 @@ function downloadDocument(docTitle) {
     `Votre <strong>${docTitle}</strong> pour <strong>${studentName.value}</strong> a été généré et est en cours de téléchargement.`
   )
 }
+
+onMounted(() => {
+  fetchAttendance()
+})
 </script>
