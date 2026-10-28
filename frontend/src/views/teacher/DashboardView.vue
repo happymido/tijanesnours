@@ -227,12 +227,7 @@ const attendanceDate = ref(new Date().toISOString().split('T')[0])
 const saving = ref(false)
 const loadingAttendance = ref(false)
 
-const assignedClasses = ref([
-  { id: 100, name: 'Classe Débutant 2A (6-8 ans)', schedule: 'Samedi 09:00 - 12:00' },
-  { id: 101, name: 'Classe Éveil 1 (4-5 ans)', schedule: 'Samedi 09:00 - 12:00' },
-  { id: 1, name: 'PREP1-SAM-M', schedule: 'Samedi 09:00 - 12:00' },
-  { id: 2, name: 'PREP2-SAM-AM', schedule: 'Samedi 09:00 - 12:00' }
-])
+const assignedClasses = ref([])
 
 const studentsList = ref([])
 

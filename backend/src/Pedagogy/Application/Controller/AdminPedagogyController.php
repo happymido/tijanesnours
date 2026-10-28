@@ -26,10 +26,21 @@ class AdminPedagogyController extends AbstractController
 
         foreach ($grades as $g) {
             $student = $g->getStudent();
+            $classroomName = 'Classe Débutant 2A (6-8 ans)';
+            if ($student) {
+                $firstClass = $student->getSchoolClasses()->first();
+                if ($firstClass) {
+                    $classroomName = $firstClass->getName();
+                } elseif ($student->getAssignedGroup()) {
+                    $classroomName = $student->getAssignedGroup();
+                }
+            }
+
             $data[] = [
                 'id' => $g->getId(),
                 'studentId' => $student?->getId(),
                 'student' => $student ? ($student->getFirstName() . ' ' . $student->getLastName()) : 'Élève Inconnu',
+                'classroom' => $classroomName,
                 'title' => $g->getTitle(),
                 'subject' => str_contains(strtolower($g->getTitle() ?? ''), 'arabe') ? 'Langue Arabe' : 'Coran & Tajwid',
                 'date' => $g->getExamDate()?->format('d/m/Y') ?? 'Récemment',

@@ -1378,37 +1378,11 @@ async function openRoster(cls) {
       }
     }
 
-    if (loadedStudents.length > 0) {
-      currentRosterStudents.value = loadedStudents
-      cls.currentEnrolled = loadedStudents.length
-    } else {
-      if (cls.id === 1 || cls.name.includes('Éveil')) {
-        currentRosterStudents.value = [
-          { id: 'student_3', dbId: 3, name: 'Aya Ghribi', dateOfBirth: '22/07/2018', parentId: 'parent_2', parentName: 'Mohamed Ghribi', contact: '+352661444412', status: 'INSCRIT' }
-        ]
-        cls.currentEnrolled = 1
-      } else {
-        currentRosterStudents.value = [
-          { id: 'student_1', dbId: 1, name: 'Youssef Benali', dateOfBirth: '12/05/2018', parentId: 'parent_1', parentName: 'Karim Benali', contact: '+352 691 123 456', status: 'INSCRIT' },
-          { id: 'student_2', dbId: 2, name: 'Hiba Ghribi', dateOfBirth: '22/07/2018', parentId: 'parent_2', parentName: 'Mohamed Ghribi', contact: '+352661444412', status: 'INSCRIT' }
-        ]
-        cls.currentEnrolled = 2
-      }
-    }
+    currentRosterStudents.value = loadedStudents
+    cls.currentEnrolled = loadedStudents.length
   } catch (err) {
     console.error('Erreur chargement effectif classe:', err)
-    if (cls.id === 1 || cls.name.includes('Éveil')) {
-      currentRosterStudents.value = [
-        { id: 'student_3', dbId: 3, name: 'Aya Ghribi', dateOfBirth: '22/07/2018', parentId: 'parent_2', parentName: 'Mohamed Ghribi', contact: '+352661444412', status: 'INSCRIT' }
-      ]
-      cls.currentEnrolled = 1
-    } else {
-      currentRosterStudents.value = [
-        { id: 'student_1', dbId: 1, name: 'Youssef Benali', dateOfBirth: '12/05/2018', parentId: 'parent_1', parentName: 'Karim Benali', contact: '+352 691 123 456', status: 'INSCRIT' },
-        { id: 'student_2', dbId: 2, name: 'Hiba Ghribi', dateOfBirth: '22/07/2018', parentId: 'parent_2', parentName: 'Mohamed Ghribi', contact: '+352661444412', status: 'INSCRIT' }
-      ]
-      cls.currentEnrolled = 2
-    }
+    currentRosterStudents.value = []
   } finally {
     loadingRoster.value = false
   }

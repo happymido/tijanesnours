@@ -21,51 +21,22 @@ class TeacherPedagogyController extends AbstractController
     public function getTeacherClasses(EntityManagerInterface $em): JsonResponse
     {
         $classes = $em->getRepository(SchoolClass::class)->findAll();
+        $allStudents = $em->getRepository(Student::class)->findAll();
         $data = [];
 
-        if (!empty($classes)) {
-            foreach ($classes as $c) {
-                $studentsCount = 0;
-                $allStudents = $em->getRepository(Student::class)->findAll();
-                foreach ($allStudents as $st) {
-                    if ($st->getAssignedGroup() === $c->getName() || $st->getSchoolClasses()->contains($c)) {
-                        $studentsCount++;
-                    }
-                }
-                $data[] = [
-                    'id' => $c->getId(),
-                    'name' => $c->getName(),
-                    'schedule' => 'Samedi 09:00 - 12:00',
-                    'studentsCount' => $studentsCount
-                ];
-            }
-        }
-
-        // Add standard groups if missing
-        $defaultGroups = [
-            'Classe Débutant 2A (6-8 ans)',
-            'Classe Éveil 1 (4-5 ans)',
-            'Classe Préparatoire 1',
-            'Classe Principal 3'
-        ];
-
-        foreach ($defaultGroups as $idx => $groupName) {
-            $exists = false;
-            foreach ($data as $d) {
-                if ($d['name'] === $groupName) {
-                    $exists = true;
-                    break;
+        foreach ($classes as $c) {
+            $studentsCount = 0;
+            foreach ($allStudents as $st) {
+                if ($st->getSchoolClasses()->contains($c) || $st->getAssignedGroup() === $c->getName()) {
+                    $studentsCount++;
                 }
             }
-            if (!$exists) {
-                $studentsCount = $em->getRepository(Student::class)->count(['assignedGroup' => $groupName]);
-                $data[] = [
-                    'id' => 100 + $idx,
-                    'name' => $groupName,
-                    'schedule' => 'Samedi 09:00 - 12:00',
-                    'studentsCount' => $studentsCount > 0 ? $studentsCount : 2
-                ];
-            }
+            $data[] = [
+                'id' => $c->getId(),
+                'name' => $c->getName(),
+                'schedule' => $c->getScheduleSlot() ? $c->getScheduleSlot()->getName() : 'Samedi 09:00 - 12:00',
+                'studentsCount' => $studentsCount
+            ];
         }
 
         return $this->json($data);
@@ -75,6 +46,7 @@ class TeacherPedagogyController extends AbstractController
     public function getAttendanceSheet(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $className = $request->query->get('class_name', 'Classe Débutant 2A (6-8 ans)');
+        $classId = $request->query->get('class_id');
         $dateStr = $request->query->get('date', (new \DateTimeImmutable())->format('Y-m-d'));
 
         try {
@@ -83,27 +55,43 @@ class TeacherPedagogyController extends AbstractController
             $date = new \DateTimeImmutable();
         }
 
-        // 1. Récupérer tous les élèves correspondant à cette classe
+        // 1. Récupérer la classe ciblée
+        $targetClass = null;
+        if ($classId) {
+            $targetClass = $em->getRepository(SchoolClass::class)->find((int)$classId);
+        }
+        if (!$targetClass && $className) {
+            $targetClass = $em->getRepository(SchoolClass::class)->findOneBy(['name' => $className]);
+        }
+
+        // 2. Récupérer uniquement les élèves STRICTEMENT inscrits dans cette classe
         $allStudents = $em->getRepository(Student::class)->findAll();
         $matchingStudents = [];
 
         foreach ($allStudents as $st) {
-            $assigned = $st->getAssignedGroup();
-            // Match exactly or loosely
-            if (
-                $assigned === $className ||
-                str_contains(strtolower($assigned ?? ''), strtolower(explode('(', $className)[0])) ||
-                str_contains(strtolower($className), strtolower($assigned ?? ''))
-            ) {
+            $isEnrolled = false;
+
+            if ($targetClass && $st->getSchoolClasses()->contains($targetClass)) {
+                $isEnrolled = true;
+            } elseif ($className) {
+                $assigned = $st->getAssignedGroup();
+                if ($assigned) {
+                    $assignedList = array_map('trim', explode(',', $assigned));
+                    foreach ($assignedList as $item) {
+                        if (strcasecmp($item, $className) === 0) {
+                            $isEnrolled = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ($isEnrolled) {
                 $matchingStudents[] = $st;
             }
         }
 
-        // Si aucun élève n'est encore assigné à cette classe, proposer tous les élèves disponibles
-        if (empty($matchingStudents)) {
-            $matchingStudents = $allStudents;
-        }
-
+        // Pas de fallback sur tous les élèves ! Si aucun élève n'est inscrit, la liste reste vide.
         $attRepo = $em->getRepository(Attendance::class);
         $result = [];
 

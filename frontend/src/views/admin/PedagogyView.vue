@@ -414,6 +414,7 @@ const savingGrade = ref(false)
 const savingAttendance = ref(false)
 
 const studentsOptions = ref([])
+const configuredClasses = ref([])
 const gradesList = ref([])
 const attendanceList = ref([])
 const bulletinsList = ref([])
@@ -448,14 +449,23 @@ const newGrade = ref({
 
 const classFilterOptions = computed(() => {
   const set = new Set()
-  studentsOptions.value.forEach(s => {
-    if (s.assignedGroup) set.add(s.assignedGroup)
-  })
-  if (set.size === 0) {
-    set.add('Classe Débutant 2A (6-8 ans)')
-    set.add('Classe Éveil 1 (4-5 ans)')
+  if (Array.isArray(configuredClasses.value)) {
+    configuredClasses.value.forEach(c => {
+      if (c && c.name) set.add(c.name)
+    })
   }
-  return Array.from(set)
+  studentsOptions.value.forEach(s => {
+    if (s.assignedGroup) {
+      s.assignedGroup.split(',').forEach(p => {
+        const trimmed = p.trim()
+        if (trimmed) set.add(trimmed)
+      })
+    }
+  })
+  attendanceList.value.forEach(a => {
+    if (a.classroom) set.add(a.classroom)
+  })
+  return Array.from(set).sort()
 })
 
 const filteredGrades = computed(() => {
@@ -491,12 +501,17 @@ const filteredAttendances = computed(() => {
 async function fetchPedagogyData() {
   loading.value = true
   try {
-    const [studentsRes, gradesRes, bulletinsRes, attRes] = await Promise.all([
+    const [studentsRes, gradesRes, bulletinsRes, attRes, classesRes] = await Promise.all([
       apiClient.get('/admin/students').catch(() => ({ data: [] })),
       apiClient.get('/admin/pedagogy/grades').catch(() => ({ data: [] })),
       apiClient.get('/admin/pedagogy/bulletins').catch(() => ({ data: [] })),
-      apiClient.get('/admin/pedagogy/attendance').catch(() => ({ data: {} }))
+      apiClient.get('/admin/pedagogy/attendance').catch(() => ({ data: {} })),
+      apiClient.get('/admin/classes').catch(() => ({ data: { classes: [] } }))
     ])
+
+    if (classesRes.data && Array.isArray(classesRes.data.classes)) {
+      configuredClasses.value = classesRes.data.classes
+    }
 
     if (Array.isArray(studentsRes.data)) {
       studentsOptions.value = studentsRes.data.filter(u => u.role === 'ROLE_STUDENT' || !u.role)

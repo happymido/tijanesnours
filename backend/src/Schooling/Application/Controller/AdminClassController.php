@@ -62,19 +62,17 @@ class AdminClassController extends AbstractController
         $allStudents = $em->getRepository(Student::class)->findAll();
 
         foreach ($classes as $c) {
-            $cName = strtolower(trim(preg_replace('/\([^)]*\)/', '', $c->getName())));
             $enrolledCount = 0;
 
             foreach ($allStudents as $st) {
                 if ($st->getSchoolClasses()->contains($c)) {
                     $enrolledCount++;
                 } else {
-                    $group = strtolower(trim($st->getAssignedGroup() ?? ''));
+                    $group = trim($st->getAssignedGroup() ?? '');
                     if (!empty($group)) {
                         $assignedList = array_map('trim', explode(',', $group));
                         foreach ($assignedList as $assignedItem) {
-                            $cleanAssigned = strtolower(trim(preg_replace('/\([^)]*\)/', '', $assignedItem)));
-                            if (!empty($cleanAssigned) && (str_contains($cleanAssigned, $cName) || str_contains($cName, $cleanAssigned))) {
+                            if (strcasecmp($assignedItem, $c->getName()) === 0) {
                                 $enrolledCount++;
                                 $st->addSchoolClass($c);
                                 break;
@@ -875,6 +873,61 @@ class AdminClassController extends AbstractController
                 'status' => $att->getStatus(),
                 'notes' => $att->getNotes()
             ]
+        ]);
+    }
+
+    #[Route('/{id}/students', name: 'class_students', methods: ['GET'])]
+    public function getClassStudents(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $class = $em->getRepository(SchoolClass::class)->find($id);
+        if (!$class) {
+            return $this->json(['error' => 'Classe introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        $allStudents = $em->getRepository(Student::class)->findAll();
+        $classStudents = [];
+
+        foreach ($allStudents as $st) {
+            $isEnrolled = $st->getSchoolClasses()->contains($class);
+            if (!$isEnrolled) {
+                $group = trim($st->getAssignedGroup() ?? '');
+                if (!empty($group)) {
+                    $assignedList = array_map('trim', explode(',', $group));
+                    foreach ($assignedList as $item) {
+                        if (strcasecmp($item, $class->getName()) === 0) {
+                            $isEnrolled = true;
+                            $st->addSchoolClass($class);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ($isEnrolled) {
+                $parent = $st->getParent();
+                $parentName = $parent ? ($parent->getFullName() ?: 'Parent Non Renseigné') : 'Parent Non Renseigné';
+                $parentPhone = $parent ? ($parent->getPhone() ?? '') : '';
+                $parentId = $parent ? ('parent_' . $parent->getId()) : null;
+
+                $classStudents[] = [
+                    'id' => 'student_' . $st->getId(),
+                    'dbId' => $st->getId(),
+                    'name' => trim($st->getFirstName() . ' ' . $st->getLastName()),
+                    'dateOfBirth' => $st->getDateOfBirth() ? $st->getDateOfBirth()->format('d/m/Y') : 'Non renseigné',
+                    'parentId' => $parentId,
+                    'parentName' => $parentName,
+                    'contact' => $parentPhone ?: ($st->getPhone() ?? ''),
+                    'status' => 'INSCRIT'
+                ];
+            }
+        }
+        $em->flush();
+
+        return $this->json([
+            'classId' => $class->getId(),
+            'className' => $class->getName(),
+            'total' => count($classStudents),
+            'students' => $classStudents
         ]);
     }
 }
