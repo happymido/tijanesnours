@@ -5,6 +5,9 @@ namespace App\Pedagogy\Application\Controller;
 use App\IdentityAccess\Domain\Entity\Student;
 use App\IdentityAccess\Domain\Entity\Teacher;
 use App\Pedagogy\Domain\Entity\Attendance;
+use App\Pedagogy\Domain\Entity\Bulletin;
+use App\Pedagogy\Domain\Entity\PedagogicalSubject;
+use App\Pedagogy\Domain\Entity\PedagogicalSkill;
 use App\Schooling\Domain\Entity\SchoolClass;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -228,5 +231,192 @@ class TeacherPedagogyController extends AbstractController
                 'lates' => $latesCount
             ]
         ], Response::HTTP_OK);
+    }
+
+    #[Route('/evaluations', name: 'evaluations_get', methods: ['GET'])]
+    public function getEvaluations(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $className = $request->query->get('class_name', 'Classe Débutant 2A (6-8 ans)');
+        $classId = $request->query->get('class_id');
+        $term = $request->query->get('term', 'Trimestre 1');
+        $schoolYear = $request->query->get('school_year', '2026-2027');
+
+        // 1. Récupérer la classe
+        $targetClass = null;
+        if ($classId) {
+            $targetClass = $em->getRepository(SchoolClass::class)->find((int)$classId);
+        }
+        if (!$targetClass && $className) {
+            $targetClass = $em->getRepository(SchoolClass::class)->findOneBy(['name' => $className]);
+        }
+
+        // 2. Récupérer les élèves de la classe
+        $allStudents = $em->getRepository(Student::class)->findAll();
+        $matchingStudents = [];
+
+        foreach ($allStudents as $st) {
+            $isEnrolled = false;
+            if ($targetClass && $st->getSchoolClasses()->contains($targetClass)) {
+                $isEnrolled = true;
+            } elseif ($className) {
+                $assigned = $st->getAssignedGroup();
+                if ($assigned) {
+                    $parts = array_map('trim', explode(',', $assigned));
+                    foreach ($parts as $p) {
+                        if (strcasecmp($p, $className) === 0) {
+                            $isEnrolled = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ($isEnrolled) {
+                $matchingStudents[] = $st;
+            }
+        }
+
+        // 3. Récupérer les matières et compétences actives
+        $subjects = $em->getRepository(PedagogicalSubject::class)->findBy(['isActive' => true], ['orderIndex' => 'ASC', 'id' => 'ASC']);
+        $curriculum = [];
+        $allSkillIds = [];
+        foreach ($subjects as $s) {
+            $skillsList = [];
+            foreach ($s->getSkills() as $sk) {
+                if ($sk->isActive()) {
+                    $skillsList[] = [
+                        'id' => $sk->getId(),
+                        'name' => $sk->getName(),
+                        'code' => $sk->getCode(),
+                        'orderIndex' => $sk->getOrderIndex()
+                    ];
+                    $allSkillIds[] = $sk->getId();
+                }
+            }
+            $curriculum[] = [
+                'id' => $s->getId(),
+                'name' => $s->getName(),
+                'code' => $s->getCode(),
+                'icon' => $s->getIcon(),
+                'orderIndex' => $s->getOrderIndex(),
+                'skills' => $skillsList
+            ];
+        }
+
+        // 4. Récupérer les bulletins existants pour chaque élève
+        $bulletinRepo = $em->getRepository(Bulletin::class);
+        $studentsData = [];
+
+        foreach ($matchingStudents as $st) {
+            $bulletin = $bulletinRepo->findOneBy([
+                'student' => $st,
+                'term' => $term,
+                'schoolYear' => $schoolYear
+            ]);
+
+            $ratings = $bulletin ? ($bulletin->getRatings() ?? []) : [];
+            // Si vide, initialiser avec 5 étoiles par défaut pour chaque compétence
+            if (empty($ratings)) {
+                foreach ($allSkillIds as $skId) {
+                    $ratings[$skId] = 5;
+                }
+            }
+
+            $studentsData[] = [
+                'id' => $st->getId(),
+                'name' => trim($st->getFirstName() . ' ' . $st->getLastName()),
+                'ratings' => $ratings,
+                'averageStars' => $bulletin ? number_format((float)$bulletin->getAverageStars(), 1, '.', '') : '5.0',
+                'teacherRemarks' => $bulletin ? ($bulletin->getTeacherRemarks() ?? '') : ''
+            ];
+        }
+
+        return $this->json([
+            'className' => $className,
+            'term' => $term,
+            'schoolYear' => $schoolYear,
+            'curriculum' => $curriculum,
+            'students' => $studentsData
+        ]);
+    }
+
+    #[Route('/evaluations', name: 'evaluations_save', methods: ['POST'])]
+    public function saveEvaluations(Request $request, EntityManagerInterface $em, LoggerInterface $logger): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $className = $payload['className'] ?? '';
+        $term = $payload['term'] ?? 'Trimestre 1';
+        $schoolYear = $payload['schoolYear'] ?? '2026-2027';
+        $evaluations = $payload['evaluations'] ?? [];
+
+        if (empty($evaluations) || !is_array($evaluations)) {
+            return $this->json(['error' => 'Aucune donnée d\'évaluation fournie.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $studentRepo = $em->getRepository(Student::class);
+        $bulletinRepo = $em->getRepository(Bulletin::class);
+        $teacher = $em->getRepository(Teacher::class)->findOneBy([]);
+
+        $savedCount = 0;
+        foreach ($evaluations as $item) {
+            $studentId = $item['studentId'] ?? $item['id'] ?? null;
+            if (!$studentId) continue;
+
+            $student = $studentRepo->find($studentId);
+            if (!$student) continue;
+
+            $bulletin = $bulletinRepo->findOneBy([
+                'student' => $student,
+                'term' => $term,
+                'schoolYear' => $schoolYear
+            ]);
+
+            if (!$bulletin) {
+                $bulletin = new Bulletin();
+                $bulletin->setStudent($student);
+                $bulletin->setTerm($term);
+                $bulletin->setSchoolYear($schoolYear);
+            }
+
+            if ($teacher) {
+                $bulletin->setTeacher($teacher);
+            }
+
+            $ratings = $item['ratings'] ?? [];
+            $remarks = $item['teacherRemarks'] ?? ($item['remarks'] ?? '');
+
+            $starValues = array_values($ratings);
+            $avg = 5.00;
+            if (!empty($starValues)) {
+                $validStars = array_filter($starValues, fn($v) => is_numeric($v));
+                if (!empty($validStars)) {
+                    $avg = round(array_sum($validStars) / count($validStars), 2);
+                }
+            }
+
+            $bulletin->setRatings($ratings);
+            $bulletin->setAverageStars((string)$avg);
+            $bulletin->setTeacherRemarks($remarks);
+            $bulletin->setUpdatedAt(new \DateTimeImmutable());
+
+            $em->persist($bulletin);
+            $savedCount++;
+        }
+
+        $em->flush();
+
+        $logger->info("Évaluations trimestrielles enregistrées par l'enseignant", [
+            'class' => $className,
+            'term' => $term,
+            'total' => $savedCount
+        ]);
+
+        return $this->json([
+            'success' => true,
+            'message' => "Évaluations trimestrielles enregistrées avec succès en base de données pour {$savedCount} élève(s) !",
+            'term' => $term,
+            'className' => $className,
+            'savedCount' => $savedCount
+        ]);
     }
 }

@@ -5,6 +5,9 @@ namespace App\Pedagogy\Application\Controller;
 use App\IdentityAccess\Domain\Entity\Student;
 use App\IdentityAccess\Domain\Entity\User;
 use App\Pedagogy\Domain\Entity\Attendance;
+use App\Pedagogy\Domain\Entity\Bulletin;
+use App\Pedagogy\Domain\Entity\PedagogicalSubject;
+use App\Pedagogy\Domain\Entity\PedagogicalSkill;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -116,6 +119,99 @@ class StudentPedagogyController extends AbstractController
                 'rate' => $rate
             ],
             'history' => $history
+        ]);
+    }
+
+    #[Route('/evaluations', name: 'evaluations', methods: ['GET'])]
+    public function getStudentEvaluations(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $studentRepo = $em->getRepository(Student::class);
+        $student = null;
+
+        // 1. Utilisateur connecté
+        $user = $this->getUser();
+        if ($user instanceof User) {
+            $student = $studentRepo->findOneBy(['user' => $user]);
+        }
+
+        // 2. Paramètre student_id (utilisé pour les parents ou l'admin)
+        $studentId = $request->query->get('student_id');
+        if ($studentId) {
+            $student = $studentRepo->find($studentId);
+        }
+
+        // 3. Fallback sur le premier élève
+        if (!$student) {
+            $students = $studentRepo->findAll();
+            $student = $students[0] ?? null;
+        }
+
+        if (!$student) {
+            return $this->json([
+                'student' => 'Élève',
+                'className' => 'Classe Débutant 2A (6-8 ans)',
+                'curriculum' => [],
+                'evaluations' => []
+            ]);
+        }
+
+        // 4. Charger le référentiel des matières et compétences actives
+        $subjects = $em->getRepository(PedagogicalSubject::class)->findBy(['isActive' => true], ['orderIndex' => 'ASC', 'id' => 'ASC']);
+        $curriculum = [];
+        foreach ($subjects as $s) {
+            $skills = [];
+            foreach ($s->getSkills() as $sk) {
+                if ($sk->isActive()) {
+                    $skills[] = [
+                        'id' => $sk->getId(),
+                        'name' => $sk->getName(),
+                        'code' => $sk->getCode(),
+                        'orderIndex' => $sk->getOrderIndex()
+                    ];
+                }
+            }
+            $curriculum[] = [
+                'id' => $s->getId(),
+                'name' => $s->getName(),
+                'code' => $s->getCode(),
+                'icon' => $s->getIcon(),
+                'orderIndex' => $s->getOrderIndex(),
+                'skills' => $skills
+            ];
+        }
+
+        // 5. Charger tous les bulletins de cet élève
+        $bulletinRepo = $em->getRepository(Bulletin::class);
+        $bulletins = $bulletinRepo->findBy(['student' => $student], ['id' => 'DESC']);
+
+        $evaluations = [];
+        foreach ($bulletins as $b) {
+            $evaluations[] = [
+                'id' => $b->getId(),
+                'term' => $b->getTerm(),
+                'schoolYear' => $b->getSchoolYear(),
+                'ratings' => $b->getRatings() ?? [],
+                'averageStars' => number_format((float)$b->getAverageStars(), 1, '.', ''),
+                'teacherRemarks' => $b->getTeacherRemarks() ?? 'Élève assidu et travail régulier.',
+                'teacherName' => $b->getTeacher()?->getFullName() ?? 'Cheikh Mahmoud',
+                'updatedAt' => $b->getUpdatedAt()?->format('d/m/Y') ?? $b->getGeneratedAt()->format('d/m/Y')
+            ];
+        }
+
+        $classroomName = 'Classe Débutant 2A (6-8 ans)';
+        $firstClass = $student->getSchoolClasses()->first();
+        if ($firstClass) {
+            $classroomName = $firstClass->getName();
+        } elseif ($student->getAssignedGroup()) {
+            $classroomName = $student->getAssignedGroup();
+        }
+
+        return $this->json([
+            'studentId' => $student->getId(),
+            'student' => $student->getFirstName() . ' ' . $student->getLastName(),
+            'className' => $classroomName,
+            'curriculum' => $curriculum,
+            'evaluations' => $evaluations
         ]);
     }
 }

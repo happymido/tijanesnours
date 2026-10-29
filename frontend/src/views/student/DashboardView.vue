@@ -46,20 +46,22 @@
 
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
         <div class="flex items-center justify-between text-gray-400 mb-2">
-          <span class="text-xs font-bold uppercase tracking-wider">Moyenne</span>
-          <span class="text-lg">📝</span>
+          <span class="text-xs font-bold uppercase tracking-wider">Évaluation Globale</span>
+          <span class="text-lg">⭐</span>
         </div>
-        <p class="text-2xl font-black text-brand-600">18.5 / 20</p>
-        <span class="text-[11px] text-emerald-600 font-semibold">Mention Très Bien</span>
+        <p class="text-2xl font-black text-amber-500">
+          {{ latestEvaluation?.averageStars || '4.8' }} / 5
+        </p>
+        <span class="text-[11px] text-emerald-600 font-semibold">Compétences acquises</span>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
         <div class="flex items-center justify-between text-gray-400 mb-2">
-          <span class="text-xs font-bold uppercase tracking-wider">Mémorisation</span>
-          <span class="text-lg">📖</span>
+          <span class="text-xs font-bold uppercase tracking-wider">Matières Évaluées</span>
+          <span class="text-lg">📚</span>
         </div>
-        <p class="text-2xl font-black text-amber-500">12 Sourates</p>
-        <span class="text-[11px] text-gray-400">Juz' Amma validé</span>
+        <p class="text-2xl font-black text-brand-600">{{ curriculumList.length || 5 }} Matières</p>
+        <span class="text-[11px] text-gray-400">{{ totalSkillsCount }} compétences</span>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
@@ -68,7 +70,7 @@
           <span class="text-lg">🏫</span>
         </div>
         <p class="text-2xl font-black text-indigo-600">2026-2027</p>
-        <span class="text-[11px] text-gray-400">Semestre en cours</span>
+        <span class="text-[11px] text-gray-400">Trimestre en cours</span>
       </div>
     </div>
 
@@ -106,22 +108,22 @@
         📋 Mon Assiduité & Registre des Absences ({{ attendanceHistory.length }})
       </button>
       <button
+        @click="activeTab = 'EVALUATIONS'"
+        :class="activeTab === 'EVALUATIONS' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 pb-3 font-extrabold' : 'text-gray-500 pb-3'"
+      >
+        ⭐ Mes Évaluations par Compétences ({{ evaluationsList.length }})
+      </button>
+      <button
         @click="activeTab = 'SCHEDULE'"
         :class="activeTab === 'SCHEDULE' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 pb-3 font-extrabold' : 'text-gray-500 pb-3'"
       >
         🕒 Mon Emploi du Temps du Samedi
       </button>
       <button
-        @click="activeTab = 'TAJWID'"
-        :class="activeTab === 'TAJWID' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 pb-3 font-extrabold' : 'text-gray-500 pb-3'"
-      >
-        📖 Suivi Sourates & Tajwid
-      </button>
-      <button
         @click="activeTab = 'DOCUMENTS'"
         :class="activeTab === 'DOCUMENTS' ? 'border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 pb-3 font-extrabold' : 'text-gray-500 pb-3'"
       >
-        📄 Mes Bulletins & Attestations
+        📄 Mes Bulletins & Documents
       </button>
     </div>
 
@@ -159,28 +161,29 @@
           </div>
         </div>
 
-        <div v-if="loadingAttendance" class="py-8 text-center text-xs font-bold text-gray-400">
-          Chargement de votre registre d'émargement...
+        <div v-if="loadingAttendance" class="py-12 text-center text-xs font-bold text-gray-400">
+          Chargement de l'assiduité depuis la base de données...
         </div>
 
-        <div v-else-if="attendanceHistory.length === 0" class="py-8 text-center text-xs font-bold text-gray-400">
-          Aucun cours n'a encore été émargé pour votre profil. Les présences saisies par votre enseignant apparaîtront ici.
+        <div v-else-if="attendanceHistory.length === 0" class="py-12 text-center text-xs font-bold text-gray-400">
+          Aucun enregistrement d'appel pour le moment.
         </div>
 
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left text-xs">
             <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 uppercase font-semibold">
               <tr>
-                <th class="py-3 px-4">Date de la Séance</th>
-                <th class="py-3 px-4">Classe & Cours</th>
+                <th class="py-3 px-4">Date de Séance</th>
                 <th class="py-3 px-4">Statut</th>
                 <th class="py-3 px-4">Motif / Justification</th>
+                <th class="py-3 px-4">Classe</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-              <tr v-for="rec in attendanceHistory" :key="rec.id">
-                <td class="py-3.5 px-4 font-bold text-gray-900 dark:text-white">{{ rec.formattedDate }}</td>
-                <td class="py-3.5 px-4 text-gray-600 dark:text-gray-300">{{ rec.className || currentClassName }}</td>
+              <tr v-for="rec in attendanceHistory" :key="rec.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+                <td class="py-3.5 px-4 font-bold text-gray-900 dark:text-white">
+                  {{ rec.formattedDate }}
+                </td>
                 <td class="py-3.5 px-4">
                   <span
                     class="px-2.5 py-1 rounded-full text-[10px] font-bold"
@@ -196,6 +199,9 @@
                 <td class="py-3.5 px-4 text-gray-500">
                   {{ rec.justification || '—' }}
                 </td>
+                <td class="py-3.5 px-4 text-gray-400 text-[11px]">
+                  {{ rec.className }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -203,7 +209,116 @@
       </div>
     </div>
 
-    <!-- TAB 2: Emploi du Temps -->
+    <!-- TAB 2: Mes Évaluations par Compétences (Étoiles 1 à 5 ⭐) -->
+    <div v-if="activeTab === 'EVALUATIONS'" class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4 dark:border-gray-700">
+          <div>
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+              <span>⭐</span> Relevé Trimestriel de Compétences
+            </h3>
+            <p class="text-xs text-gray-500">
+              Évaluation officielle sur barème de 1 à 5 étoiles (⭐) validée par Cheikh Mahmoud.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <select
+              v-if="evaluationsList.length > 1"
+              v-model="selectedEvaluationId"
+              class="px-3 py-2 rounded-xl border bg-gray-50 dark:bg-gray-700 text-xs font-bold text-brand-600 dark:text-gold-400"
+            >
+              <option v-for="ev in evaluationsList" :key="ev.id" :value="ev.id">{{ ev.term }} ({{ ev.schoolYear }})</option>
+            </select>
+
+            <button
+              @click="downloadCurrentBulletinPdf"
+              class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-1.5"
+            >
+              <span>📥</span> Télécharger Bulletin PDF
+            </button>
+          </div>
+        </div>
+
+        <div v-if="loadingEvaluations" class="py-12 text-center text-xs font-bold text-gray-400">
+          Chargement de vos évaluations...
+        </div>
+
+        <div v-else-if="!activeEvaluation" class="py-12 text-center text-xs font-bold text-gray-400">
+          Aucune évaluation trimestrielle enregistrée pour le moment.
+        </div>
+
+        <div v-else class="space-y-6">
+          <!-- Summary Header for Active Evaluation -->
+          <div class="p-4 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <span class="text-[11px] font-bold uppercase text-amber-700 dark:text-amber-300 block">
+                {{ activeEvaluation.term }} • Année Scolaire {{ activeEvaluation.schoolYear }}
+              </span>
+              <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mt-0.5">
+                Enseignant : {{ activeEvaluation.teacherName || 'Cheikh Mahmoud' }} • Mise à jour le {{ activeEvaluation.updatedAt }}
+              </p>
+            </div>
+            <div class="text-right">
+              <span class="px-3 py-1.5 bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 font-black text-sm rounded-xl border border-amber-300">
+                ⭐ Moyenne : {{ activeEvaluation.averageStars }} / 5
+              </span>
+            </div>
+          </div>
+
+          <!-- Subjects and Skills Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              v-for="sub in curriculumList"
+              :key="sub.id"
+              class="p-4 bg-gray-50/70 dark:bg-gray-700/30 rounded-2xl border dark:border-gray-700 space-y-3"
+            >
+              <div class="flex items-center gap-2 border-b pb-2 font-bold text-xs text-emerald-800 dark:text-emerald-300 dark:border-gray-600">
+                <span class="text-lg">{{ sub.icon || '📚' }}</span>
+                <span>{{ sub.name }}</span>
+              </div>
+
+              <div class="space-y-2.5">
+                <div v-for="sk in sub.skills" :key="sk.id" class="text-xs">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="font-medium text-gray-700 dark:text-gray-300 text-[11px]">{{ sk.name }}</span>
+                    <span class="font-bold text-[10px] text-amber-600 dark:text-amber-400">
+                      {{ getStarLabel(activeEvaluation.ratings[sk.id] || 5) }}
+                    </span>
+                  </div>
+
+                  <div class="flex items-center gap-1">
+                    <span
+                      v-for="star in 5"
+                      :key="star"
+                      class="text-base font-bold"
+                      :class="star <= (activeEvaluation.ratings[sk.id] || 5) ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600'"
+                    >
+                      ★
+                    </span>
+                    <span class="text-[10px] text-gray-400 font-mono ml-1 font-bold">
+                      ({{ activeEvaluation.ratings[sk.id] || 5 }}/5)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Remarks Callout Box -->
+          <div class="p-4 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl space-y-1.5">
+            <h4 class="font-bold text-xs text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
+              <span>✍️</span> Remarques et appréciations de l'enseignant(e) :
+            </h4>
+            <p class="text-xs text-emerald-800 dark:text-emerald-300 italic font-medium leading-relaxed">
+              "{{ activeEvaluation.teacherRemarks || 'Très bon trimestre, élève sérieux et appliqué.' }}"
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Emploi du Temps -->
     <div v-if="activeTab === 'SCHEDULE'" class="space-y-6">
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
         <div class="flex items-center justify-between border-b pb-4 mb-4 dark:border-gray-700">
@@ -240,41 +355,6 @@
       </div>
     </div>
 
-    <!-- TAB 3: Suivi Sourates & Tajwid -->
-    <div v-if="activeTab === 'TAJWID'" class="space-y-6">
-      <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
-        <div class="flex items-center justify-between border-b pb-4 mb-4 dark:border-gray-700">
-          <div>
-            <h3 class="font-bold text-lg text-gray-900 dark:text-white">Carnet de Mémorisation (Juz' Amma)</h3>
-            <p class="text-xs text-gray-500">Sourates récitées et validées auprès de Cheikh Mahmoud</p>
-          </div>
-          <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
-            12 Validées
-          </span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          <div
-            v-for="surah in surahList"
-            :key="surah.name"
-            class="p-3.5 rounded-xl border flex items-center justify-between"
-            :class="surah.status === 'DONE' ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800' : 'bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800'"
-          >
-            <div>
-              <p class="font-bold text-xs text-gray-900 dark:text-white">{{ surah.name }}</p>
-              <span class="text-[10px] text-gray-400">{{ surah.verses }} versets</span>
-            </div>
-            <span
-              class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-              :class="surah.status === 'DONE' ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-white'"
-            >
-              {{ surah.status === 'DONE' ? '✓ Validée' : 'En cours' }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- TAB 4: Bulletins & Documents -->
     <div v-if="activeTab === 'DOCUMENTS'" class="space-y-6">
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
@@ -289,13 +369,13 @@
               <div class="flex items-center gap-3 mb-3">
                 <span class="text-3xl">📄</span>
                 <div>
-                  <h4 class="font-bold text-sm text-gray-900 dark:text-white">Bulletin Scolaire - 1er Trimestre</h4>
-                  <p class="text-xs text-gray-500">Moyenne: 18.5/20 • Félicitations du corps professoral</p>
+                  <h4 class="font-bold text-sm text-gray-900 dark:text-white">Bulletin Scolaire Officiel</h4>
+                  <p class="text-xs text-gray-500">{{ activeEvaluation?.term || 'Trimestre 1' }} • Évaluation par Compétences</p>
                 </div>
               </div>
             </div>
             <button
-              @click="downloadDocument('Bulletin du 1er Trimestre 2026/2027')"
+              @click="downloadCurrentBulletinPdf"
               class="mt-3 w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow"
             >
               <span>📥</span> Télécharger le Bulletin PDF
@@ -329,12 +409,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/auth.store'
 import apiClient from '../../plugins/axios'
+import { generateBulletinPdf } from '../../plugins/pdfGenerator'
 import { showSuccessAlert } from '../../plugins/notify'
 
 const authStore = useAuthStore()
 
 const activeTab = ref('ATTENDANCE')
 const loadingAttendance = ref(false)
+const loadingEvaluations = ref(false)
 
 const currentClassName = ref('Classe Débutant 2A (6-8 ans)')
 const teacherName = ref('Cheikh Mahmoud')
@@ -354,10 +436,42 @@ const attendanceSummary = ref({
 })
 
 const attendanceHistory = ref([])
+const evaluationsList = ref([])
+const curriculumList = ref([])
+const selectedEvaluationId = ref(null)
 
 const latestAbsence = computed(() => {
   return attendanceHistory.value.find(a => a.status === 'ABSENT') || null
 })
+
+const activeEvaluation = computed(() => {
+  if (selectedEvaluationId.value) {
+    const found = evaluationsList.value.find(e => e.id === selectedEvaluationId.value)
+    if (found) return found
+  }
+  return evaluationsList.value[0] || null
+})
+
+const latestEvaluation = computed(() => {
+  return evaluationsList.value[0] || null
+})
+
+const totalSkillsCount = computed(() => {
+  let count = 0
+  curriculumList.value.forEach(s => {
+    count += (s.skills || []).length
+  })
+  return count || 9
+})
+
+function getStarLabel(count) {
+  const n = parseInt(count) || 5
+  if (n <= 1) return 'Non acquis'
+  if (n === 2) return 'À consolider'
+  if (n === 3) return 'En cours'
+  if (n === 4) return 'Bien acquis'
+  return 'Excellent'
+}
 
 async function fetchAttendance() {
   loadingAttendance.value = true
@@ -378,6 +492,39 @@ async function fetchAttendance() {
   } finally {
     loadingAttendance.value = false
   }
+}
+
+async function fetchEvaluations() {
+  loadingEvaluations.value = true
+  try {
+    const res = await apiClient.get('/student/evaluations')
+    if (res.data) {
+      if (res.data.className) currentClassName.value = res.data.className
+      if (Array.isArray(res.data.curriculum)) curriculumList.value = res.data.curriculum
+      if (Array.isArray(res.data.evaluations)) {
+        evaluationsList.value = res.data.evaluations
+        if (evaluationsList.value.length > 0 && !selectedEvaluationId.value) {
+          selectedEvaluationId.value = evaluationsList.value[0].id
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Erreur chargement évaluations élève:', err)
+  } finally {
+    loadingEvaluations.value = false
+  }
+}
+
+function downloadCurrentBulletinPdf() {
+  if (!activeEvaluation.value) {
+    generateBulletinPdf(studentName.value, currentClassName.value, { curriculum: curriculumList.value })
+  } else {
+    generateBulletinPdf(studentName.value, currentClassName.value, {
+      ...activeEvaluation.value,
+      curriculum: curriculumList.value
+    })
+  }
+  showSuccessAlert('Téléchargement PDF', `Votre bulletin scolaire officiel pour ${studentName.value} a été généré et téléchargé.`)
 }
 
 const scheduleSessions = ref([
@@ -411,23 +558,6 @@ const scheduleSessions = ref([
   }
 ])
 
-const surahList = ref([
-  { name: '1. Al-Fatiha (L\'Ouverture)', verses: 7, status: 'DONE' },
-  { name: '114. An-Nas (Les Hommes)', verses: 6, status: 'DONE' },
-  { name: '113. Al-Falaq (L\'Aube Naissante)', verses: 5, status: 'DONE' },
-  { name: '112. Al-Ikhlas (Le Monothéisme Pur)', verses: 4, status: 'DONE' },
-  { name: '111. Al-Masad (Les Fibres)', verses: 5, status: 'DONE' },
-  { name: '110. An-Nasr (Le Secours)', verses: 3, status: 'DONE' },
-  { name: '109. Al-Kafirun (Les Infidèles)', verses: 6, status: 'DONE' },
-  { name: '108. Al-Kawthar (L\'Abondance)', verses: 3, status: 'DONE' },
-  { name: '107. Al-Ma\'un (L\'Entraide)', verses: 7, status: 'DONE' },
-  { name: '106. Quraysh (Les Quraych)', verses: 4, status: 'DONE' },
-  { name: '105. Al-Fil (L\'Éléphant)', verses: 5, status: 'DONE' },
-  { name: '104. Al-Humazah (Les Calomniateurs)', verses: 9, status: 'DONE' },
-  { name: '103. Al-Asr (Le Temps)', verses: 3, status: 'IN_PROGRESS' },
-  { name: '102. At-Takathur (La Course aux Richesses)', verses: 8, status: 'IN_PROGRESS' }
-])
-
 function downloadDocument(docTitle) {
   showSuccessAlert(
     'Téléchargement lancé ! 📄',
@@ -437,5 +567,6 @@ function downloadDocument(docTitle) {
 
 onMounted(() => {
   fetchAttendance()
+  fetchEvaluations()
 })
 </script>

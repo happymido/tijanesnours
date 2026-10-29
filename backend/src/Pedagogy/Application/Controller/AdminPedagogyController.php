@@ -7,6 +7,8 @@ use App\IdentityAccess\Domain\Entity\Teacher;
 use App\Pedagogy\Domain\Entity\Attendance;
 use App\Pedagogy\Domain\Entity\Bulletin;
 use App\Pedagogy\Domain\Entity\Grade;
+use App\Pedagogy\Domain\Entity\PedagogicalSubject;
+use App\Pedagogy\Domain\Entity\PedagogicalSkill;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -298,5 +300,351 @@ class AdminPedagogyController extends AbstractController
         $em->flush();
 
         return $this->json(['success' => true, 'message' => 'Enregistrement supprimé avec succès.']);
+    }
+
+    #[Route('/curriculum', name: 'curriculum', methods: ['GET'])]
+    public function getCurriculum(EntityManagerInterface $em): JsonResponse
+    {
+        $subjects = $em->getRepository(PedagogicalSubject::class)->findBy([], ['orderIndex' => 'ASC', 'id' => 'ASC']);
+
+        // Auto-seed if empty
+        if (empty($subjects)) {
+            $defaultCurriculum = [
+                ['name' => 'Saint Coran', 'code' => 'CORAN', 'icon' => '📖', 'order' => 1, 'skills' => [
+                    ['name' => 'Mémorisation des sourates', 'code' => 'memorisation_sourates', 'order' => 1]
+                ]],
+                ['name' => 'Éducation Islamique', 'code' => 'EDUCATION_ISLAMIQUE', 'icon' => '🕌', 'order' => 2, 'skills' => [
+                    ['name' => 'Acquisition des concepts religieux prescrits', 'code' => 'acquisition_concepts', 'order' => 1]
+                ]],
+                ['name' => 'Lecture', 'code' => 'LECTURE', 'icon' => '📚', 'order' => 3, 'skills' => [
+                    ['name' => 'Lecture fluide avec le respect de la ponctuation', 'code' => 'lecture_fluide', 'order' => 1],
+                    ['name' => 'Compréhension', 'code' => 'comprehension', 'order' => 2]
+                ]],
+                ['name' => 'Expression Orale', 'code' => 'EXPRESSION_ORALE', 'icon' => '🗣️', 'order' => 4, 'skills' => [
+                    ['name' => 'Mémoriser les dialogues', 'code' => 'memoriser_dialogues', 'order' => 1],
+                    ['name' => 'Mémoriser le vocabulaire', 'code' => 'memoriser_vocabulaire', 'order' => 2],
+                    ['name' => 'Former des phrases avec les mots acquis', 'code' => 'former_phrases', 'order' => 3],
+                    ['name' => 'Compréhension orale', 'code' => 'comprehension_orale', 'order' => 4]
+                ]],
+                ['name' => 'Dictée', 'code' => 'DICTEE', 'icon' => '✍️', 'order' => 5, 'skills' => [
+                    ['name' => 'Écrire correctement les mots dictés', 'code' => 'ecrire_mots', 'order' => 1]
+                ]]
+            ];
+
+            foreach ($defaultCurriculum as $subData) {
+                $sub = new PedagogicalSubject();
+                $sub->setName($subData['name']);
+                $sub->setCode($subData['code']);
+                $sub->setIcon($subData['icon']);
+                $sub->setOrderIndex($subData['order']);
+                $sub->setIsActive(true);
+                $em->persist($sub);
+
+                foreach ($subData['skills'] as $skData) {
+                    $sk = new PedagogicalSkill();
+                    $sk->setSubject($sub);
+                    $sk->setName($skData['name']);
+                    $sk->setCode($skData['code']);
+                    $sk->setOrderIndex($skData['order']);
+                    $sk->setIsActive(true);
+                    $em->persist($sk);
+                }
+            }
+            $em->flush();
+            $subjects = $em->getRepository(PedagogicalSubject::class)->findBy([], ['orderIndex' => 'ASC', 'id' => 'ASC']);
+        }
+
+        $data = [];
+        foreach ($subjects as $s) {
+            $skillsData = [];
+            foreach ($s->getSkills() as $sk) {
+                $skillsData[] = [
+                    'id' => $sk->getId(),
+                    'subjectId' => $s->getId(),
+                    'name' => $sk->getName(),
+                    'code' => $sk->getCode(),
+                    'orderIndex' => $sk->getOrderIndex(),
+                    'isActive' => $sk->isActive()
+                ];
+            }
+
+            $data[] = [
+                'id' => $s->getId(),
+                'name' => $s->getName(),
+                'code' => $s->getCode(),
+                'icon' => $s->getIcon(),
+                'orderIndex' => $s->getOrderIndex(),
+                'isActive' => $s->isActive(),
+                'skills' => $skillsData
+            ];
+        }
+
+        return $this->json($data);
+    }
+
+    #[Route('/subjects', name: 'save_subject', methods: ['POST'])]
+    public function saveSubject(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $id = $payload['id'] ?? null;
+        $name = trim($payload['name'] ?? '');
+        $code = trim($payload['code'] ?? '');
+        $icon = trim($payload['icon'] ?? '📚');
+        $orderIndex = (int)($payload['orderIndex'] ?? 0);
+        $isActive = isset($payload['isActive']) ? (bool)$payload['isActive'] : true;
+
+        if (empty($name)) {
+            return $this->json(['error' => 'Le nom de la matière est obligatoire.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (empty($code)) {
+            $code = strtoupper(preg_replace('/[^a-zA-Z0-9_]/', '_', $name));
+        }
+
+        $repo = $em->getRepository(PedagogicalSubject::class);
+        $subject = null;
+        if ($id) {
+            $subject = $repo->find($id);
+        }
+        if (!$subject) {
+            $subject = new PedagogicalSubject();
+        }
+
+        $subject->setName($name);
+        $subject->setCode($code);
+        $subject->setIcon($icon);
+        $subject->setOrderIndex($orderIndex);
+        $subject->setIsActive($isActive);
+
+        $em->persist($subject);
+        $em->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Matière enregistrée avec succès en base de données.',
+            'subject' => [
+                'id' => $subject->getId(),
+                'name' => $subject->getName(),
+                'code' => $subject->getCode(),
+                'icon' => $subject->getIcon(),
+                'orderIndex' => $subject->getOrderIndex(),
+                'isActive' => $subject->isActive()
+            ]
+        ]);
+    }
+
+    #[Route('/subjects/{id}', name: 'delete_subject', methods: ['DELETE'])]
+    public function deleteSubject(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $subject = $em->getRepository(PedagogicalSubject::class)->find($id);
+        if (!$subject) {
+            return $this->json(['error' => 'Matière introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $em->remove($subject);
+        $em->flush();
+
+        return $this->json(['success' => true, 'message' => 'Matière supprimée avec succès.']);
+    }
+
+    #[Route('/skills', name: 'save_skill', methods: ['POST'])]
+    public function saveSkill(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $id = $payload['id'] ?? null;
+        $subjectId = $payload['subjectId'] ?? null;
+        $name = trim($payload['name'] ?? '');
+        $code = trim($payload['code'] ?? '');
+        $orderIndex = (int)($payload['orderIndex'] ?? 0);
+        $isActive = isset($payload['isActive']) ? (bool)$payload['isActive'] : true;
+
+        if (!$subjectId || empty($name)) {
+            return $this->json(['error' => 'Matière et intitulé de la compétence obligatoires.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $subject = $em->getRepository(PedagogicalSubject::class)->find($subjectId);
+        if (!$subject) {
+            return $this->json(['error' => 'Matière parente introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (empty($code)) {
+            $code = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $name));
+        }
+
+        $repo = $em->getRepository(PedagogicalSkill::class);
+        $skill = null;
+        if ($id) {
+            $skill = $repo->find($id);
+        }
+        if (!$skill) {
+            $skill = new PedagogicalSkill();
+        }
+
+        $skill->setSubject($subject);
+        $skill->setName($name);
+        $skill->setCode($code);
+        $skill->setOrderIndex($orderIndex);
+        $skill->setIsActive($isActive);
+
+        $em->persist($skill);
+        $em->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Compétence enregistrée avec succès en base de données.',
+            'skill' => [
+                'id' => $skill->getId(),
+                'subjectId' => $subject->getId(),
+                'name' => $skill->getName(),
+                'code' => $skill->getCode(),
+                'orderIndex' => $skill->getOrderIndex(),
+                'isActive' => $skill->isActive()
+            ]
+        ]);
+    }
+
+    #[Route('/skills/{id}', name: 'delete_skill', methods: ['DELETE'])]
+    public function deleteSkill(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $skill = $em->getRepository(PedagogicalSkill::class)->find($id);
+        if (!$skill) {
+            return $this->json(['error' => 'Compétence introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $em->remove($skill);
+        $em->flush();
+
+        return $this->json(['success' => true, 'message' => 'Compétence supprimée avec succès.']);
+    }
+
+    #[Route('/evaluations', name: 'list_evaluations', methods: ['GET'])]
+    public function listEvaluations(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $classFilter = $request->query->get('class');
+        $termFilter = $request->query->get('term');
+        $studentId = $request->query->get('student_id');
+
+        $repo = $em->getRepository(Bulletin::class);
+        $bulletins = $repo->findBy([], ['id' => 'DESC']);
+
+        $items = [];
+        foreach ($bulletins as $b) {
+            $student = $b->getStudent();
+            if ($studentId && $student?->getId() != $studentId) {
+                continue;
+            }
+
+            $classroom = 'Classe Débutant 2A (6-8 ans)';
+            if ($student) {
+                $firstClass = $student->getSchoolClasses()->first();
+                if ($firstClass) {
+                    $classroom = $firstClass->getName();
+                } elseif ($student->getAssignedGroup()) {
+                    $classroom = $student->getAssignedGroup();
+                }
+            }
+
+            if ($classFilter && $classFilter !== 'ALL') {
+                if (strcasecmp($classroom, $classFilter) !== 0 && !str_contains(strtolower($classroom), strtolower($classFilter))) {
+                    continue;
+                }
+            }
+
+            if ($termFilter && $termFilter !== 'ALL' && strcasecmp($b->getTerm(), $termFilter) !== 0) {
+                continue;
+            }
+
+            $ratings = $b->getRatings() ?? [];
+
+            $items[] = [
+                'id' => $b->getId(),
+                'studentId' => $student?->getId(),
+                'student' => $student ? ($student->getFirstName() . ' ' . $student->getLastName()) : 'Élève Inconnu',
+                'classroom' => $classroom,
+                'term' => $b->getTerm(),
+                'schoolYear' => $b->getSchoolYear(),
+                'ratings' => $ratings,
+                'averageStars' => number_format((float)$b->getAverageStars(), 1, '.', ''),
+                'teacherRemarks' => $b->getTeacherRemarks() ?? 'Très bon investissement et régularité exemplaire.',
+                'teacherName' => $b->getTeacher()?->getFullName() ?? 'Cheikh Mahmoud',
+                'updatedAt' => $b->getUpdatedAt()?->format('d/m/Y') ?? $b->getGeneratedAt()->format('d/m/Y')
+            ];
+        }
+
+        return $this->json($items);
+    }
+
+    #[Route('/evaluations', name: 'save_evaluation', methods: ['POST'])]
+    public function saveEvaluation(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $studentId = $payload['studentId'] ?? null;
+        $term = $payload['term'] ?? 'Trimestre 1';
+        $schoolYear = $payload['schoolYear'] ?? '2026-2027';
+        $ratings = $payload['ratings'] ?? [];
+        $teacherRemarks = $payload['teacherRemarks'] ?? ($payload['remarks'] ?? '');
+
+        if (!$studentId) {
+            return $this->json(['error' => 'Identifiant élève obligatoire.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $student = $em->getRepository(Student::class)->find($studentId);
+        if (!$student) {
+            return $this->json(['error' => 'Élève introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $repo = $em->getRepository(Bulletin::class);
+        $bulletin = $repo->findOneBy(['student' => $student, 'term' => $term, 'schoolYear' => $schoolYear]);
+        if (!$bulletin) {
+            $bulletin = new Bulletin();
+            $bulletin->setStudent($student);
+            $bulletin->setTerm($term);
+            $bulletin->setSchoolYear($schoolYear);
+        }
+
+        // Calculate average stars
+        $starValues = array_values($ratings);
+        $avg = 5.00;
+        if (!empty($starValues)) {
+            $validStars = array_filter($starValues, fn($v) => is_numeric($v));
+            if (!empty($validStars)) {
+                $avg = round(array_sum($validStars) / count($validStars), 2);
+            }
+        }
+
+        $teacher = $em->getRepository(Teacher::class)->findOneBy([]);
+        if ($teacher) {
+            $bulletin->setTeacher($teacher);
+        }
+
+        $bulletin->setRatings($ratings);
+        $bulletin->setAverageStars((string)$avg);
+        $bulletin->setTeacherRemarks($teacherRemarks);
+        $bulletin->setUpdatedAt(new \DateTimeImmutable());
+
+        $em->persist($bulletin);
+        $em->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Évaluation enregistrée avec succès.',
+            'id' => $bulletin->getId(),
+            'averageStars' => $avg,
+            'term' => $term
+        ]);
+    }
+
+    #[Route('/evaluations/{id}', name: 'delete_evaluation', methods: ['DELETE'])]
+    public function deleteEvaluation(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        $bulletin = $em->getRepository(Bulletin::class)->find($id);
+        if (!$bulletin) {
+            return $this->json(['error' => 'Évaluation introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $em->remove($bulletin);
+        $em->flush();
+
+        return $this->json(['success' => true, 'message' => 'Évaluation supprimée avec succès.']);
     }
 }
