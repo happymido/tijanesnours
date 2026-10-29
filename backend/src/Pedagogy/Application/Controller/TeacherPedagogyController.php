@@ -315,10 +315,16 @@ class TeacherPedagogyController extends AbstractController
             ]);
 
             $ratings = $bulletin ? ($bulletin->getRatings() ?? []) : [];
-            // Si vide, initialiser avec 5 étoiles par défaut pour chaque compétence
+            // Valeur par défaut 0 (non évalué) pour chaque compétence
             if (empty($ratings)) {
                 foreach ($allSkillIds as $skId) {
-                    $ratings[$skId] = 5;
+                    $ratings[$skId] = 0;
+                }
+            } else {
+                foreach ($allSkillIds as $skId) {
+                    if (!isset($ratings[$skId])) {
+                        $ratings[$skId] = 0;
+                    }
                 }
             }
 
@@ -326,7 +332,7 @@ class TeacherPedagogyController extends AbstractController
                 'id' => $st->getId(),
                 'name' => trim($st->getFirstName() . ' ' . $st->getLastName()),
                 'ratings' => $ratings,
-                'averageStars' => $bulletin ? number_format((float)$bulletin->getAverageStars(), 1, '.', '') : '5.0',
+                'averageStars' => $bulletin ? number_format((float)$bulletin->getAverageStars(), 1, '.', '') : '0.0',
                 'teacherRemarks' => $bulletin ? ($bulletin->getTeacherRemarks() ?? '') : ''
             ];
         }
@@ -386,9 +392,9 @@ class TeacherPedagogyController extends AbstractController
             $remarks = $item['teacherRemarks'] ?? ($item['remarks'] ?? '');
 
             $starValues = array_values($ratings);
-            $avg = 5.00;
+            $avg = 0.00;
             if (!empty($starValues)) {
-                $validStars = array_filter($starValues, fn($v) => is_numeric($v));
+                $validStars = array_filter($starValues, fn($v) => is_numeric($v) && (int)$v > 0);
                 if (!empty($validStars)) {
                     $avg = round(array_sum($validStars) / count($validStars), 2);
                 }
