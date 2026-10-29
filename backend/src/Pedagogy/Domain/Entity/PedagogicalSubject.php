@@ -18,6 +18,9 @@ class PedagogicalSubject
     #[ORM\Column(length: 150)]
     private string $name;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $nameAr = null;
+
     #[ORM\Column(length: 50, unique: true)]
     private string $code;
 
@@ -52,6 +55,17 @@ class PedagogicalSubject
     public function setName(string $name): self
     {
         $this->name = $name;
+        return $this;
+    }
+
+    public function getNameAr(): ?string
+    {
+        return $this->nameAr;
+    }
+
+    public function setNameAr(?string $nameAr): self
+    {
+        $this->nameAr = $nameAr;
         return $this;
     }
 

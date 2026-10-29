@@ -59,6 +59,7 @@ const routes = [
       { path: 'users/:id/id-card', name: 'admin-user-id-card', component: () => import('../views/admin/UserIdCardView.vue') },
       { path: 'classes', name: 'admin-classes', component: () => import('../views/admin/ClassesView.vue') },
       { path: 'pedagogy', name: 'admin-pedagogy', component: () => import('../views/admin/PedagogyView.vue') },
+      { path: 'bulletins', name: 'admin-bulletins', component: () => import('../views/admin/BulletinsView.vue') },
       { path: 'finance', name: 'admin-finance', component: () => import('../views/admin/FinanceView.vue') },
       { path: 'events', name: 'admin-events', component: () => import('../views/admin/EventsView.vue') },
       { path: 'cms', name: 'admin-cms', component: () => import('../views/admin/CmsView.vue') },

@@ -32,8 +32,14 @@ class Student
     #[ORM\Column(length: 100)]
     private ?string $firstName = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $firstNameAr = null;
+
     #[ORM\Column(length: 100)]
     private ?string $lastName = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $lastNameAr = null;
 
     #[ORM\Column(length: 150, nullable: true)]
     private ?string $assignedGroup = 'Classe Débutant 2A (6-8 ans)';
@@ -142,6 +148,17 @@ class Student
         return $this;
     }
 
+    public function getFirstNameAr(): ?string
+    {
+        return $this->firstNameAr;
+    }
+
+    public function setFirstNameAr(?string $firstNameAr): self
+    {
+        $this->firstNameAr = $firstNameAr;
+        return $this;
+    }
+
     public function getLastName(): ?string
     {
         return $this->lastName;
@@ -150,6 +167,17 @@ class Student
     public function setLastName(string $lastName): self
     {
         $this->lastName = $lastName;
+        return $this;
+    }
+
+    public function getLastNameAr(): ?string
+    {
+        return $this->lastNameAr;
+    }
+
+    public function setLastNameAr(?string $lastNameAr): self
+    {
+        $this->lastNameAr = $lastNameAr;
         return $this;
     }
 

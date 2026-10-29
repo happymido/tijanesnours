@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
 
 export const generateBulletinPdf = (studentName, className, evaluationData = null) => {
   const doc = new jsPDF()
@@ -208,4 +209,45 @@ export const generateInvoicePdf = (parentName, childName, amount = 690) => {
   doc.text(`Total Reglé : ${amount}.00 EUR (Acquitté)`, 120, 155)
 
   doc.save(`Facture_${childName.replace(/\s+/g, '_')}_2026.pdf`)
+}
+
+export const generateBilingualBulletinPdf = async (elementOrId, filename = 'Bulletin.pdf') => {
+  const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId
+  if (!el) throw new Error('Element introuvable pour la génération du bulletin')
+
+  const canvas = await html2canvas(el, {
+    scale: 2.5,
+    useCORS: true,
+    logging: false,
+    backgroundColor: '#ffffff'
+  })
+
+  const imgData = canvas.toDataURL('image/jpeg', 0.98)
+  const pdf = new jsPDF('p', 'mm', 'a4')
+  const pdfWidth = pdf.internal.pageSize.getWidth()
+  const pdfHeight = pdf.internal.pageSize.getHeight()
+
+  pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+  pdf.save(filename)
+  return pdf
+}
+
+export const getBilingualBulletinPdfBlob = async (elementOrId) => {
+  const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId
+  if (!el) throw new Error('Element introuvable pour la génération du bulletin')
+
+  const canvas = await html2canvas(el, {
+    scale: 2.2,
+    useCORS: true,
+    logging: false,
+    backgroundColor: '#ffffff'
+  })
+
+  const imgData = canvas.toDataURL('image/jpeg', 0.95)
+  const pdf = new jsPDF('p', 'mm', 'a4')
+  const pdfWidth = pdf.internal.pageSize.getWidth()
+  const pdfHeight = pdf.internal.pageSize.getHeight()
+
+  pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+  return pdf.output('blob')
 }

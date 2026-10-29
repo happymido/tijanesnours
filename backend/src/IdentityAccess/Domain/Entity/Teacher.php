@@ -20,6 +20,9 @@ class Teacher
     #[ORM\Column(length: 100)]
     private ?string $fullName = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $fullNameAr = null;
+
     #[ORM\Column(type: 'json')]
     private array $specialities = [];
 
@@ -53,6 +56,17 @@ class Teacher
     public function setFullName(string $fullName): self
     {
         $this->fullName = $fullName;
+        return $this;
+    }
+
+    public function getFullNameAr(): ?string
+    {
+        return $this->fullNameAr;
+    }
+
+    public function setFullNameAr(?string $fullNameAr): self
+    {
+        $this->fullNameAr = $fullNameAr;
         return $this;
     }
 

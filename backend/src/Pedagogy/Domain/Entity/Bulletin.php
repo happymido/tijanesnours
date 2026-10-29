@@ -42,6 +42,9 @@ class Bulletin
     private ?string $teacherRemarks = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $teacherRemarksAr = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $teacherAppreciation = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -150,6 +153,17 @@ class Bulletin
     {
         $this->teacherRemarks = $teacherRemarks;
         $this->teacherAppreciation = $teacherRemarks;
+        return $this;
+    }
+
+    public function getTeacherRemarksAr(): ?string
+    {
+        return $this->teacherRemarksAr;
+    }
+
+    public function setTeacherRemarksAr(?string $teacherRemarksAr): self
+    {
+        $this->teacherRemarksAr = $teacherRemarksAr;
         return $this;
     }
 

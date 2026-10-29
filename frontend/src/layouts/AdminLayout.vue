@@ -39,6 +39,22 @@
         </router-link>
 
         <router-link
+          to="/admin/pedagogy"
+          active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"
+        >
+          <span class="text-base">📚</span> Pédagogie & Évaluations
+        </router-link>
+
+        <router-link
+          to="/admin/bulletins"
+          active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"
+        >
+          <span class="text-base">📑</span> Bulletins Scolaires Bilingues
+        </router-link>
+
+        <router-link
           to="/admin/finance"
           active-class="bg-brand-600 text-white shadow-lg shadow-brand-600/30"
           class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-all"

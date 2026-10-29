@@ -63,6 +63,13 @@
       >
         📚 Matières & Compétences ({{ curriculumList.length }})
       </button>
+
+      <router-link
+        to="/admin/bulletins"
+        class="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 pb-3 font-extrabold flex items-center gap-1.5 ml-auto bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1 rounded-xl border border-emerald-200 dark:border-emerald-800 transition-all shadow-sm"
+      >
+        <span>📑</span> Bulletins Bilingues PDF (Modèle Bayen) →
+      </router-link>
     </div>
 
     <div v-if="loading" class="p-8 text-center text-xs font-bold text-gray-500">
